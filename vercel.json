@@ -1,0 +1,6 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "regions": ["sin1"],
+  "installCommand": "npx --yes pnpm@12.16.1 install --frozen-lockfile",
+  "buildCommand": "npx --yes pnpm@12.16.1 db:migrate && npx --yes pnpm@12.16.1 build"
+}
