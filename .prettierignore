@@ -1,0 +1,13 @@
+pnpm-lock.yaml
+.next/
+coverage/
+playwright-report/
+test-results/
+drizzle/meta/
+next-env.d.ts
+
+# Source-of-truth docs are maintained by hand.
+SPEC.md
+BUILD_PLAN.md
+CLAUDE.md
+AGENTS.md
