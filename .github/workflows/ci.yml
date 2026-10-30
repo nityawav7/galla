@@ -12,9 +12,6 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  TEST_DATABASE_URL: postgres://galla:galla@localhost:5432/galla_test
-
 jobs:
   quality:
     name: Lint, format, typecheck, audit
@@ -62,7 +59,8 @@ jobs:
           --health-cmd "pg_isready -U galla -d galla_test"
           --health-interval 2s --health-timeout 5s --health-retries 20
     env:
-      DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+      # Matches the postgres service above; local test credentials only.
+      DATABASE_URL: postgres://galla:galla@localhost:5432/galla_test
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -88,7 +86,8 @@ jobs:
           --health-cmd "pg_isready -U galla -d galla_test"
           --health-interval 2s --health-timeout 5s --health-retries 20
     env:
-      DATABASE_URL: ${{ env.TEST_DATABASE_URL }}
+      # Matches the postgres service above; local test credentials only.
+      DATABASE_URL: postgres://galla:galla@localhost:5432/galla_test
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
