@@ -1,8 +1,15 @@
 import { defineConfig, devices } from "@playwright/test";
 
 const isCI = Boolean(process.env.CI);
-// Set PLAYWRIGHT_BASE_URL to run against a deployed preview instead of a local server.
-const externalBaseURL = process.env.PLAYWRIGHT_BASE_URL;
+// Set PLAYWRIGHT_BASE_URL to run against a deployment instead of a local server. Vercel's
+// dispatch payload may give a bare host ("galla-abc.vercel.app"), so add https:// if missing.
+// GitHub passes an empty string when the value is absent, so treat "" as unset.
+const rawExternalURL = process.env.PLAYWRIGHT_BASE_URL?.trim();
+const externalBaseURL = rawExternalURL
+  ? /^https?:\/\//.test(rawExternalURL)
+    ? rawExternalURL
+    : `https://${rawExternalURL}`
+  : undefined;
 const baseURL = externalBaseURL ?? "http://localhost:3000";
 // Lets CI reach Vercel previews that have Deployment Protection enabled.
 const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
