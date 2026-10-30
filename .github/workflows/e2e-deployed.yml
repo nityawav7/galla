@@ -23,6 +23,13 @@ jobs:
       PLAYWRIGHT_BASE_URL: ${{ github.event.client_payload.url || inputs.url }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
+      # Vercel sends the deployment's own URL, which Vercel Authentication protects even in
+      # production. Without the bypass secret the tests would only see the login page.
+      - name: Check protection bypass secret
+        if: env.VERCEL_AUTOMATION_BYPASS_SECRET == ''
+        run: |
+          echo "::error::VERCEL_AUTOMATION_BYPASS_SECRET is not set. See docs/runbook.md (E2E after deploys)."
+          exit 1
       - uses: actions/checkout@v7
         with:
           ref: ${{ github.event.client_payload.git.sha || github.sha }}
