@@ -1,0 +1,121 @@
+{
+  "id": "10-mixed-ship-to-other-state",
+  "title": "Billed in Maharashtra, shipped to Goa: IGST on a mixed five-line invoice",
+  "business": {
+    "stateCode": "27",
+    "scheme": "REGULAR"
+  },
+  "customer": {
+    "billingStateCode": "27",
+    "shippingStateCode": "30"
+  },
+  "overrideStateCode": null,
+  "roundOff": true,
+  "lines": [
+    {
+      "description": "Ceiling fan (MRP)",
+      "qty": "1",
+      "unitPrice": "1,180.00",
+      "rateBp": 1800,
+      "priceIncludesTax": true,
+      "discount": "100.00"
+    },
+    {
+      "description": "Paint (L)",
+      "qty": "2.5",
+      "unitPrice": "64.00",
+      "rateBp": 500,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    },
+    {
+      "description": "Fresh vegetables",
+      "qty": "6",
+      "unitPrice": "12.00",
+      "rateBp": 0,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    },
+    {
+      "description": "Honey 500 g (MRP)",
+      "qty": "1",
+      "unitPrice": "349.00",
+      "rateBp": 500,
+      "priceIncludesTax": true,
+      "discount": "0.00"
+    },
+    {
+      "description": "Bulb",
+      "qty": "3",
+      "unitPrice": "19.99",
+      "rateBp": 1800,
+      "priceIncludesTax": false,
+      "discount": "5.97"
+    }
+  ],
+  "expected": {
+    "documentType": "TAX_INVOICE",
+    "placeOfSupply": "30",
+    "taxMode": "INTER",
+    "lines": [
+      {
+        "gross": "1180.00",
+        "taxable": "900.00",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "162.00",
+        "total": "1062.00"
+      },
+      {
+        "gross": "160.00",
+        "taxable": "160.00",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "8.00",
+        "total": "168.00"
+      },
+      {
+        "gross": "72.00",
+        "taxable": "72.00",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "72.00"
+      },
+      {
+        "gross": "349.00",
+        "taxable": "332.38",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "16.62",
+        "total": "349.00"
+      },
+      {
+        "gross": "59.97",
+        "taxable": "54.00",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "9.72",
+        "total": "63.72"
+      }
+    ],
+    "totals": {
+      "gross": "1820.97",
+      "discount": "105.97",
+      "taxable": "1518.38",
+      "cgst": "0.00",
+      "sgst": "0.00",
+      "utgst": "0.00",
+      "igst": "196.34",
+      "subTotal": "1714.72",
+      "roundOff": "0.28",
+      "grandTotal": "1715.00"
+    },
+    "amountInWords": "Rupees One Thousand Seven Hundred Fifteen Only"
+  }
+}

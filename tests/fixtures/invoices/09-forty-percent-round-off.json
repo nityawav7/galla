@@ -1,0 +1,70 @@
+{
+  "id": "09-forty-percent-round-off",
+  "title": "40% rate, inter-state to Delhi, MRP line plus exclusive line, round-off up",
+  "business": {
+    "stateCode": "27",
+    "scheme": "REGULAR"
+  },
+  "customer": {
+    "billingStateCode": "07",
+    "shippingStateCode": null
+  },
+  "overrideStateCode": null,
+  "roundOff": true,
+  "lines": [
+    {
+      "description": "Aerated drink 600 ml",
+      "qty": "24",
+      "unitPrice": "40.00",
+      "rateBp": 4000,
+      "priceIncludesTax": true,
+      "discount": "0.00"
+    },
+    {
+      "description": "Luxury item",
+      "qty": "1",
+      "unitPrice": "2,499.00",
+      "rateBp": 4000,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    }
+  ],
+  "expected": {
+    "documentType": "TAX_INVOICE",
+    "placeOfSupply": "07",
+    "taxMode": "INTER",
+    "lines": [
+      {
+        "gross": "960.00",
+        "taxable": "685.71",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "274.28",
+        "total": "959.99"
+      },
+      {
+        "gross": "2499.00",
+        "taxable": "2499.00",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "999.60",
+        "total": "3498.60"
+      }
+    ],
+    "totals": {
+      "gross": "3459.00",
+      "discount": "0.00",
+      "taxable": "3184.71",
+      "cgst": "0.00",
+      "sgst": "0.00",
+      "utgst": "0.00",
+      "igst": "1273.88",
+      "subTotal": "4458.59",
+      "roundOff": "0.41",
+      "grandTotal": "4459.00"
+    },
+    "amountInWords": "Rupees Four Thousand Four Hundred Fifty Nine Only"
+  }
+}

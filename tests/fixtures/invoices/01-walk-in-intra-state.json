@@ -1,0 +1,70 @@
+{
+  "id": "01-walk-in-intra-state",
+  "title": "Walk-in customer (no state) at a Maharashtra shop, prices before tax",
+  "business": {
+    "stateCode": "27",
+    "scheme": "REGULAR"
+  },
+  "customer": {
+    "billingStateCode": null,
+    "shippingStateCode": null
+  },
+  "overrideStateCode": null,
+  "roundOff": true,
+  "lines": [
+    {
+      "description": "Basmati rice 1 kg",
+      "qty": "2",
+      "unitPrice": "250.00",
+      "rateBp": 500,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    },
+    {
+      "description": "Detergent 1 kg",
+      "qty": "3",
+      "unitPrice": "99.00",
+      "rateBp": 1800,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    }
+  ],
+  "expected": {
+    "documentType": "TAX_INVOICE",
+    "placeOfSupply": "27",
+    "taxMode": "INTRA_SGST",
+    "lines": [
+      {
+        "gross": "500.00",
+        "taxable": "500.00",
+        "cgst": "12.50",
+        "sgst": "12.50",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "525.00"
+      },
+      {
+        "gross": "297.00",
+        "taxable": "297.00",
+        "cgst": "26.73",
+        "sgst": "26.73",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "350.46"
+      }
+    ],
+    "totals": {
+      "gross": "797.00",
+      "discount": "0.00",
+      "taxable": "797.00",
+      "cgst": "39.23",
+      "sgst": "39.23",
+      "utgst": "0.00",
+      "igst": "0.00",
+      "subTotal": "875.46",
+      "roundOff": "-0.46",
+      "grandTotal": "875.00"
+    },
+    "amountInWords": "Rupees Eight Hundred Seventy Five Only"
+  }
+}
