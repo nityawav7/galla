@@ -113,7 +113,7 @@ Permissions are defined **once** in `src/server/authz/permissions.ts` and checke
 - **Intra-state** (business state = place of supply): **CGST + SGST**, or **CGST + UTGST** for UTs without a legislature.
 - **Inter-state:** **IGST**.
 - UTGST applies in 04 Chandigarh, 26 Dadra and Nagar Haveli and Daman and Diu, 31 Lakshadweep, 35 Andaman and Nicobar Islands and 38 Ladakh. 01 Jammu and Kashmir, 07 Delhi and 34 Puducherry have legislatures and charge SGST. Legacy codes 25 (Daman and Diu) and 28 (undivided Andhra Pradesh) are kept **inactive** so old data renders. 97 Other Territory is treated as UTGST (**verify**).
-- **Composition** businesses cannot bill a customer in another state (CGST Act s.10(2)(c)); the invoice is blocked with a clear message. **Unregistered** businesses issue a plain "Invoice" with no tax in either case.
+- **Composition** businesses cannot bill a customer in another state (CGST Act s.10(2)(c)); the invoice is blocked with a clear message. **Unregistered** businesses issue a plain "Invoice" with no tax in either case. Billing another state is **allowed with a warning** (`UNREGISTERED_INTER_STATE`) shown before issuing: inter-state sales usually require registration (CGST Act s.24(i)), but a shop selling only exempt goods may legitimately be unregistered.
 
 ### 4.3 Tax rates
 - Since **22 Sep 2025 (GST 2.0)**, the main slabs are **5% and 18%**, with **40%** on sin and luxury goods. Many essentials are 0%. Special rates such as 0.25% and 3% exist for specific goods.

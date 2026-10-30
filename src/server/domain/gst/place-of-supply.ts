@@ -26,10 +26,18 @@ export interface PlaceOfSupplyInput {
   overrideStateCode?: string | null;
 }
 
+/**
+ * Allowed but worth a second look; the UI shows these before issuing.
+ * UNREGISTERED_INTER_STATE: inter-state sales usually need GST registration
+ * (CGST Act s.24(i)), but a shop selling only exempt goods may be unregistered.
+ */
+export type PlaceOfSupplyWarning = "UNREGISTERED_INTER_STATE";
+
 export interface PlaceOfSupply {
   stateCode: string;
   isInterState: boolean;
   taxMode: TaxMode;
+  warnings: PlaceOfSupplyWarning[];
 }
 
 const DOCUMENT_TYPES: Record<GstScheme, DocumentType> = {
@@ -64,6 +72,7 @@ export function determinePlaceOfSupply(input: PlaceOfSupplyInput): PlaceOfSupply
     stateCode: place.code,
     isInterState,
     taxMode: taxModeFor(input.scheme, isInterState, place.isUtWithoutLegislature),
+    warnings: input.scheme === "UNREGISTERED" && isInterState ? ["UNREGISTERED_INTER_STATE"] : [],
   };
 }
 

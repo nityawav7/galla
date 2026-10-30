@@ -21,6 +21,7 @@ describe("determinePlaceOfSupply", () => {
       stateCode: "27",
       isInterState: false,
       taxMode: "INTRA_SGST",
+      warnings: [],
     });
   });
 
@@ -29,6 +30,7 @@ describe("determinePlaceOfSupply", () => {
       stateCode: "29",
       isInterState: true,
       taxMode: "INTER",
+      warnings: [],
     });
   });
 
@@ -102,7 +104,7 @@ describe("determinePlaceOfSupply", () => {
         scheme: "COMPOSITION",
         customerBillingStateCode: "27",
       }),
-    ).toEqual({ stateCode: "27", isInterState: false, taxMode: "NONE" });
+    ).toEqual({ stateCode: "27", isInterState: false, taxMode: "NONE", warnings: [] });
   });
 
   it("composition dealer cannot sell to another state", () => {
@@ -115,16 +117,31 @@ describe("determinePlaceOfSupply", () => {
     ).toThrow(ValidationError);
   });
 
-  it("unregistered business → no tax in either case", () => {
-    for (const customerState of ["27", "29"]) {
-      expect(
-        determinePlaceOfSupply({
-          businessStateCode: "27",
-          scheme: "UNREGISTERED",
-          customerBillingStateCode: customerState,
-        }).taxMode,
-      ).toBe("NONE");
-    }
+  it("unregistered business within the state → no tax, no warning", () => {
+    expect(
+      determinePlaceOfSupply({
+        businessStateCode: "27",
+        scheme: "UNREGISTERED",
+        customerBillingStateCode: "27",
+      }),
+    ).toEqual({ stateCode: "27", isInterState: false, taxMode: "NONE", warnings: [] });
+  });
+
+  it("unregistered business billing another state → allowed with a warning", () => {
+    // Inter-state sales usually need GST registration (CGST Act s.24(i)), but a shop
+    // selling only exempt goods may legitimately be unregistered, so warn, don't block.
+    expect(
+      determinePlaceOfSupply({
+        businessStateCode: "27",
+        scheme: "UNREGISTERED",
+        customerBillingStateCode: "29",
+      }),
+    ).toEqual({
+      stateCode: "29",
+      isInterState: true,
+      taxMode: "NONE",
+      warnings: ["UNREGISTERED_INTER_STATE"],
+    });
   });
 
   it.each([

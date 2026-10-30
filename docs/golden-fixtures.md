@@ -143,5 +143,5 @@ Taxable 1518.38, IGST 196.34, sub-total **1714.72**, round off **+0.28**, grand 
 ## Open questions for a CA
 
 1. Is code **97 Other Territory** charged UTGST? (Assumed yes.)
-2. Can an **unregistered** business bill a customer in another state? Section 24(i) generally requires registration for inter-state taxable supplies. Galla currently allows it (plain invoice, no tax). Should it block it like composition?
+2. An **unregistered** business billing a customer in another state is allowed with a warning (decided 30 Oct 2026), because a shop selling only exempt goods may legitimately be unregistered. Is a warning enough, or should it be blocked like composition?
 3. Rounding of each CGST/SGST half separately (fixture 08) versus rounding the total tax and splitting it: which do CAs expect? SPEC §4.5 says separate equal halves.

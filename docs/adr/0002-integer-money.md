@@ -25,6 +25,7 @@ An invoice that is off by one paisa from what a CA or the GST portal expects is 
   4. Discount is always before tax.
   5. GSTIN: only the regular taxpayer format in v1.
   6. Amount in words is English only in v1.
+  7. An unregistered business billing another state is allowed with a warning, not blocked.
 
 ## Consequences
 
