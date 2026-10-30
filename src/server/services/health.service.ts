@@ -13,7 +13,9 @@ export interface HealthReport {
   commitSha: string;
 }
 
-const DB_TIMEOUT_MS = 2_000;
+// Neon's free plan suspends idle compute; waking it plus a cross-region
+// WebSocket handshake can take a few seconds, which is not an outage.
+const DB_TIMEOUT_MS = 8_000;
 
 type Pingable = Pick<Database, "execute">;
 
