@@ -2,7 +2,7 @@
 
 > **Working name:** "Galla" (the cash box on a shop counter). Before you commit to it, check GitHub, Vercel, the Play Store and Google. "Munim" and "Raseed" are already existing billing products, so avoid those. The app name lives in one config constant (`APP_NAME`), so renaming later is a one-line change.
 >
-> **Status:** v1 specification. Owner: Nitya. Last updated: 29 Oct 2026.
+> **Status:** v1 specification. Owner: Nitya. Last updated: 30 Oct 2026.
 
 ---
 
@@ -77,7 +77,7 @@ Permissions are defined **once** in `src/server/authz/permissions.ts` and checke
 - Products and services with HSN/SAC, unit, price, GST rate, tax-inclusive flag; CSV import
 - Customers with GSTIN validation, state, addresses, opening balance, credit days; CSV import
 - Invoice builder (draft → issue), automatic GST calculation, gapless invoice numbering per financial year
-- Tax Invoice (regular scheme) and Bill of Supply (composition scheme)
+- Tax Invoice (regular scheme), Bill of Supply (composition scheme), and a plain Invoice with no GST (unregistered business)
 - Cancel invoice (with reason) and credit notes
 - PDF invoice (A4 and 80 mm thermal), public share link, UPI QR, WhatsApp share
 - Payments (full or partial, cash/UPI/bank/card/cheque), customer ledger (udhaar), receivables aging
@@ -105,12 +105,15 @@ Permissions are defined **once** in `src/server/authz/permissions.ts` and checke
 - 15 characters: `SS` state code (2 digits) + PAN (10) + entity number (1) + `Z` (default) + check character (1).
 - Validate the regex **and the check character** (mod-36 checksum algorithm). Write unit tests using known-valid GSTINs and mutated invalid ones.
 - Derive the customer's state from the first two digits. Block a mismatch between the GSTIN state and the chosen state (with an override plus a warning).
+- v1 accepts only the regular taxpayer format (14th character `Z`) with an active state code. Other formats (TDS/TCS, UN bodies, non-resident) get a clear "not supported yet" message.
 
 ### 4.2 States & place of supply
 - Seed the official **GST state code list** (01 Jammu & Kashmir … 37 Andhra Pradesh, 38 Ladakh, 97 Other Territory). Verify it against the GST portal and store it in a `states` reference table with a `is_ut_without_legislature` flag.
 - **Place of supply (v1 rule for goods):** the customer's state (shipping state if one is given, otherwise billing state). If the customer is unregistered and has no state, use the business's state. The user can override it per invoice.
 - **Intra-state** (business state = place of supply): **CGST + SGST**, or **CGST + UTGST** for UTs without a legislature.
 - **Inter-state:** **IGST**.
+- UTGST applies in 04 Chandigarh, 26 Dadra and Nagar Haveli and Daman and Diu, 31 Lakshadweep, 35 Andaman and Nicobar Islands and 38 Ladakh. 01 Jammu and Kashmir, 07 Delhi and 34 Puducherry have legislatures and charge SGST. Legacy codes 25 (Daman and Diu) and 28 (undivided Andhra Pradesh) are kept **inactive** so old data renders. 97 Other Territory is treated as UTGST (**verify**).
+- **Composition** businesses cannot bill a customer in another state (CGST Act s.10(2)(c)); the invoice is blocked with a clear message. **Unregistered** businesses issue a plain "Invoice" with no tax in either case.
 
 ### 4.3 Tax rates
 - Since **22 Sep 2025 (GST 2.0)**, the main slabs are **5% and 18%**, with **40%** on sin and luxury goods. Many essentials are 0%. Special rates such as 0.25% and 3% exist for specific goods.
@@ -137,7 +140,9 @@ else:
     igst = round(taxable * rate_bp / 10000); cgst = sgst = 0
 line_total       = taxable + cgst + sgst + igst
 ```
-Invoice totals are **sums of the line values** (never recomputed from aggregates). Optional **round-off** to the nearest rupee is shown as a separate "Round off" line (±₹0.99 max). Invoices under the **composition** scheme (Bill of Supply) carry **no tax lines**.
+Invoice totals are **sums of the line values** (never recomputed from aggregates). Optional **round-off** to the nearest rupee is shown as a separate "Round off" line; 50 paise rounds up, so it is between −₹0.49 and +₹0.50. Invoices under the **composition** scheme (Bill of Supply) or from an unregistered business carry **no tax lines**: the line rate and the "price includes tax" flag are ignored and `taxable = gross − discount`.
+
+**Discount** is always taken off **before tax**, including on tax-inclusive lines (it comes off the backed-out taxable value). The form labels it "Discount (before tax)".
 
 **Invariants (property-based tests with fast-check):**
 - `Σ line_total + round_off = grand_total`
@@ -150,12 +155,12 @@ Invoice totals are **sums of the line values** (never recomputed from aggregates
 - Financial year runs 1 April – 31 March, in **Asia/Kolkata** time.
 - The number is assigned **only when issuing** (drafts have none). Numbers are **consecutive and gapless per business, per series, per FY**.
 - Format: `{prefix}/{FY}/{seq}`, for example `GAL/26-27/0042`. **Max 16 characters**, allowed characters `A–Z a–z 0–9 - /` (Rule 46). Validate the prefix length so the full number always fits.
-- Series: `INV` (tax invoice / bill of supply) and `CN` (credit notes), each with its own counter.
+- Series: `INV` (tax invoice / bill of supply) and `CN` (credit notes), each with its own counter. Both prefixes are set by the business (defaults `INV` and `CN`), are 1–5 letters, digits or hyphens, and must differ (ignoring case), e.g. `CN/26-27/0001`. A 5-character prefix fits 9,999 documents per FY; shorter prefixes fit more.
 - **Concurrency-safe:** use a `number_sequences` row locked with `SELECT … FOR UPDATE` (or `UPDATE … RETURNING`) inside the same transaction that issues the invoice. An integration test fires 50 parallel issues and asserts the resulting numbers are unique and gapless.
 - Cancelled invoices **keep** their number. Numbers are never reused.
 
 ### 4.7 Mandatory invoice contents (Rule 46, verify)
-Supplier name, address and GSTIN; invoice number and date; recipient name and address, and GSTIN if registered; for unregistered recipients with value ≥ ₹50,000, recipient name, address and state; place of supply (state name and code) for inter-state; HSN/SAC, description, quantity and unit (UQC), taxable value, rate and amount of each tax; total; "Whether tax is payable on reverse charge: No"; signature (image or "Authorised Signatory"). Also print the amount in words using the Indian system (lakh, crore).
+Supplier name, address and GSTIN; invoice number and date; recipient name and address, and GSTIN if registered; for unregistered recipients with value ≥ ₹50,000, recipient name, address and state; place of supply (state name and code) for inter-state; HSN/SAC, description, quantity and unit (UQC), taxable value, rate and amount of each tax; total; "Whether tax is payable on reverse charge: No"; signature (image or "Authorised Signatory"). Also print the amount in words using the Indian system (lakh, crore), in English in v1: "Rupees One Lakh Twenty Thousand and Fifty Paise Only".
 
 **HSN digits:** a business with AATO ≤ ₹5 cr needs a 4-digit HSN on B2B invoices; above that, 6 digits (verify). Enforce this with a business-level setting.
 
@@ -362,7 +367,7 @@ All tenant tables have: `id uuid pk (v7)`, `business_id uuid not null fk`, `crea
 
 | Table | Key columns |
 |---|---|
-| `businesses` | slug (unique), legal_name, trade_name, gstin (nullable), gst_scheme (`REGULAR`/`COMPOSITION`/`UNREGISTERED`), state_code, address fields, phone, email, logo_url, signature_url, upi_vpa, bank_* , invoice_prefix, terms, hsn_digits_required, round_off_enabled, locale, is_demo |
+| `businesses` | slug (unique), legal_name, trade_name, gstin (nullable), gst_scheme (`REGULAR`/`COMPOSITION`/`UNREGISTERED`), state_code, address fields, phone, email, logo_url, signature_url, upi_vpa, bank_* , invoice_prefix, credit_note_prefix, terms, hsn_digits_required, round_off_enabled, locale, is_demo |
 | `members` / auth tables | managed by Better Auth (user, session, account, organization, member with role, invitation) |
 | `states` (reference) | code, name, is_ut_without_legislature |
 | `tax_rates` (reference) | rate_bp, label, active |
@@ -370,7 +375,7 @@ All tenant tables have: `id uuid pk (v7)`, `business_id uuid not null fk`, `crea
 | `products` | name, hsn_sac, unit, price_paise, rate_bp, price_includes_tax, sku, archived_at |
 | `customers` | name, phone_e164, email, gstin, billing_* , billing_state_code, shipping_* , opening_balance_paise, credit_days, archived_at |
 | `number_sequences` | business_id, series (`INV`/`CN`), fy (`26-27`), next_value — **unique(business_id, series, fy)** |
-| `invoices` | type (`TAX_INVOICE`/`BILL_OF_SUPPLY`), status, number (nullable until issued; **unique(business_id, number)**), fy, invoice_date (date), due_date, customer_id, **customer snapshot JSON** (name, GSTIN, addresses as at issue), place_of_supply_state_code, is_inter_state, reverse_charge (false), subtotal_taxable, cgst, sgst, utgst, igst, round_off, grand_total, amount_paid, notes, public_token (unique), token_revoked_at, issued_at, cancelled_at, cancel_reason, version |
+| `invoices` | type (`TAX_INVOICE`/`BILL_OF_SUPPLY`/`INVOICE`), status, number (nullable until issued; **unique(business_id, number)**), fy, invoice_date (date), due_date, customer_id, **customer snapshot JSON** (name, GSTIN, addresses as at issue), place_of_supply_state_code, is_inter_state, reverse_charge (false), subtotal_taxable, cgst, sgst, utgst, igst, round_off, grand_total, amount_paid, notes, public_token (unique), token_revoked_at, issued_at, cancelled_at, cancel_reason, version |
 | `invoice_lines` | invoice_id, position, product_id (nullable), **snapshot**: description, hsn_sac, unit, qty_milli, unit_price_paise, price_includes_tax, discount_paise, rate_bp, taxable, cgst, sgst, utgst, igst, line_total |
 | `credit_notes` (+ lines) | same shape, linked `invoice_id`, reason, own CN number series |
 | `payments` | customer_id, date, amount_paise, mode, reference, notes |
