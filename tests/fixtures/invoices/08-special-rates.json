@@ -1,0 +1,104 @@
+{
+  "id": "08-special-rates",
+  "title": "0.25% and 3% special rates (precious stones, gold), intra-state Gujarat",
+  "business": {
+    "stateCode": "24",
+    "scheme": "REGULAR"
+  },
+  "customer": {
+    "billingStateCode": "24",
+    "shippingStateCode": null
+  },
+  "overrideStateCode": null,
+  "roundOff": false,
+  "lines": [
+    {
+      "description": "Rough diamond lot",
+      "qty": "1",
+      "unitPrice": "10,000.00",
+      "rateBp": 25,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    },
+    {
+      "description": "Rough diamond lot",
+      "qty": "1",
+      "unitPrice": "1,001.00",
+      "rateBp": 25,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    },
+    {
+      "description": "Semi-precious stone",
+      "qty": "1",
+      "unitPrice": "100.00",
+      "rateBp": 25,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    },
+    {
+      "description": "Gold coin 1 g",
+      "qty": "1",
+      "unitPrice": "6,500.00",
+      "rateBp": 300,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    }
+  ],
+  "expected": {
+    "documentType": "TAX_INVOICE",
+    "placeOfSupply": "24",
+    "taxMode": "INTRA_SGST",
+    "lines": [
+      {
+        "gross": "10000.00",
+        "taxable": "10000.00",
+        "cgst": "12.50",
+        "sgst": "12.50",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "10025.00"
+      },
+      {
+        "gross": "1001.00",
+        "taxable": "1001.00",
+        "cgst": "1.25",
+        "sgst": "1.25",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "1003.50"
+      },
+      {
+        "gross": "100.00",
+        "taxable": "100.00",
+        "cgst": "0.13",
+        "sgst": "0.13",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "100.26"
+      },
+      {
+        "gross": "6500.00",
+        "taxable": "6500.00",
+        "cgst": "97.50",
+        "sgst": "97.50",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "6695.00"
+      }
+    ],
+    "totals": {
+      "gross": "17601.00",
+      "discount": "0.00",
+      "taxable": "17601.00",
+      "cgst": "111.38",
+      "sgst": "111.38",
+      "utgst": "0.00",
+      "igst": "0.00",
+      "subTotal": "17823.76",
+      "roundOff": "0.00",
+      "grandTotal": "17823.76"
+    },
+    "amountInWords": "Rupees Seventeen Thousand Eight Hundred Twenty Three and Seventy Six Paise Only"
+  }
+}

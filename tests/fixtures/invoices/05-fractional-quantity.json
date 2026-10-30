@@ -1,0 +1,87 @@
+{
+  "id": "05-fractional-quantity",
+  "title": "Loose goods sold by weight and length, intra-state, no round-off",
+  "business": {
+    "stateCode": "27",
+    "scheme": "REGULAR"
+  },
+  "customer": {
+    "billingStateCode": "27",
+    "shippingStateCode": null
+  },
+  "overrideStateCode": null,
+  "roundOff": false,
+  "lines": [
+    {
+      "description": "Sugar (kg)",
+      "qty": "1.5",
+      "unitPrice": "44.90",
+      "rateBp": 500,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    },
+    {
+      "description": "Cashews (kg)",
+      "qty": "0.25",
+      "unitPrice": "899.00",
+      "rateBp": 500,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    },
+    {
+      "description": "Electric wire (m)",
+      "qty": "2.375",
+      "unitPrice": "33.33",
+      "rateBp": 1800,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    }
+  ],
+  "expected": {
+    "documentType": "TAX_INVOICE",
+    "placeOfSupply": "27",
+    "taxMode": "INTRA_SGST",
+    "lines": [
+      {
+        "gross": "67.35",
+        "taxable": "67.35",
+        "cgst": "1.68",
+        "sgst": "1.68",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "70.71"
+      },
+      {
+        "gross": "224.75",
+        "taxable": "224.75",
+        "cgst": "5.62",
+        "sgst": "5.62",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "235.99"
+      },
+      {
+        "gross": "79.16",
+        "taxable": "79.16",
+        "cgst": "7.12",
+        "sgst": "7.12",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "93.40"
+      }
+    ],
+    "totals": {
+      "gross": "371.26",
+      "discount": "0.00",
+      "taxable": "371.26",
+      "cgst": "14.42",
+      "sgst": "14.42",
+      "utgst": "0.00",
+      "igst": "0.00",
+      "subTotal": "400.10",
+      "roundOff": "0.00",
+      "grandTotal": "400.10"
+    },
+    "amountInWords": "Rupees Four Hundred and Ten Paise Only"
+  }
+}

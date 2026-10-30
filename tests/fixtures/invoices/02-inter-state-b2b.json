@@ -1,0 +1,70 @@
+{
+  "id": "02-inter-state-b2b",
+  "title": "Maharashtra shop billing a Karnataka business, no round-off",
+  "business": {
+    "stateCode": "27",
+    "scheme": "REGULAR"
+  },
+  "customer": {
+    "billingStateCode": "29",
+    "shippingStateCode": null
+  },
+  "overrideStateCode": null,
+  "roundOff": false,
+  "lines": [
+    {
+      "description": "Steel tumbler",
+      "qty": "10",
+      "unitPrice": "45.50",
+      "rateBp": 1800,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    },
+    {
+      "description": "Pressure cooker 5 L",
+      "qty": "1",
+      "unitPrice": "1,200.00",
+      "rateBp": 500,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    }
+  ],
+  "expected": {
+    "documentType": "TAX_INVOICE",
+    "placeOfSupply": "29",
+    "taxMode": "INTER",
+    "lines": [
+      {
+        "gross": "455.00",
+        "taxable": "455.00",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "81.90",
+        "total": "536.90"
+      },
+      {
+        "gross": "1200.00",
+        "taxable": "1200.00",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "60.00",
+        "total": "1260.00"
+      }
+    ],
+    "totals": {
+      "gross": "1655.00",
+      "discount": "0.00",
+      "taxable": "1655.00",
+      "cgst": "0.00",
+      "sgst": "0.00",
+      "utgst": "0.00",
+      "igst": "141.90",
+      "subTotal": "1796.90",
+      "roundOff": "0.00",
+      "grandTotal": "1796.90"
+    },
+    "amountInWords": "Rupees One Thousand Seven Hundred Ninety Six and Ninety Paise Only"
+  }
+}

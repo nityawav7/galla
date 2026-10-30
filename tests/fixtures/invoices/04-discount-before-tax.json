@@ -1,0 +1,70 @@
+{
+  "id": "04-discount-before-tax",
+  "title": "Line discounts taken off before tax, intra-state",
+  "business": {
+    "stateCode": "27",
+    "scheme": "REGULAR"
+  },
+  "customer": {
+    "billingStateCode": "27",
+    "shippingStateCode": null
+  },
+  "overrideStateCode": null,
+  "roundOff": true,
+  "lines": [
+    {
+      "description": "Mixer grinder",
+      "qty": "1",
+      "unitPrice": "1,500.00",
+      "rateBp": 1800,
+      "priceIncludesTax": false,
+      "discount": "150.00"
+    },
+    {
+      "description": "Tea 250 g",
+      "qty": "4",
+      "unitPrice": "62.50",
+      "rateBp": 500,
+      "priceIncludesTax": false,
+      "discount": "12.50"
+    }
+  ],
+  "expected": {
+    "documentType": "TAX_INVOICE",
+    "placeOfSupply": "27",
+    "taxMode": "INTRA_SGST",
+    "lines": [
+      {
+        "gross": "1500.00",
+        "taxable": "1350.00",
+        "cgst": "121.50",
+        "sgst": "121.50",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "1593.00"
+      },
+      {
+        "gross": "250.00",
+        "taxable": "237.50",
+        "cgst": "5.94",
+        "sgst": "5.94",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "249.38"
+      }
+    ],
+    "totals": {
+      "gross": "1750.00",
+      "discount": "162.50",
+      "taxable": "1587.50",
+      "cgst": "127.44",
+      "sgst": "127.44",
+      "utgst": "0.00",
+      "igst": "0.00",
+      "subTotal": "1842.38",
+      "roundOff": "-0.38",
+      "grandTotal": "1842.00"
+    },
+    "amountInWords": "Rupees One Thousand Eight Hundred Forty Two Only"
+  }
+}

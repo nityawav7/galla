@@ -1,0 +1,104 @@
+{
+  "id": "03-tax-inclusive-mrp",
+  "title": "MRP prices that include GST, intra-state; one line lands 1 paisa under MRP",
+  "business": {
+    "stateCode": "27",
+    "scheme": "REGULAR"
+  },
+  "customer": {
+    "billingStateCode": "27",
+    "shippingStateCode": null
+  },
+  "overrideStateCode": null,
+  "roundOff": true,
+  "lines": [
+    {
+      "description": "Shampoo 340 ml",
+      "qty": "1",
+      "unitPrice": "118.00",
+      "rateBp": 1800,
+      "priceIncludesTax": true,
+      "discount": "0.00"
+    },
+    {
+      "description": "Ghee 200 ml",
+      "qty": "2",
+      "unitPrice": "55.00",
+      "rateBp": 500,
+      "priceIncludesTax": true,
+      "discount": "0.00"
+    },
+    {
+      "description": "Toothpaste 150 g",
+      "qty": "1",
+      "unitPrice": "99.00",
+      "rateBp": 1800,
+      "priceIncludesTax": true,
+      "discount": "0.00"
+    },
+    {
+      "description": "Biscuits",
+      "qty": "1",
+      "unitPrice": "10.00",
+      "rateBp": 1800,
+      "priceIncludesTax": true,
+      "discount": "0.00"
+    }
+  ],
+  "expected": {
+    "documentType": "TAX_INVOICE",
+    "placeOfSupply": "27",
+    "taxMode": "INTRA_SGST",
+    "lines": [
+      {
+        "gross": "118.00",
+        "taxable": "100.00",
+        "cgst": "9.00",
+        "sgst": "9.00",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "118.00"
+      },
+      {
+        "gross": "110.00",
+        "taxable": "104.76",
+        "cgst": "2.62",
+        "sgst": "2.62",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "110.00"
+      },
+      {
+        "gross": "99.00",
+        "taxable": "83.90",
+        "cgst": "7.55",
+        "sgst": "7.55",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "99.00"
+      },
+      {
+        "gross": "10.00",
+        "taxable": "8.47",
+        "cgst": "0.76",
+        "sgst": "0.76",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "9.99"
+      }
+    ],
+    "totals": {
+      "gross": "337.00",
+      "discount": "0.00",
+      "taxable": "297.13",
+      "cgst": "19.93",
+      "sgst": "19.93",
+      "utgst": "0.00",
+      "igst": "0.00",
+      "subTotal": "336.99",
+      "roundOff": "0.01",
+      "grandTotal": "337.00"
+    },
+    "amountInWords": "Rupees Three Hundred Thirty Seven Only"
+  }
+}

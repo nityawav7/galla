@@ -1,0 +1,70 @@
+{
+  "id": "07-composition-bill-of-supply",
+  "title": "Composition dealer: Bill of Supply, no tax even if the product has a rate",
+  "business": {
+    "stateCode": "27",
+    "scheme": "COMPOSITION"
+  },
+  "customer": {
+    "billingStateCode": "27",
+    "shippingStateCode": null
+  },
+  "overrideStateCode": null,
+  "roundOff": true,
+  "lines": [
+    {
+      "description": "Namkeen 400 g",
+      "qty": "2",
+      "unitPrice": "120.00",
+      "rateBp": 500,
+      "priceIncludesTax": true,
+      "discount": "0.00"
+    },
+    {
+      "description": "Soap",
+      "qty": "1",
+      "unitPrice": "49.50",
+      "rateBp": 0,
+      "priceIncludesTax": false,
+      "discount": "4.50"
+    }
+  ],
+  "expected": {
+    "documentType": "BILL_OF_SUPPLY",
+    "placeOfSupply": "27",
+    "taxMode": "NONE",
+    "lines": [
+      {
+        "gross": "240.00",
+        "taxable": "240.00",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "240.00"
+      },
+      {
+        "gross": "49.50",
+        "taxable": "45.00",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "0.00",
+        "total": "45.00"
+      }
+    ],
+    "totals": {
+      "gross": "289.50",
+      "discount": "4.50",
+      "taxable": "285.00",
+      "cgst": "0.00",
+      "sgst": "0.00",
+      "utgst": "0.00",
+      "igst": "0.00",
+      "subTotal": "285.00",
+      "roundOff": "0.00",
+      "grandTotal": "285.00"
+    },
+    "amountInWords": "Rupees Two Hundred Eighty Five Only"
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "id": "06-chandigarh-utgst",
+  "title": "Chandigarh shop and customer: CGST + UTGST",
+  "business": {
+    "stateCode": "04",
+    "scheme": "REGULAR"
+  },
+  "customer": {
+    "billingStateCode": "04",
+    "shippingStateCode": null
+  },
+  "overrideStateCode": null,
+  "roundOff": true,
+  "lines": [
+    {
+      "description": "Bedsheet",
+      "qty": "3",
+      "unitPrice": "240.00",
+      "rateBp": 1800,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    },
+    {
+      "description": "Notebook",
+      "qty": "1",
+      "unitPrice": "35.00",
+      "rateBp": 500,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    }
+  ],
+  "expected": {
+    "documentType": "TAX_INVOICE",
+    "placeOfSupply": "04",
+    "taxMode": "INTRA_UTGST",
+    "lines": [
+      {
+        "gross": "720.00",
+        "taxable": "720.00",
+        "cgst": "64.80",
+        "sgst": "0.00",
+        "utgst": "64.80",
+        "igst": "0.00",
+        "total": "849.60"
+      },
+      {
+        "gross": "35.00",
+        "taxable": "35.00",
+        "cgst": "0.88",
+        "sgst": "0.00",
+        "utgst": "0.88",
+        "igst": "0.00",
+        "total": "36.76"
+      }
+    ],
+    "totals": {
+      "gross": "755.00",
+      "discount": "0.00",
+      "taxable": "755.00",
+      "cgst": "65.68",
+      "sgst": "0.00",
+      "utgst": "65.68",
+      "igst": "0.00",
+      "subTotal": "886.36",
+      "roundOff": "-0.36",
+      "grandTotal": "886.00"
+    },
+    "amountInWords": "Rupees Eight Hundred Eighty Six Only"
+  }
+}
