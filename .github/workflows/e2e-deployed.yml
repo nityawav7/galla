@@ -1,25 +1,31 @@
-name: E2E on Vercel preview
+name: E2E on Vercel deployment
 
-# Vercel reports each finished deployment back to GitHub; test previews only.
-on: deployment_status
+# Vercel sends repository_dispatch events when a deployment finishes. They only
+# trigger workflows that exist on the default branch (main).
+on:
+  repository_dispatch:
+    types: ["vercel.deployment.success"]
+  workflow_dispatch:
+    inputs:
+      url:
+        description: Deployment URL to test
+        required: true
 
 permissions:
   contents: read
 
 jobs:
   e2e:
-    if: >-
-      github.event.deployment_status.state == 'success' &&
-      startsWith(github.event.deployment.environment, 'Preview')
+    name: E2E (${{ github.event.client_payload.environment || 'manual' }})
     runs-on: ubuntu-latest
     env:
       CI: "true"
-      PLAYWRIGHT_BASE_URL: ${{ github.event.deployment_status.environment_url }}
+      PLAYWRIGHT_BASE_URL: ${{ github.event.client_payload.url || inputs.url }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.deployment.sha }}
+          ref: ${{ github.event.client_payload.git.sha || github.sha }}
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -31,6 +37,6 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: playwright-report-preview
+          name: playwright-report-deployed
           path: playwright-report/
           retention-days: 7
