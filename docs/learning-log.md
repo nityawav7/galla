@@ -25,3 +25,12 @@ What I learned and what broke while building Galla, phase by phase.
 - Vercel only sends `repository_dispatch` events (e.g. `vercel.deployment.success`) when **Project Settings → Git → repository_dispatch Events** is on. With it off, the workflow sits on `main` and never runs, with no error anywhere.
 - The payload `url` is the deployment's own address (e.g. `galla-abc123-….vercel.app`), not the production domain, and Vercel Authentication protects it even for production. Without the bypass secret, Playwright followed the redirect to `vercel.com/login`, got a 200 and failed on the missing heading, which looked like an app bug. The health test now refuses redirects and says why.
 - Vercel's payload `url` is not documented as including `https://`, so `playwright.config.ts` adds it when missing. GitHub also turns a missing expression into an empty string, which must count as "not set".
+
+## Phase 3: database schema and tenant isolation
+
+- drizzle-kit 0.31 crashes with "Do not know how to serialize a BigInt" on `.default(0n)`. Give `bigint` columns an SQL default instead: ``.default(sql`0`)``.
+- With `casing: "snake_case"`, `phoneE164` becomes `phone_e_164`. Name such columns explicitly (`text("phone_e164")`) and read the generated SQL before committing.
+- A CHECK that evaluates to NULL passes. `length(trim(cancel_reason)) > 0` let a cancelled invoice with no reason through; `coalesce(…, 0) > 0` fixes it. Test the NULL case of every CHECK on a nullable column.
+- Postgres reports only the first failing CHECK (checked in name order), so each constraint test must break exactly one rule, or it passes for the wrong reason.
+- Composite foreign keys on `(business_id, id)` make cross-tenant links impossible in the database itself, not just in the repos.
+- pg_trgm's `<%` operator uses a 0.6 word-similarity threshold, which misses one-letter typos in short words ("basmti" scores 0.57 against "Basmati"). The repos compare `word_similarity` with an explicit 0.5.

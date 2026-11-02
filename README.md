@@ -21,6 +21,7 @@ pnpm install
 cp .env.example .env.local
 pnpm db:up          # Postgres 16 in Docker (also creates the galla_test database)
 pnpm db:migrate
+pnpm db:seed        # states, tax rates, units + a local "dev-shop" business (safe to re-run)
 pnpm dev            # http://localhost:3000, health check at /api/health
 ```
 
@@ -37,7 +38,7 @@ Commits follow [Conventional Commits](https://www.conventionalcommits.org/). A p
 
 ## Architecture
 
-_Diagram and write-up coming in Phase 11 ([docs/architecture.md](docs/architecture.md))._
+The data model and data-access layers are in [docs/architecture.md](docs/architecture.md); the full write-up comes in Phase 11. Decisions are recorded in [docs/adr/](docs/adr/).
 
 ## Metrics
 
