@@ -132,13 +132,13 @@ Taxable 1518.38, IGST 196.34, sub-total **1714.72**, round off **+0.28**, grand 
 
 ## Sign-off
 
-| Fixture | Checked by | Date | OK? |
-| ------- | ---------- | ---- | --- |
-| 01      |            |      |     |
-| 03      |            |      |     |
-| 04      |            |      |     |
-| 06      |            |      |     |
-| 09      |            |      |     |
+| Fixture | Checked by | Date       | OK? |
+| ------- | ---------- | ---------- | --- |
+| 01      | Nitya      | 2026-11-02 | Yes |
+| 03      | Nitya      | 2026-11-02 | Yes |
+| 04      | Nitya      | 2026-11-02 | Yes |
+| 06      | Nitya      | 2026-11-02 | Yes |
+| 09      | Nitya      | 2026-11-02 | Yes |
 
 ## Open questions for a CA
 
