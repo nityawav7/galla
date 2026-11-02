@@ -23,4 +23,5 @@ What I learned and what broke while building Galla, phase by phase.
 ## Ops: e2e after Vercel deploys
 
 - Vercel only sends `repository_dispatch` events (e.g. `vercel.deployment.success`) when **Project Settings → Git → repository_dispatch Events** is on. With it off, the workflow sits on `main` and never runs, with no error anywhere.
+- The payload `url` is the deployment's own address (e.g. `galla-abc123-….vercel.app`), not the production domain, and Vercel Authentication protects it even for production. Without the bypass secret, Playwright followed the redirect to `vercel.com/login`, got a 200 and failed on the missing heading, which looked like an app bug. The health test now refuses redirects and says why.
 - Vercel's payload `url` is not documented as including `https://`, so `playwright.config.ts` adds it when missing. GitHub also turns a missing expression into an empty string, which must count as "not set".
