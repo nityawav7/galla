@@ -10,6 +10,24 @@ const adminDbImports = {
   message: "Cross-tenant DB access is only allowed from src/server/jobs. Use tenant-scoped repos.",
 };
 
+// Queries live in src/server/db (repos); everything else calls repo functions (ADR 0003).
+const dbOnlyMessage =
+  "Build queries only in src/server/db. Call a tenant-scoped repo from src/server/db/repos.";
+const dbDriverImports = ["drizzle-orm", "pg", "@neondatabase/serverless"].map((name) => ({
+  name,
+  message: dbOnlyMessage,
+}));
+const dbInternalImports = {
+  group: [
+    "drizzle-orm/*",
+    "@/server/db/schema",
+    "@/server/db/schema/*",
+    "**/db/schema",
+    "**/db/schema/*",
+  ],
+  message: dbOnlyMessage,
+};
+
 // The domain layer is pure: no framework, DB, network, logging or env access (SPEC §7.2).
 const domainForbiddenImports = {
   paths: [
@@ -101,7 +119,23 @@ export default defineConfig([
 
   {
     files: ["src/**/*.{ts,tsx}"],
-    ignores: ["src/server/jobs/**", "src/server/db/admin/**"],
+    ignores: ["src/server/jobs/**", "src/server/db/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        { paths: dbDriverImports, patterns: [adminDbImports, dbInternalImports] },
+      ],
+    },
+  },
+  {
+    files: ["src/server/jobs/**/*.ts"],
+    rules: {
+      "no-restricted-imports": ["error", { paths: dbDriverImports, patterns: [dbInternalImports] }],
+    },
+  },
+  {
+    files: ["src/server/db/**/*.ts"],
+    ignores: ["src/server/db/admin/**"],
     rules: {
       "no-restricted-imports": ["error", { patterns: [adminDbImports] }],
     },

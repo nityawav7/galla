@@ -363,7 +363,7 @@ UI (app/ routes, components)  →  Server Actions / Route Handlers (thin: auth, 
 ```
 
 ### 7.4 Data model (Postgres)
-All tenant tables have: `id uuid pk (v7)`, `business_id uuid not null fk`, `created_at`, `updated_at`, `created_by`. Money is `bigint` paise.
+All tenant tables have: `id uuid pk (v7)`, `business_id uuid not null fk`, `created_at`, `updated_at`, `created_by`. Money is `bigint` paise in columns ending `_paise`; quantities are `bigint` milli-units (`qty_milli`). The schema lives in `src/server/db/schema/` and [docs/architecture.md](docs/architecture.md#data-model) has the diagram.
 
 | Table | Key columns |
 |---|---|
@@ -375,9 +375,9 @@ All tenant tables have: `id uuid pk (v7)`, `business_id uuid not null fk`, `crea
 | `products` | name, hsn_sac, unit, price_paise, rate_bp, price_includes_tax, sku, archived_at |
 | `customers` | name, phone_e164, email, gstin, billing_* , billing_state_code, shipping_* , opening_balance_paise, credit_days, archived_at |
 | `number_sequences` | business_id, series (`INV`/`CN`), fy (`26-27`), next_value — **unique(business_id, series, fy)** |
-| `invoices` | type (`TAX_INVOICE`/`BILL_OF_SUPPLY`/`INVOICE`), status, number (nullable until issued; **unique(business_id, number)**), fy, invoice_date (date), due_date, customer_id, **customer snapshot JSON** (name, GSTIN, addresses as at issue), place_of_supply_state_code, is_inter_state, reverse_charge (false), subtotal_taxable, cgst, sgst, utgst, igst, round_off, grand_total, amount_paid, notes, public_token (unique), token_revoked_at, issued_at, cancelled_at, cancel_reason, version |
+| `invoices` | type (`TAX_INVOICE`/`BILL_OF_SUPPLY`/`INVOICE`), status, number (nullable until issued; **unique(business_id, number)**), fy, invoice_date (date), due_date, customer_id, **customer snapshot JSON** (name, GSTIN, addresses as at issue), place_of_supply_state_code, is_inter_state, reverse_charge (false), discount, taxable, cgst, sgst, utgst, igst, round_off, grand_total, amount_paid (all `_paise`), notes, public_token (unique), token_revoked_at, issued_at, cancelled_at, cancel_reason, version |
 | `invoice_lines` | invoice_id, position, product_id (nullable), **snapshot**: description, hsn_sac, unit, qty_milli, unit_price_paise, price_includes_tax, discount_paise, rate_bp, taxable, cgst, sgst, utgst, igst, line_total |
-| `credit_notes` (+ lines) | same shape, linked `invoice_id`, reason, own CN number series |
+| `credit_notes` (+ lines) | same shape, linked `invoice_id`, reason, own CN number series. Issued directly (no drafts), so number, fy and snapshot are always set |
 | `payments` | customer_id, date, amount_paise, mode, reference, notes |
 | `payment_allocations` | payment_id, invoice_id, amount_paise |
 | `reminders_sent` | invoice_id, kind (`DUE`, `D1`, `D7`, `D14`), channel, sent_at — **unique(invoice_id, kind, channel)** for idempotency |
@@ -385,7 +385,7 @@ All tenant tables have: `id uuid pk (v7)`, `business_id uuid not null fk`, `crea
 
 **Snapshots:** issued invoices copy customer and product details, so later edits to a customer or product never change a past invoice.
 
-**DB constraints are the last line of defence:** CHECK constraints (amounts ≥ 0; intra-state lines have `igst = 0` and `cgst = sgst + utgst`, with only one of sgst/utgst non-zero; inter-state lines have `cgst = sgst = utgst = 0`; `status` enum), FKs with `ON DELETE RESTRICT` on financial data, and unique constraints as listed.
+**DB constraints are the last line of defence:** CHECK constraints (amounts ≥ 0; intra-state lines have `igst = 0` and `cgst = sgst + utgst`, with only one of sgst/utgst non-zero; inter-state lines have `cgst = sgst = utgst = 0`; `status` enum; grand and line totals add up; round-off between −49 and +50 paise; numbers only once issued; amount paid ≤ grand total), FKs with `ON DELETE RESTRICT` on financial data, and unique constraints as listed. **Links between tenant tables are composite foreign keys** on `(business_id, x_id)`, so a row can never reference another business's row ([ADR 0003](docs/adr/0003-tenant-isolation.md)). Customer GSTINs and product SKUs are unique per business among non-archived rows.
 
 ### 7.5 Environments & deployment
 | Env | App | DB | Notes |
