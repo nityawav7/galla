@@ -1,6 +1,7 @@
 import { type Metadata } from "next";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
+import { Suspense } from "react";
 
 import { LoginForm } from "@/components/forms/login-form";
 import { APP_NAME } from "@/lib/config";
@@ -19,7 +20,10 @@ export default async function LoginPage() {
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <p className="text-sm text-muted-foreground">{t("subtitle", { app: APP_NAME })}</p>
       </header>
-      <LoginForm googleEnabled={isGoogleEnabled()} />
+      {/* The form reads ?next=, which needs a Suspense boundary on a static page. */}
+      <Suspense>
+        <LoginForm googleEnabled={isGoogleEnabled()} />
+      </Suspense>
       <p className="text-sm text-muted-foreground">
         {t("noAccount", { app: APP_NAME })}{" "}
         <Link

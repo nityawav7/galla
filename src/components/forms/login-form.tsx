@@ -24,8 +24,7 @@ import {
 import { GoogleButton } from "./google-button";
 import { TextField } from "./text-field";
 import { useFormMessages } from "./use-form-messages";
-
-const AFTER_SIGN_IN = "/b";
+import { useNextPath } from "./use-next-path";
 
 function FormError({ error }: { error: AuthErrorKey | undefined }) {
   const { formError } = useFormMessages();
@@ -42,6 +41,7 @@ function PasswordSignIn() {
   const common = useTranslations("common");
   const { fieldError } = useFormMessages();
   const router = useRouter();
+  const next = useNextPath();
   const [error, setError] = useState<AuthErrorKey>();
   const form = useForm<PasswordSignInInput>({
     resolver: zodResolver(passwordSignInSchema),
@@ -56,7 +56,7 @@ function PasswordSignIn() {
       setError(authErrorKey(signInError));
       return;
     }
-    router.push(AFTER_SIGN_IN);
+    router.push(next);
     router.refresh();
   });
 
@@ -93,6 +93,7 @@ function CodeSignIn() {
   const common = useTranslations("common");
   const { fieldError } = useFormMessages();
   const router = useRouter();
+  const next = useNextPath();
   const [error, setError] = useState<AuthErrorKey>();
   const [sentTo, setSentTo] = useState<string>();
 
@@ -126,7 +127,7 @@ function CodeSignIn() {
       setError(authErrorKey(verifyError));
       return;
     }
-    router.push(AFTER_SIGN_IN);
+    router.push(next);
     router.refresh();
   });
 

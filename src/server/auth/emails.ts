@@ -2,6 +2,7 @@ import { createTranslator } from "next-intl";
 
 import { APP_NAME } from "@/lib/config";
 import messages from "@/messages/en.json";
+import { type Role } from "@/server/authz/context";
 import { type Email } from "@/server/notifications/email";
 
 export type OtpPurpose = "sign-in" | "email-verification" | "forget-password" | "change-email";
@@ -26,5 +27,40 @@ export function otpEmail(to: string, otp: string, purpose: OtpPurpose): Email {
     subject,
     text: `${intro}\n\n${otp}\n\n${expiry}\n${ignore}`,
     html: `<p>${intro}</p><p style="font-size:28px;font-weight:600;letter-spacing:4px">${otp}</p><p>${expiry}<br>${ignore}</p>`,
+  };
+}
+
+const tInvite = createTranslator({ locale: "en", messages, namespace: "emails.invite" });
+const tRoles = createTranslator({ locale: "en", messages, namespace: "roles" });
+
+/** Shop and inviter names are typed by users, so they are escaped before going into HTML. */
+export function escapeHtml(text: string): string {
+  return text.replace(/[&<>"']/g, (char) => `&#${String(char.charCodeAt(0))};`);
+}
+
+export interface InviteEmailInput {
+  inviterName: string;
+  businessName: string;
+  role: Role;
+  link: string;
+}
+
+export function inviteEmail(to: string, input: InviteEmailInput): Email {
+  const values = {
+    app: APP_NAME,
+    inviter: input.inviterName,
+    business: input.businessName,
+    role: tRoles(input.role),
+  };
+  const subject = tInvite("subject", values);
+  const intro = tInvite("intro", values);
+  const action = tInvite("action");
+  const expiry = tInvite("expiry");
+  const ignore = tInvite("ignore");
+  return {
+    to,
+    subject,
+    text: `${intro}\n\n${action}: ${input.link}\n\n${expiry}\n${ignore}`,
+    html: `<p>${escapeHtml(intro)}</p><p><a href="${escapeHtml(input.link)}">${escapeHtml(action)}</a></p><p>${escapeHtml(expiry)}<br>${escapeHtml(ignore)}</p>`,
   };
 }

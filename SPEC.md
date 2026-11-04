@@ -202,7 +202,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 - Email and password, a 6-digit email code (also used to verify the email and reset the password), and Google sign-in. No magic links: they often open in a different browser than the one the user started in ([ADR 0004](docs/adr/0004-auth-and-tenancy.md)).
 - Email verification is required to accept an invite, not to start billing.
 - After first login, a 3-step onboarding: business details → GSTIN (optional; select "Unregistered/Composition" as needed) → invoice prefix and UPI ID. A live invoice preview updates while the user types.
-- Invite members by email with a role. The invite expires in 7 days.
+- Invite members by email with a role. The invite expires in 7 days. The owner also sees the link to share it on WhatsApp. Accepting needs a signed-in account with the invited, verified email. A business always keeps at least one owner.
 - **AC:** a new user can sign up and issue their first invoice in < 3 minutes in an e2e test. A user with no membership in business B gets 404 for every B route and API.
 
 ### F2. Products

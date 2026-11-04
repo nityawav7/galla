@@ -51,6 +51,12 @@ async function TenantShell({
           >
             {t("shell.settings")}
           </Link>
+          <Link
+            href={`${base}/members`}
+            className="text-sm font-medium underline-offset-4 hover:underline"
+          >
+            {t("shell.members")}
+          </Link>
         </nav>
       </header>
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6">
