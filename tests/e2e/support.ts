@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { expect, type Page, type TestInfo } from "@playwright/test";
+import { type Page, type TestInfo } from "@playwright/test";
 
 /**
  * The visible input labelled exactly `label`. Tab panels are labelled "Password" too, and
@@ -31,6 +31,7 @@ export async function signUp(
   await field(page, "Email").fill(email);
   await field(page, "Password").fill(password);
   await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page).not.toHaveURL(/\/signup$/);
+  // The first sign-up of a local run waits for the dev server to compile the next pages.
+  await page.waitForURL((url) => !url.pathname.endsWith("/signup"), { timeout: 30_000 });
   return { email, password };
 }
