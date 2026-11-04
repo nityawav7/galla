@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { eq } from "drizzle-orm";
 import { beforeEach, describe, expect, it } from "vitest";
 
@@ -8,7 +10,9 @@ import { clearTestOutbox, readTestOutbox } from "@/server/notifications/email";
 
 import { uniqueSlug } from "../support/tenants";
 
-const PASSWORD = "integration-pass-1";
+// Generated per run, so no password-like literal sits in the repo for secret scanners.
+const PASSWORD = randomUUID();
+const NEW_PASSWORD = randomUUID();
 
 const uniqueEmail = () => `${uniqueSlug("user")}@example.com`;
 
@@ -111,13 +115,13 @@ describe("Better Auth on our schema (ADR 0004)", () => {
     const { email } = await signUp();
     await getAuth().api.requestPasswordResetEmailOTP({ body: { email } });
     await getAuth().api.resetPasswordEmailOTP({
-      body: { email, otp: lastCode(email), password: "brand-new-pass-2" },
+      body: { email, otp: lastCode(email), password: NEW_PASSWORD },
     });
 
     await expect(
       getAuth().api.signInEmail({ body: { email, password: PASSWORD } }),
     ).rejects.toMatchObject({ statusCode: 401 });
-    const ok = await getAuth().api.signInEmail({ body: { email, password: "brand-new-pass-2" } });
+    const ok = await getAuth().api.signInEmail({ body: { email, password: NEW_PASSWORD } });
     expect(ok.token).toBeTruthy();
   });
 
