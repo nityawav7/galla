@@ -41,21 +41,27 @@ describe("migrations", () => {
       "select table_name from information_schema.tables where table_schema = 'public' order by 1",
     );
     expect(tables.rows.map((r) => r.table_name)).toEqual([
+      "accounts",
       "audit_logs",
       "businesses",
       "credit_note_lines",
       "credit_notes",
       "customers",
+      "invitations",
       "invoice_lines",
       "invoices",
+      "members",
       "number_sequences",
       "payment_allocations",
       "payments",
       "products",
       "reminders_sent",
+      "sessions",
       "states",
       "tax_rates",
       "units",
+      "users",
+      "verifications",
     ]);
 
     const trigram = await fresh.query(

@@ -34,3 +34,12 @@ What I learned and what broke while building Galla, phase by phase.
 - Postgres reports only the first failing CHECK (checked in name order), so each constraint test must break exactly one rule, or it passes for the wrong reason.
 - Composite foreign keys on `(business_id, id)` make cross-tenant links impossible in the database itself, not just in the repos.
 - pg_trgm's `<%` operator uses a 0.6 word-similarity threshold, which misses one-letter typos in short words ("basmti" scores 0.57 against "Basmati"). The repos compare `word_similarity` with an explicit 0.5.
+
+## Phase 4a: sign-in
+
+- Better Auth checks the Drizzle schema at startup and refuses required columns it never writes (`businesses.gst_scheme`, `state_code`). Declaring them as `additionalFields` with `input: false` satisfies the check without letting its endpoints set them.
+- Better Auth looks `verifications` rows up by ids it derives itself, which aren't UUIDs, so that one table needs a `text` id. A `uuid` column fails at the first code sign-in, not at sign-up, so test every flow against real Postgres.
+- Better Auth's built-in rate limiter counts in memory, which serverless instances don't share. Ours wraps the route handler and uses Upstash in production.
+- Next 16 keeps pages you visited earlier mounted but hidden (React Activity). In Playwright, `getByLabel("Email")` then matches the hidden sign-up form too; filter with `{ visible: true }`.
+- `getByLabel` also matches elements labelled _by_ another element, such as a tab panel named after its "Password" tab. Pair it with `locator("input")`.
+- The `auth` instance is cached on `globalThis`, so config changes need a dev-server restart.
