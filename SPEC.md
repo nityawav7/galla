@@ -65,7 +65,7 @@ Existing apps are feature-heavy. Galla focuses on three things only:
 | Download GST exports & reports | ✅ | ✅ | ❌ |
 | View audit log | ✅ | ✅ | ❌ |
 
-Permissions are defined **once** in `src/server/authz/permissions.ts` and checked in **every service function**, not only in the UI.
+Permissions are defined **once** in `src/server/authz/permissions.ts` and checked in **every service function**, not only in the UI. Staff's hidden dashboard totals are their own action (`dashboard:viewTotals`), and Better Auth's invite and member roles are generated from the same file.
 
 ---
 
@@ -199,7 +199,8 @@ Label the export clearly as **"Helper for your CA — not a filed return."** Mat
 Each feature is done only when its acceptance criteria pass as automated tests.
 
 ### F1. Auth & onboarding
-- Email and password, email OTP or magic link, and Google sign-in.
+- Email and password, a 6-digit email code (also used to verify the email and reset the password), and Google sign-in. No magic links: they often open in a different browser than the one the user started in ([ADR 0004](docs/adr/0004-auth-and-tenancy.md)).
+- Email verification is required to accept an invite, not to start billing.
 - After first login, a 3-step onboarding: business details → GSTIN (optional; select "Unregistered/Composition" as needed) → invoice prefix and UPI ID. A live invoice preview updates while the user types.
 - Invite members by email with a role. The invite expires in 7 days.
 - **AC:** a new user can sign up and issue their first invoice in < 3 minutes in an e2e test. A user with no membership in business B gets 404 for every B route and API.
@@ -368,7 +369,7 @@ All tenant tables have: `id uuid pk (v7)`, `business_id uuid not null fk`, `crea
 | Table | Key columns |
 |---|---|
 | `businesses` | slug (unique), legal_name, trade_name, gstin (nullable), gst_scheme (`REGULAR`/`COMPOSITION`/`UNREGISTERED`), state_code, address fields, phone, email, logo_url, signature_url, upi_vpa, bank_* , invoice_prefix, credit_note_prefix, terms, hsn_digits_required, round_off_enabled, locale, is_demo |
-| `members` / auth tables | managed by Better Auth (user, session, account, organization, member with role, invitation) |
+| `users`, `sessions`, `accounts`, `verifications`, `members`, `invitations` | managed by Better Auth ([ADR 0004](docs/adr/0004-auth-and-tenancy.md)); its organization model is `businesses`. `members.role` is `OWNER`/`ACCOUNTANT`/`STAFF`, one membership per user per business |
 | `states` (reference) | code, name, is_ut_without_legislature |
 | `tax_rates` (reference) | rate_bp, label, active |
 | `units` (reference) | uqc_code, label |

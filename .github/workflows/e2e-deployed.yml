@@ -21,6 +21,8 @@ jobs:
     env:
       CI: "true"
       PLAYWRIGHT_BASE_URL: ${{ github.event.client_payload.url || inputs.url }}
+      # "production", "preview" or "manual". Tests that create accounts skip production.
+      E2E_ENVIRONMENT: ${{ github.event.client_payload.environment || 'manual' }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
     steps:
       # Vercel sends the deployment's own URL, which Vercel Authentication protects even in

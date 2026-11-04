@@ -16,8 +16,8 @@ export const createdAt = () => timestamp({ withTimezone: true }).notNull().defau
 
 /**
  * The columns every tenant table carries (SPEC §7.4). `created_by` is the acting user's id.
- * It has no foreign key until Better Auth's user table arrives in Phase 4, and is null only
- * for rows written by the system (seed, jobs).
+ * It has no foreign key to `users` on purpose, so history outlives a deleted user (ADR 0004),
+ * and is null only for rows written by the system (seed, jobs).
  */
 export const audited = () => ({
   createdAt: createdAt(),

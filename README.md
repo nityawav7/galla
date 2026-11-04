@@ -2,7 +2,7 @@
 
 GST billing and udhaar for small Indian shops. Create a GST-correct invoice in under 60 seconds on a phone, share it on WhatsApp with a UPI QR, track who owes what, and hand your CA a one-click GST sales export.
 
-> **Status:** early development (Phase 1 of [BUILD_PLAN.md](BUILD_PLAN.md)). Not tax or legal advice.
+> **Status:** early development (Phase 4 of [BUILD_PLAN.md](BUILD_PLAN.md)): you can create an account and sign in; business setup is next. Not tax or legal advice.
 
 - **Live demo:** _coming in Phase 12_
 - **2-minute video:** _coming in Phase 12_
@@ -10,7 +10,7 @@ GST billing and udhaar for small Indian shops. Create a GST-correct invoice in u
 
 ## Tech stack
 
-Next.js (App Router) · TypeScript (strict) · Tailwind CSS + shadcn/ui · Drizzle ORM · PostgreSQL (Neon) · Vitest + fast-check · Playwright · GitHub Actions · Vercel
+Next.js (App Router) · TypeScript (strict) · Tailwind CSS + shadcn/ui · next-intl · Drizzle ORM · PostgreSQL (Neon) · Better Auth · Upstash Redis · Resend · Vitest + fast-check · Playwright · GitHub Actions · Vercel
 
 ## Run locally
 
@@ -24,6 +24,8 @@ pnpm db:migrate
 pnpm db:seed        # states, tax rates, units + a local "dev-shop" business (safe to re-run)
 pnpm dev            # http://localhost:3000, health check at /api/health
 ```
+
+Sign up at http://localhost:3000/signup. Without `RESEND_API_KEY`, sign-in codes are printed in the `pnpm dev` terminal instead of emailed.
 
 ## Tests and checks
 

@@ -61,6 +61,9 @@ jobs:
     env:
       # Matches the postgres service above; local test credentials only.
       DATABASE_URL: postgres://galla:galla@localhost:5432/galla_test
+      # Test-only values, not secrets.
+      BETTER_AUTH_SECRET: test-secret-test-secret-test-secret-test
+      BETTER_AUTH_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -88,6 +91,9 @@ jobs:
     env:
       # Matches the postgres service above; local test credentials only.
       DATABASE_URL: postgres://galla:galla@localhost:5432/galla_test
+      # Test-only values, not secrets.
+      BETTER_AUTH_SECRET: test-secret-test-secret-test-secret-test
+      BETTER_AUTH_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6

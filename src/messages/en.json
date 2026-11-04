@@ -1,1 +1,79 @@
-{}
+{
+  "common": {
+    "signOut": "Sign out",
+    "or": "or",
+    "pleaseWait": "Please wait…"
+  },
+  "auth": {
+    "fields": {
+      "name": "Your name",
+      "email": "Email",
+      "password": "Password",
+      "newPassword": "New password",
+      "code": "6-digit code"
+    },
+    "validation": {
+      "nameRequired": "Enter your name",
+      "nameTooLong": "Use at most 100 characters",
+      "emailInvalid": "Enter a valid email address",
+      "passwordLength": "Use 8 to 128 characters",
+      "codeFormat": "Enter the 6-digit code from the email"
+    },
+    "login": {
+      "title": "Sign in",
+      "subtitle": "Welcome back to {app}",
+      "withPassword": "Password",
+      "withCode": "Email code",
+      "submit": "Sign in",
+      "sendCode": "Email me a code",
+      "codeSent": "If an account exists for this email, we sent it a code. It expires in 5 minutes.",
+      "verifyCode": "Sign in with code",
+      "differentEmail": "Use a different email",
+      "forgot": "Forgot password?",
+      "noAccount": "New to {app}?",
+      "signUpLink": "Create an account",
+      "google": "Continue with Google"
+    },
+    "signup": {
+      "title": "Create your account",
+      "subtitle": "Start making GST bills in minutes",
+      "submit": "Create account",
+      "passwordHint": "At least 8 characters",
+      "haveAccount": "Already have an account?",
+      "signInLink": "Sign in"
+    },
+    "reset": {
+      "title": "Reset your password",
+      "subtitle": "We will email you a code",
+      "sendCode": "Email me a code",
+      "submit": "Set new password",
+      "done": "Password changed. Sign in with your new password.",
+      "back": "Back to sign in"
+    },
+    "errors": {
+      "invalidCredentials": "Email or password is incorrect",
+      "emailTaken": "An account with this email already exists. Sign in instead.",
+      "invalidCode": "That code is wrong or has expired",
+      "tooManyAttempts": "Too many attempts. Please wait a minute and try again.",
+      "weakPassword": "Use 8 to 128 characters",
+      "generic": "Something went wrong. Please try again."
+    }
+  },
+  "home": {
+    "title": "Your businesses",
+    "signedInAs": "Signed in as {name}",
+    "noBusinessYet": "Business setup arrives in the next update. You are signed in and your account is ready."
+  },
+  "emails": {
+    "otp": {
+      "subject": {
+        "signIn": "Your {app} sign-in code",
+        "verify": "Verify your email for {app}",
+        "reset": "Reset your {app} password"
+      },
+      "intro": "Use this code to continue in {app}:",
+      "expiry": "The code expires in {minutes} minutes.",
+      "ignore": "If you did not ask for it, you can ignore this email."
+    }
+  }
+}

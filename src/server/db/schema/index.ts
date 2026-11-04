@@ -1,5 +1,6 @@
-// Drizzle table definitions (SPEC §7.4). Better Auth's tables arrive in Phase 4.
+// Drizzle table definitions (SPEC §7.4).
 export * from "./audit";
+export * from "./auth";
 export * from "./businesses";
 export * from "./catalog";
 export * from "./credit-notes";
