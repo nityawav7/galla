@@ -15,12 +15,14 @@ import { type SignUpInput, signUpSchema } from "@/lib/validation/auth";
 import { GoogleButton } from "./google-button";
 import { TextField } from "./text-field";
 import { useFormMessages } from "./use-form-messages";
+import { useNextPath } from "./use-next-path";
 
 export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
   const t = useTranslations("auth");
   const common = useTranslations("common");
   const { fieldError, formError } = useFormMessages();
   const router = useRouter();
+  const next = useNextPath();
   const [error, setError] = useState<AuthErrorKey>();
   const form = useForm<SignUpInput>({
     resolver: zodResolver(signUpSchema),
@@ -35,7 +37,7 @@ export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
       setError(authErrorKey(signUpError));
       return;
     }
-    router.push("/b");
+    router.push(next);
     router.refresh();
   });
 

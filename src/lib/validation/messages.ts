@@ -23,6 +23,7 @@ export const VALIDATION_KEYS = [
   "prefixInvalid",
   "prefixesSame",
   "upiInvalid",
+  "roleRequired",
 ] as const;
 
 export type ValidationKey = (typeof VALIDATION_KEYS)[number];

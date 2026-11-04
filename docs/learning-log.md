@@ -51,3 +51,11 @@ What I learned and what broke while building Galla, phase by phase.
 - `getByRole("button", { name: "Next" })` also matches Next.js's own "Open Next.js Dev Tools" button in dev. Use `exact: true`.
 - The auth rate limit (5 sign-ups a minute per IP) also limits the e2e suite, which runs from one IP. Each account-creating test runs in one browser size only.
 - React `cache()` makes `requireTenant(slug)` run once per request even though the layout and the page both call it.
+
+## Phase 4c: invites and members
+
+- Better Auth serves every plugin endpoint over HTTP, including organization ones that would bypass our permission checks and audit log. Its `disabledPaths` only takes exact paths, so the route handler blocks the whole `/api/auth/organization/` prefix and services call `auth.api.*` instead.
+- Better Auth's member hooks receive the affected user, not the one acting, so they cannot fill an audit row's actor. The service, which has the `TenantContext`, writes it.
+- An id from a URL must be checked before it reaches a `uuid` column, or a typo becomes a 500 (`invalid input syntax for type uuid`) instead of a 404.
+- Vitest's global setup failing (here: Docker not running) shows up only as "code.charCodeAt is not a function". Check `docker ps` first.
+- After a restart the dev server compiles each page on first visit (4–30 s), which breaks 5 s Playwright assertions. Local runs now wait 15 s; CI uses a production build.

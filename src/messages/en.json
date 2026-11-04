@@ -24,7 +24,8 @@
     "gstinStateMismatch": "This GSTIN belongs to a different state than the one chosen",
     "prefixInvalid": "Use 1 to 5 letters, digits or hyphens",
     "prefixesSame": "Invoice and credit note prefixes must be different",
-    "upiInvalid": "Enter a UPI ID like yourname@oksbi"
+    "upiInvalid": "Enter a UPI ID like yourname@oksbi",
+    "roleRequired": "Choose a role"
   },
   "auth": {
     "fields": {
@@ -151,7 +152,8 @@
     "nav": "Main",
     "dashboard": "Dashboard",
     "settings": "Settings",
-    "switchBusiness": "Switch business"
+    "switchBusiness": "Switch business",
+    "members": "Members"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -188,6 +190,63 @@
       "intro": "Use this code to continue in {app}:",
       "expiry": "The code expires in {minutes} minutes.",
       "ignore": "If you did not ask for it, you can ignore this email."
+    },
+    "invite": {
+      "subject": "{inviter} invited you to {business} on {app}",
+      "intro": "{inviter} invited you to join {business} on {app} as {role}.",
+      "action": "Open the invite",
+      "expiry": "The invite works for 7 days. Sign in with this email address to accept it.",
+      "ignore": "If you were not expecting this, you can ignore this email."
     }
+  },
+  "roleHints": {
+    "OWNER": "Everything, including settings and members",
+    "ACCOUNTANT": "Sees everything, records payments, downloads GST exports",
+    "STAFF": "Makes bills, adds customers and products, records payments"
+  },
+  "members": {
+    "title": "Members",
+    "listTitle": "People in this business",
+    "you": "(you)",
+    "roleFor": "Role for {name}",
+    "remove": "Remove",
+    "confirmRemove": "Remove {name} from this business?",
+    "ownerOnly": "Only the owner can invite people or change roles.",
+    "inviteTitle": "Invite someone",
+    "email": "Email",
+    "role": "Role",
+    "sendInvite": "Send invite",
+    "invited": "Invite created. We emailed it, and you can also send this link on WhatsApp. It works for 7 days.",
+    "copy": "Copy link",
+    "copied": "Link copied",
+    "pendingTitle": "Pending invites",
+    "noPending": "No pending invites.",
+    "expires": "Expires {date}",
+    "cancel": "Cancel invite",
+    "errors": {
+      "alreadyMember": "This person is already a member.",
+      "alreadyInvited": "This person already has an invite.",
+      "lastOwner": "A business needs at least one owner. Make someone else owner first.",
+      "inviteInvalid": "This invite has expired, was cancelled, or was sent to a different email address.",
+      "verifyFirst": "Verify your email address first."
+    }
+  },
+  "invite": {
+    "title": "Join a business",
+    "signedOut": "Sign in, or create an account, with the email address this invite was sent to.",
+    "signIn": "Sign in",
+    "signUp": "Create an account",
+    "signedInAs": "Signed in as {email}",
+    "verifyTitle": "Verify your email first",
+    "verifyBody": "We will email a 6-digit code to {email}. It proves the invite is yours.",
+    "sendCode": "Email me a code",
+    "codeSent": "We sent a code. It expires in 5 minutes.",
+    "verify": "Verify email",
+    "details": "{inviter} invited you to join {business} as {role}.",
+    "accept": "Accept and join",
+    "decline": "Decline",
+    "declined": "You declined this invite.",
+    "invalid": "This invite has expired, was cancelled, or was sent to a different email address. Ask the owner for a new one.",
+    "useAnother": "Sign out and use another account"
   }
 }

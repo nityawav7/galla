@@ -52,6 +52,35 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
   // Settings are reachable and pre-filled for the owner.
   await page.getByRole("link", { name: "Settings" }).click();
   await expect(field(page, "Shop name (if different)")).toHaveValue(shopName);
+
+  // Invite a member: the link is shown to share, and the invite is listed until cancelled.
+  // (Accepting needs the emailed verification code, so the integration tests cover it.)
+  await page.getByRole("link", { name: "Members" }).click();
+  await expect(page.getByText("E2E Owner (you)")).toBeVisible();
+  const inviteeEmail = `e2e-invitee-${randomUUID().slice(0, 8)}@example.com`;
+  await field(page, "Email").fill(inviteeEmail);
+  await field(page, "Role").selectOption("STAFF");
+  await page.getByRole("button", { name: "Send invite" }).click();
+  const link = page.getByText(/\/invite\/[0-9a-f-]{36}$/);
+  await expect(link).toBeVisible();
+  const invitePath = new URL((await link.textContent()) ?? "").pathname;
+  const pending = page.getByRole("listitem").filter({ hasText: inviteeEmail });
+  await expect(pending).toBeVisible();
+
+  // Someone signed out who opens the link is asked to sign in first.
+  const visitor = await page.context().browser()?.newContext();
+  if (visitor) {
+    const visitorPage = await visitor.newPage();
+    await visitorPage.goto(invitePath);
+    await expect(visitorPage.getByRole("link", { name: "Create an account" })).toHaveAttribute(
+      "href",
+      `/signup?next=${encodeURIComponent(invitePath)}`,
+    );
+    await visitor.close();
+  }
+
+  await pending.getByRole("button", { name: "Cancel invite" }).click();
+  await expect(page.getByText("No pending invites.")).toBeVisible();
 });
 
 test("a user with no membership gets 404 for another business (SPEC F1)", async ({

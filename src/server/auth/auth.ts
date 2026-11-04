@@ -5,12 +5,13 @@ import { organization } from "better-auth/plugins/organization";
 
 import { APP_NAME } from "@/lib/config";
 import { env } from "@/lib/env";
+import { ROLES } from "@/server/authz/context";
 import { authDatabase } from "@/server/db/auth-adapter";
 import { newId } from "@/server/db/ids";
 import { sendEmail } from "@/server/notifications/email";
 
 import { accessControl, authRoles } from "./access";
-import { otpEmail } from "./emails";
+import { inviteEmail, otpEmail } from "./emails";
 
 const SEVEN_DAYS_SECONDS = 7 * 24 * 60 * 60;
 
@@ -98,6 +99,18 @@ function createAuth() {
         invitationExpiresIn: SEVEN_DAYS_SECONDS,
         cancelPendingInvitationsOnReInvite: true,
         requireEmailVerificationOnInvitation: true,
+        async sendInvitationEmail({ id, email, role, organization, inviter }) {
+          const knownRole = ROLES.find((known) => known === role);
+          if (!knownRole) throw new Error("invitation has an unknown role");
+          await sendEmail(
+            inviteEmail(email, {
+              inviterName: inviter.user.name,
+              businessName: organization.name,
+              role: knownRole,
+              link: `${authBaseUrl()}/invite/${id}`,
+            }),
+          );
+        },
         teams: { enabled: false },
         schema: {
           session: { fields: { activeOrganizationId: "activeBusinessId" } },
