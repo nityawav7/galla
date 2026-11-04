@@ -6,7 +6,8 @@ import { ValidationError } from "@/lib/errors";
 
 import { getActiveState } from "../states";
 
-export type GstScheme = "REGULAR" | "COMPOSITION" | "UNREGISTERED";
+export const GST_SCHEMES = ["REGULAR", "COMPOSITION", "UNREGISTERED"] as const;
+export type GstScheme = (typeof GST_SCHEMES)[number];
 
 /** UNREGISTERED businesses issue a plain "Invoice" with no GST (ADR 0002 decisions). */
 export type DocumentType = "TAX_INVOICE" | "BILL_OF_SUPPLY" | "INVOICE";

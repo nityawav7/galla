@@ -4,6 +4,28 @@
     "or": "या",
     "pleaseWait": "कृपया प्रतीक्षा करें…"
   },
+  "validation": {
+    "nameRequired": "अपना नाम लिखें",
+    "nameTooLong": "100 से ज़्यादा अक्षर नहीं",
+    "emailInvalid": "सही ईमेल पता लिखें",
+    "passwordLength": "8 से 128 अक्षर रखें",
+    "codeFormat": "ईमेल में आया 6 अंकों का कोड लिखें",
+    "textTooLong": "यह बहुत लंबा है",
+    "legalNameRequired": "व्यवसाय का पंजीकृत नाम लिखें",
+    "addressRequired": "दुकान का पता लिखें",
+    "cityRequired": "शहर या कस्बे का नाम लिखें",
+    "pincodeInvalid": "6 अंकों का पिन कोड लिखें",
+    "stateRequired": "राज्य चुनें",
+    "phoneInvalid": "10 अंकों का भारतीय फ़ोन नंबर लिखें",
+    "gstinRequired": "अपना GSTIN लिखें, या GST में पंजीकृत नहीं चुनें",
+    "gstinFormat": "GSTIN में 15 अक्षर होते हैं, जैसे 27AAPFU0939F1ZV",
+    "gstinState": "यह GSTIN किसी अज्ञात राज्य कोड से शुरू होता है",
+    "gstinChecksum": "इस GSTIN में गलती है: आखिरी अक्षर मेल नहीं खाता",
+    "gstinStateMismatch": "यह GSTIN चुने गए राज्य से अलग राज्य का है",
+    "prefixInvalid": "1 से 5 अक्षर, अंक या हाइफ़न इस्तेमाल करें",
+    "prefixesSame": "इनवॉइस और क्रेडिट नोट के प्रीफ़िक्स अलग होने चाहिए",
+    "upiInvalid": "UPI ID लिखें, जैसे yourname@oksbi"
+  },
   "auth": {
     "fields": {
       "name": "आपका नाम",
@@ -11,13 +33,6 @@
       "password": "पासवर्ड",
       "newPassword": "नया पासवर्ड",
       "code": "6 अंकों का कोड"
-    },
-    "validation": {
-      "nameRequired": "अपना नाम लिखें",
-      "nameTooLong": "100 से ज़्यादा अक्षर नहीं",
-      "emailInvalid": "सही ईमेल पता लिखें",
-      "passwordLength": "8 से 128 अक्षर रखें",
-      "codeFormat": "ईमेल में आया 6 अंकों का कोड लिखें"
     },
     "login": {
       "title": "साइन इन",
@@ -62,7 +77,106 @@
   "home": {
     "title": "आपके व्यवसाय",
     "signedInAs": "{name} के रूप में साइन इन",
-    "noBusinessYet": "व्यवसाय सेटअप अगले अपडेट में आएगा। आप साइन इन हैं और आपका खाता तैयार है।"
+    "addBusiness": "एक और व्यवसाय जोड़ें"
+  },
+  "business": {
+    "fields": {
+      "legalName": "व्यवसाय का पंजीकृत नाम",
+      "tradeName": "दुकान का नाम (अगर अलग है)",
+      "addressLine1": "पता",
+      "addressLine2": "पता पंक्ति 2 (वैकल्पिक)",
+      "city": "शहर या कस्बा",
+      "pincode": "पिन कोड",
+      "state": "राज्य",
+      "phone": "फ़ोन (वैकल्पिक)",
+      "email": "ईमेल (वैकल्पिक)",
+      "gstScheme": "GST पंजीकरण",
+      "gstin": "GSTIN",
+      "invoicePrefix": "इनवॉइस नंबर प्रीफ़िक्स",
+      "creditNotePrefix": "क्रेडिट नोट प्रीफ़िक्स",
+      "upiVpa": "UPI ID (वैकल्पिक)"
+    },
+    "hints": {
+      "legalName": "जैसा आपके GST प्रमाणपत्र या दुकान लाइसेंस पर है",
+      "tradeName": "वह नाम जिससे ग्राहक जानते हैं, जैसे शर्मा हार्डवेयर",
+      "gstin": "15 अक्षर, आपके GST प्रमाणपत्र पर छपा हुआ",
+      "invoicePrefix": "आपका पहला इनवॉइस {example} होगा",
+      "upiVpa": "इनवॉइस पर छपता है ताकि ग्राहक UPI से भुगतान कर सकें"
+    },
+    "chooseState": "राज्य चुनें",
+    "schemes": {
+      "REGULAR": "नियमित GST",
+      "COMPOSITION": "कंपोज़िशन योजना",
+      "UNREGISTERED": "GST में पंजीकृत नहीं"
+    },
+    "schemeHints": {
+      "REGULAR": "आपके बिलों पर GST लगता है",
+      "COMPOSITION": "आप तय दर पर GST भरते हैं और बिना GST के बिल ऑफ़ सप्लाई देते हैं",
+      "UNREGISTERED": "आपके बिलों पर GST नहीं लगता"
+    }
+  },
+  "onboarding": {
+    "title": "अपना व्यवसाय सेट करें",
+    "stepOf": "चरण {step} / {total}",
+    "steps": {
+      "details": "व्यवसाय की जानकारी",
+      "gst": "GST",
+      "invoicing": "इनवॉइस और भुगतान"
+    },
+    "next": "आगे",
+    "back": "पीछे",
+    "submit": "व्यवसाय बनाएं"
+  },
+  "preview": {
+    "label": "इनवॉइस का पूर्वावलोकन",
+    "sample": "केवल नमूना। आपके असली इनवॉइस सेटअप के बाद शुरू होंगे।",
+    "titles": {
+      "TAX_INVOICE": "टैक्स इनवॉइस",
+      "BILL_OF_SUPPLY": "बिल ऑफ़ सप्लाई",
+      "INVOICE": "इनवॉइस"
+    },
+    "yourBusiness": "आपके व्यवसाय का नाम",
+    "gstin": "GSTIN: {gstin}",
+    "unregistered": "GST के तहत पंजीकृत नहीं",
+    "compositionNote": "कंपोज़िशन करदाता, आपूर्ति पर कर वसूलने के पात्र नहीं",
+    "phone": "फ़ोन: {phone}",
+    "number": "इनवॉइस नं.",
+    "date": "तारीख",
+    "billTo": "बिल पाने वाला",
+    "sampleCustomer": "आपका ग्राहक",
+    "itemsPlaceholder": "सामान, GST और कुल राशि यहां दिखेंगे",
+    "payByUpi": "UPI से भुगतान करें: {upi}"
+  },
+  "shell": {
+    "nav": "मुख्य",
+    "dashboard": "डैशबोर्ड",
+    "settings": "सेटिंग्स",
+    "switchBusiness": "व्यवसाय बदलें"
+  },
+  "dashboard": {
+    "title": "डैशबोर्ड",
+    "welcome": "{name} में आपका स्वागत है",
+    "comingSoon": "इनवॉइस, भुगतान और उधार अगले अपडेट में आएंगे। तब तक आप अपने व्यवसाय की सेटिंग्स देख सकते हैं।"
+  },
+  "settings": {
+    "title": "व्यवसाय सेटिंग्स",
+    "profile": "व्यवसाय प्रोफ़ाइल",
+    "gst": "GST",
+    "invoicing": "इनवॉइस और भुगतान",
+    "save": "बदलाव सहेजें",
+    "saved": "बदलाव सहेजे गए",
+    "ownerOnly": "केवल मालिक ही व्यवसाय सेटिंग्स बदल सकते हैं।"
+  },
+  "roles": {
+    "OWNER": "मालिक",
+    "ACCOUNTANT": "अकाउंटेंट",
+    "STAFF": "स्टाफ़"
+  },
+  "errors": {
+    "generic": "कुछ गड़बड़ हो गई। कृपया फिर कोशिश करें।",
+    "notFoundTitle": "पेज नहीं मिला",
+    "notFoundBody": "यह पेज मौजूद नहीं है, या आपके पास इसकी पहुंच नहीं है।",
+    "goHome": "अपने व्यवसायों पर जाएं"
   },
   "emails": {
     "otp": {

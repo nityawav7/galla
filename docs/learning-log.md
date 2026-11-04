@@ -43,3 +43,11 @@ What I learned and what broke while building Galla, phase by phase.
 - Next 16 keeps pages you visited earlier mounted but hidden (React Activity). In Playwright, `getByLabel("Email")` then matches the hidden sign-up form too; filter with `{ visible: true }`.
 - `getByLabel` also matches elements labelled _by_ another element, such as a tab panel named after its "Password" tab. Pair it with `locator("input")`.
 - The `auth` instance is cached on `globalThis`, so config changes need a dev-server restart.
+
+## Phase 4b: onboarding and tenant pages
+
+- With Cache Components, pages stream. A `notFound()` inside a Suspense boundary shows the 404 page but keeps HTTP 200, because the headers are already sent. A real 404 for non-members has to come from the proxy (it rewrites to an unmatched path).
+- Zod 4 runs an object-level `superRefine` even when a field inside already failed, so cross-field rules must guard against invalid inputs (an invalid state code produced a second, confusing GSTIN error).
+- `getByRole("button", { name: "Next" })` also matches Next.js's own "Open Next.js Dev Tools" button in dev. Use `exact: true`.
+- The auth rate limit (5 sign-ups a minute per IP) also limits the e2e suite, which runs from one IP. Each account-creating test runs in one browser size only.
+- React `cache()` makes `requireTenant(slug)` run once per request even though the layout and the page both call it.

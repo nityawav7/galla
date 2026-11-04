@@ -2,7 +2,7 @@
 
 GST billing and udhaar for small Indian shops. Create a GST-correct invoice in under 60 seconds on a phone, share it on WhatsApp with a UPI QR, track who owes what, and hand your CA a one-click GST sales export.
 
-> **Status:** early development (Phase 4 of [BUILD_PLAN.md](BUILD_PLAN.md)): you can create an account and sign in; business setup is next. Not tax or legal advice.
+> **Status:** early development (Phase 4 of [BUILD_PLAN.md](BUILD_PLAN.md)): you can create an account, set up your business and edit its settings; invites are next. Not tax or legal advice.
 
 - **Live demo:** _coming in Phase 12_
 - **2-minute video:** _coming in Phase 12_
@@ -34,6 +34,7 @@ pnpm check              # lint, format check, typecheck, unit and integration te
 pnpm test:unit          # Vitest, no infrastructure needed
 pnpm test:integration   # Vitest against the galla_test database (needs pnpm db:up)
 pnpm test:e2e           # Playwright, desktop and 360 px mobile
+pnpm test:coverage      # unit + integration with the coverage gates (domain 100%, services 85%)
 ```
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org/). A pre-commit hook runs ESLint and Prettier on staged files.

@@ -19,7 +19,7 @@
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
-    "test:coverage": "vitest run --project unit --coverage",
+    "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",

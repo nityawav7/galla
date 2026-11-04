@@ -14,12 +14,12 @@ import { type SignUpInput, signUpSchema } from "@/lib/validation/auth";
 
 import { GoogleButton } from "./google-button";
 import { TextField } from "./text-field";
-import { useAuthTranslations } from "./use-auth-translations";
+import { useFormMessages } from "./use-form-messages";
 
 export function SignupForm({ googleEnabled }: { googleEnabled: boolean }) {
   const t = useTranslations("auth");
   const common = useTranslations("common");
-  const { fieldError, formError } = useAuthTranslations();
+  const { fieldError, formError } = useFormMessages();
   const router = useRouter();
   const [error, setError] = useState<AuthErrorKey>();
   const form = useForm<SignUpInput>({

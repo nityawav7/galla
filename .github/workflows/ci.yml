@@ -42,7 +42,7 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:coverage
+      - run: pnpm test:unit
 
   integration:
     name: Integration tests
@@ -72,7 +72,9 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:integration
+      # Unit and integration together: services are covered by integration tests, so the
+      # SPEC §7.6 gates (domain 100%, services 85%) are measured over both.
+      - run: pnpm test:coverage
 
   build-e2e:
     name: Build and e2e (local server)

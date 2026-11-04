@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  codeSignInSchema,
-  isValidationKey,
-  passwordSignInSchema,
-  signUpSchema,
-  VALIDATION_KEYS,
-} from "@/lib/validation/auth";
+import { codeSignInSchema, passwordSignInSchema, signUpSchema } from "@/lib/validation/auth";
+import { isValidationKey, VALIDATION_KEYS } from "@/lib/validation/messages";
 import en from "@/messages/en.json";
 
 interface ParseResult {
@@ -44,7 +39,7 @@ describe("auth schemas", () => {
 
   it("has an English message for every validation key", () => {
     for (const key of VALIDATION_KEYS) {
-      expect(en.auth.validation[key]).toBeTruthy();
+      expect(en.validation[key]).toBeTruthy();
       expect(isValidationKey(key)).toBe(true);
     }
     expect(isValidationKey("nope")).toBe(false);

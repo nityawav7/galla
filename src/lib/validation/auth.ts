@@ -2,7 +2,7 @@ import { z } from "zod";
 
 /**
  * Auth form schemas, shared by the client forms and anything server-side that needs them.
- * Messages are keys under `auth.validation` in src/messages, translated by the form.
+ * Messages are keys under `validation` in src/messages (see ./messages.ts).
  */
 
 const email = z
@@ -42,16 +42,3 @@ export type PasswordSignInInput = z.infer<typeof passwordSignInSchema>;
 export type EmailOnlyInput = z.infer<typeof emailOnlySchema>;
 export type CodeSignInInput = z.infer<typeof codeSignInSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
-
-export const VALIDATION_KEYS = [
-  "nameRequired",
-  "nameTooLong",
-  "emailInvalid",
-  "passwordLength",
-  "codeFormat",
-] as const;
-export type ValidationKey = (typeof VALIDATION_KEYS)[number];
-
-export function isValidationKey(value: unknown): value is ValidationKey {
-  return typeof value === "string" && (VALIDATION_KEYS as readonly string[]).includes(value);
-}
