@@ -27,7 +27,7 @@ describe("parseCsv", () => {
   });
 
   it("strips the byte order mark Excel adds", () => {
-    expect(cells("﻿name\nCement")).toEqual([["name"], ["Cement"]]);
+    expect(cells("\uFEFFname\nCement")).toEqual([["name"], ["Cement"]]);
   });
 
   it("reads quoted cells with commas, escaped quotes and newlines", () => {
@@ -66,7 +66,7 @@ describe("parseCsv", () => {
 
   it("returns no records for empty input", () => {
     expect(parseCsv("")).toEqual({ ok: true, records: [] });
-    expect(parseCsv("﻿\r\n\n")).toEqual({ ok: true, records: [] });
+    expect(parseCsv("\uFEFF\r\n\n")).toEqual({ ok: true, records: [] });
   });
 
   it("reports an unclosed quote with the line it opened on", () => {

@@ -275,7 +275,7 @@ describe("CSV import", () => {
     const { ctx } = await createTenant();
     const report = await previewProductImport(
       ctx,
-      `﻿${csv(good(1), "Milk,0401,ltr,₹56.50,0,yes,")}\r\n`,
+      `\uFEFF${csv(good(1), "Milk,0401,ltr,₹56.50,0,yes,")}\r\n`,
     );
     expect(report).toEqual({
       total: 2,

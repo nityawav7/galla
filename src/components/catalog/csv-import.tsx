@@ -39,7 +39,7 @@ type State<S> =
 
 /** Excel only reads a CSV as UTF-8 (₹, Hindi) when it starts with a byte order mark. */
 function templateHref(rows: readonly (readonly string[])[]): string {
-  return `data:text/csv;charset=utf-8,${encodeURIComponent(`﻿${toCsv(rows)}`)}`;
+  return `data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${toCsv(rows)}`)}`;
 }
 
 const tooLarge = <S,>(): ImportReport<S> => ({

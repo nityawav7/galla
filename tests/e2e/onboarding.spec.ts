@@ -81,6 +81,49 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
 
   await pending.getByRole("button", { name: "Cancel invite" }).click();
   await expect(page.getByText("No pending invites.")).toBeVisible();
+
+  // Products (SPEC F2), in the same account: sign-ups are rate-limited (see support.ts).
+  await test.step("add a product and find it with a typo", async () => {
+    await page.getByRole("link", { name: "Products" }).click();
+    await page.getByRole("link", { name: "Add product" }).click();
+    await field(page, "Product name").fill("Cement 50 kg");
+    await field(page, "Price (₹)").fill("420");
+    await field(page, "Unit").selectOption("BAG");
+    await field(page, "HSN or SAC code (optional)").fill("2523");
+    await field(page, "SKU (optional)").fill("CEM-50");
+    await page.getByRole("button", { name: "Add product" }).click();
+    await expect(page).toHaveURL(/\/products$/);
+    await field(page, "Search products").fill("cemnt");
+    await page.getByRole("button", { name: "Search", exact: true }).click();
+    await expect(page.getByRole("link", { name: /Cement 50 kg/ })).toBeVisible();
+  });
+
+  await test.step("import a CSV: a bad row blocks it, the fixed file imports", async () => {
+    await page.getByRole("link", { name: "Products" }).click();
+    await page.getByRole("link", { name: "Import CSV" }).click();
+    const upload = (rows: string[]) =>
+      page.getByLabel("CSV file").setInputFiles({
+        name: "products.csv",
+        mimeType: "text/csv",
+        buffer: Buffer.from(
+          ["name,hsn_sac,unit,price,gst_rate,price_includes_tax,sku", ...rows].join("\r\n"),
+        ),
+      });
+    const sand = "Sand 1 bag,2505,BAG,90,5,no,SAND";
+    const nails = "Nails,7317,KGS,120,18,no,NAIL";
+    await upload([sand, "Milk 1 L,0401,LTR,abc,0,yes,", nails]);
+    await expect(page.getByText("Line 3 · price:")).toBeVisible();
+    await expect(page.getByRole("button", { name: /^Import all/ })).toHaveCount(0);
+
+    await upload([sand, "Milk 1 L,0401,LTR,56.50,0,yes,", nails]);
+    await expect(page.getByText("3 of 3 rows are ready.")).toBeVisible();
+    await page.getByRole("button", { name: "Import all 3 rows" }).click();
+    await expect(page.getByText("Imported 3 products.")).toBeVisible();
+    await page.getByRole("link", { name: "See the products" }).click();
+    for (const name of ["Cement 50 kg", "Milk 1 L", "Nails", "Sand 1 bag"]) {
+      await expect(page.getByRole("link", { name: new RegExp(name) })).toBeVisible();
+    }
+  });
 });
 
 test("a user with no membership gets 404 for another business (SPEC F1)", async ({

@@ -29,7 +29,7 @@
     "gstinUnsupported": "Only regular GSTINs (14th character Z) are supported for now",
     "productNameRequired": "Enter the product name",
     "hsnInvalid": "An HSN or SAC code has 4, 6 or 8 digits",
-    "hsnLeadingZero": "This code looks like it lost a leading zero (Excel does this). Format the column as Text and type it again, like 0401",
+    "hsnLeadingZero": "This looks like it is missing a leading zero (spreadsheets often drop it). HSN codes have 4, 6 or 8 digits, like 0401",
     "unitRequired": "Choose a unit, like NOS, PCS or KGS",
     "priceInvalid": "Enter a price like 120 or 120.50",
     "priceTooHigh": "The price is too high",

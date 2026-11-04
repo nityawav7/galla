@@ -15,7 +15,7 @@ export interface CsvRecord {
 export type CsvParseResult =
   { ok: true; records: CsvRecord[] } | { ok: false; reason: "UNCLOSED_QUOTE"; line: number };
 
-const BOM = "﻿";
+const BOM = "\uFEFF";
 
 export function parseCsv(input: string): CsvParseResult {
   const text = input.startsWith(BOM) ? input.slice(BOM.length) : input;

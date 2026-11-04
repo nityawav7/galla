@@ -31,8 +31,7 @@ export async function ProductList({ businessSlug, products }: ProductListProps) 
                 <span className="shrink-0 tabular-nums">{formatINR(product.pricePaise)}</span>
               </span>
               <span className="text-xs text-muted-foreground">
-                {product.unit} · {t("columns.rate")} {formatRatePercent(product.rateBp)}{" "}
-                {priceNote(product)}
+                {product.unit} · {formatRatePercent(product.rateBp)} {priceNote(product)}
                 {product.hsnSac ? ` · HSN ${product.hsnSac}` : ""}
                 {product.sku ? ` · ${product.sku}` : ""}
                 {product.archivedAt ? ` · ${t("archived")}` : ""}
