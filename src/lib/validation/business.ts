@@ -7,7 +7,7 @@ import { normalizeIndianPhone } from "@/server/domain/phone";
 import { isActiveStateCode } from "@/server/domain/states";
 import { isValidUpiVpa, normalizeUpiVpa } from "@/server/domain/upi";
 
-import { type ValidationKey } from "./messages";
+import { GSTIN_ERRORS, optionalText, requiredText } from "./fields";
 
 /**
  * Business details, shared by onboarding, settings and business.service. Messages are keys
@@ -15,18 +15,8 @@ import { type ValidationKey } from "./messages";
  * settings form can clear them.
  */
 
-const text = (max: number) => z.string().trim().max(max, { error: "textTooLong" });
-const requiredText = (max: number, error: ValidationKey) => text(max).min(1, { error });
-const optionalText = (max: number) => text(max).transform((value) => value || null);
-
 const prefixPattern = new RegExp(`^[A-Za-z0-9-]{1,${String(MAX_PREFIX_LENGTH)}}$`);
 const prefix = z.string().trim().regex(prefixPattern, { error: "prefixInvalid" });
-
-const GSTIN_ERRORS = {
-  FORMAT: "gstinFormat",
-  STATE: "gstinState",
-  CHECKSUM: "gstinChecksum",
-} as const satisfies Record<string, ValidationKey>;
 
 export const businessFields = {
   legalName: requiredText(100, "legalNameRequired"),

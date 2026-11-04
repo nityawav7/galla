@@ -38,12 +38,21 @@ async function TenantShell({
             <SignOutButton />
           </div>
         </div>
-        <nav aria-label={t("shell.nav")} className="mx-auto flex w-full max-w-5xl gap-4 px-4 pb-2">
+        <nav
+          aria-label={t("shell.nav")}
+          className="mx-auto flex w-full max-w-5xl gap-4 overflow-x-auto px-4 pb-2 whitespace-nowrap"
+        >
           <Link
             href={`${base}/dashboard`}
             className="text-sm font-medium underline-offset-4 hover:underline"
           >
             {t("shell.dashboard")}
+          </Link>
+          <Link
+            href={`${base}/products`}
+            className="text-sm font-medium underline-offset-4 hover:underline"
+          >
+            {t("shell.products")}
           </Link>
           <Link
             href={`${base}/settings`}

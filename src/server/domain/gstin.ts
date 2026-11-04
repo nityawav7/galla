@@ -10,8 +10,14 @@ import { isActiveStateCode } from "./states";
 const CHARSET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 const GSTIN_PATTERN = /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z][1-9A-Z]Z[0-9A-Z]$/;
 const BODY_PATTERN = /^[0-9A-Z]{14}$/;
+/** 15 characters that look like a GSTIN of another kind (TDS/TCS, UN body, non-resident). */
+const OTHER_KIND_PATTERN = /^[0-9]{2}[0-9A-Z]{11}[0-9A-Y][0-9A-Z]$/;
 
-export type GstinInvalidReason = "FORMAT" | "STATE" | "CHECKSUM";
+/**
+ * UNSUPPORTED: a GSTIN-like value whose 14th character is not "Z". v1 handles only regular
+ * taxpayers (SPEC §4.1), so these get "not supported yet" rather than "bad format".
+ */
+export type GstinInvalidReason = "FORMAT" | "STATE" | "CHECKSUM" | "UNSUPPORTED";
 
 export type GstinValidation =
   | { ok: true; gstin: string; stateCode: string; pan: string }
@@ -21,6 +27,7 @@ const MESSAGES: Record<GstinInvalidReason, string> = {
   FORMAT: "GSTIN must be 15 characters in the format 22AAAAA0000A1Z5",
   STATE: "GSTIN starts with an unknown state code",
   CHECKSUM: "GSTIN check digit does not match. Check for typos",
+  UNSUPPORTED: "Only regular GSTINs (14th character Z) are supported for now",
 };
 
 export function normalizeGstin(input: string): string {
@@ -43,7 +50,9 @@ export function gstinCheckCharacter(body: string): string {
 
 export function validateGstin(input: string): GstinValidation {
   const gstin = normalizeGstin(input);
-  if (!GSTIN_PATTERN.test(gstin)) return { ok: false, reason: "FORMAT" };
+  if (!GSTIN_PATTERN.test(gstin)) {
+    return { ok: false, reason: OTHER_KIND_PATTERN.test(gstin) ? "UNSUPPORTED" : "FORMAT" };
+  }
   const stateCode = gstin.slice(0, 2);
   if (!isActiveStateCode(stateCode)) return { ok: false, reason: "STATE" };
   if (gstinCheckCharacter(gstin.slice(0, 14)) !== gstin.charAt(14)) {

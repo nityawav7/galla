@@ -47,6 +47,8 @@ export const products = pgTable(
       .on(t.businessId, t.sku)
       .where(sql`${t.sku} is not null and ${t.archivedAt} is null`),
     index("products_business_id_created_at_idx").on(t.businessId, t.createdAt),
+    // Keyset pagination of the list, A–Z (SPEC §6.1: no OFFSET).
+    index("products_business_id_name_id_idx").on(t.businessId, t.name, t.id),
     index("products_name_trgm_idx").using("gin", t.name.op("gin_trgm_ops")),
     index("products_unit_idx").on(t.unit),
     index("products_rate_bp_idx").on(t.rateBp),
@@ -99,6 +101,7 @@ export const customers = pgTable(
       .where(sql`${t.gstin} is not null and ${t.archivedAt} is null`),
     index("customers_business_id_phone_idx").on(t.businessId, t.phoneE164),
     index("customers_business_id_created_at_idx").on(t.businessId, t.createdAt),
+    index("customers_business_id_name_id_idx").on(t.businessId, t.name, t.id),
     index("customers_name_trgm_idx").using("gin", t.name.op("gin_trgm_ops")),
     index("customers_billing_state_code_idx").on(t.billingStateCode),
     index("customers_shipping_state_code_idx").on(t.shippingStateCode),

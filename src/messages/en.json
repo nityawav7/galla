@@ -25,7 +25,27 @@
     "prefixInvalid": "Use 1 to 5 letters, digits or hyphens",
     "prefixesSame": "Invoice and credit note prefixes must be different",
     "upiInvalid": "Enter a UPI ID like yourname@oksbi",
-    "roleRequired": "Choose a role"
+    "roleRequired": "Choose a role",
+    "gstinUnsupported": "Only regular GSTINs (14th character Z) are supported for now",
+    "productNameRequired": "Enter the product name",
+    "hsnInvalid": "An HSN or SAC code has 4, 6 or 8 digits",
+    "hsnLeadingZero": "This code looks like it lost a leading zero (Excel does this). Format the column as Text and type it again, like 0401",
+    "unitRequired": "Choose a unit, like NOS, PCS or KGS",
+    "priceInvalid": "Enter a price like 120 or 120.50",
+    "priceTooHigh": "The price is too high",
+    "rateRequired": "Choose a GST rate, like 5 or 18",
+    "skuInvalid": "Use letters, digits and . _ / - only",
+    "skuTaken": "Another product already has this SKU",
+    "yesNoInvalid": "Write yes or no",
+    "csvEmpty": "The file has no rows to import",
+    "csvTooLarge": "The file is too large. Split it into files of up to 1,000 rows",
+    "csvTooManyRows": "A file can have at most 1,000 rows. Split it into smaller files",
+    "csvColumnMissing": "This column is missing. Start from the template",
+    "csvUnknownColumn": "This column is not in the template. Rename or remove it",
+    "csvDuplicateColumn": "This column appears twice",
+    "csvUnclosedQuote": "A quote (\") opened on this line is never closed",
+    "csvDuplicateInFile": "The same value is on an earlier row of this file",
+    "csvRowInvalid": "This row could not be read"
   },
   "auth": {
     "fields": {
@@ -153,7 +173,8 @@
     "dashboard": "Dashboard",
     "settings": "Settings",
     "switchBusiness": "Switch business",
-    "members": "Members"
+    "members": "Members",
+    "products": "Products"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -248,5 +269,79 @@
     "declined": "You declined this invite.",
     "invalid": "This invite has expired, was cancelled, or was sent to a different email address. Ask the owner for a new one.",
     "useAnother": "Sign out and use another account"
+  },
+  "products": {
+    "title": "Products",
+    "archivedTitle": "Archived products",
+    "search": "Search products",
+    "searchPlaceholder": "Name or SKU",
+    "searchButton": "Search",
+    "clearSearch": "Clear",
+    "add": "Add product",
+    "import": "Import CSV",
+    "showArchived": "Show archived",
+    "showActive": "Show active products",
+    "empty": "No products yet. Add one, or import a CSV file.",
+    "emptyArchived": "No archived products.",
+    "noMatches": "No products match “{q}”.",
+    "nextPage": "Next page",
+    "firstPage": "Back to the start",
+    "archived": "Archived",
+    "inclusive": "incl. GST",
+    "exclusive": "+ GST",
+    "columns": {
+      "name": "Name",
+      "hsnSac": "HSN/SAC",
+      "unit": "Unit",
+      "price": "Price",
+      "rate": "GST"
+    },
+    "newTitle": "Add product",
+    "editTitle": "Edit product",
+    "back": "All products",
+    "readOnly": "Only the owner and staff can change products.",
+    "fields": {
+      "name": "Product name",
+      "hsnSac": "HSN or SAC code (optional)",
+      "unit": "Unit",
+      "price": "Price (₹)",
+      "rateBp": "GST rate",
+      "priceIncludesTax": "Price includes GST",
+      "sku": "SKU (optional)"
+    },
+    "hints": {
+      "hsnSac": "4, 6 or 8 digits. Needed on B2B invoices.",
+      "price": "Price for one unit.",
+      "priceIncludesTax": "Tick if this is the MRP or a price with GST already in it.",
+      "rateNoGst": "Your business does not charge GST now, so the rate is only kept for later.",
+      "sku": "Your own product code, if you use one."
+    },
+    "create": "Add product",
+    "save": "Save changes",
+    "saved": "Saved.",
+    "archive": "Archive",
+    "restore": "Restore",
+    "archiveHint": "Archived products are hidden from lists and new invoices. Past invoices are not changed.",
+    "archivedNotice": "This product is archived.",
+    "restoreConflict": "Another active product now has this SKU. Change one of the SKUs first."
+  },
+  "import": {
+    "productsTitle": "Import products",
+    "intro": "Upload a CSV file. Every row is checked first, and nothing is saved until all rows are correct.",
+    "template": "Download the template",
+    "file": "CSV file",
+    "fileHint": "Up to 1,000 rows. In Excel: File → Save As → CSV UTF-8.",
+    "checking": "Checking the file…",
+    "summary": "{valid} of {total} rows are ready.",
+    "issuesTitle": "Fix these in your file, then choose it again",
+    "moreIssues": "…and {count} more.",
+    "fileProblem": "File",
+    "line": "Line {line}",
+    "previewTitle": "First rows",
+    "commit": "Import all {count} rows",
+    "importing": "Importing…",
+    "imported": "Imported {count} products.",
+    "conflict": "Someone added a product with one of these SKUs just now. Choose the file again to re-check it.",
+    "viewList": "See the products"
   }
 }

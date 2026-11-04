@@ -11,8 +11,11 @@ import {
 import {
   archiveProduct,
   findProductById,
+  findProductsBySkus,
   insertProduct,
+  insertProducts,
   listProducts,
+  restoreProduct,
   updateProduct,
 } from "@/server/db/repos/products.repo";
 import { listStates, listTaxRates, listUnits } from "@/server/db/repos/reference.repo";
@@ -99,6 +102,59 @@ describe("products repo", () => {
     const found = await listProducts(db(), tenant.ctx, { search: "10%" });
     expect(found.map((p) => p.name)).toEqual(["Cashback 10% pack"]);
     expect(await listProducts(db(), tenant.ctx, { search: "_" })).toEqual([]);
+  });
+
+  it("pages A–Z after a cursor, breaking name ties by id", async () => {
+    const tenant = await createTenant();
+    const names = ["Bolt", "Anchor", "Bolt", "Chain", "Anchor"];
+    await insertProducts(
+      db(),
+      tenant.ctx,
+      names.map((name) => ({ name, unit: "NOS", pricePaise: 100n, rateBp: 1800 })),
+    );
+    const seen: string[] = [];
+    let after: { name: string; id: string } | undefined;
+    for (;;) {
+      const page = await listProducts(db(), tenant.ctx, { limit: 2, after });
+      if (page.length === 0) break;
+      seen.push(...page.map((p) => p.id));
+      const last = page.at(-1);
+      after = last ? { name: last.name, id: last.id } : undefined;
+    }
+    const all = await listProducts(db(), tenant.ctx);
+    expect(seen).toEqual(all.map((p) => p.id));
+    expect(all.map((p) => p.name)).toEqual(["Anchor", "Anchor", "Bolt", "Bolt", "Chain"]);
+  });
+
+  it("finds products by SKU prefix, and active SKUs for the import check", async () => {
+    const tenant = await createTenant();
+    const make = (name: string, sku: string) =>
+      insertProduct(db(), tenant.ctx, { name, unit: "NOS", pricePaise: 1n, rateBp: 0, sku });
+    await make("Hammer", "HW-100");
+    const old = await make("Old hammer", "HW-200");
+    await archiveProduct(db(), tenant.ctx, old.id);
+    expect((await listProducts(db(), tenant.ctx, { search: "hw-1" })).map((p) => p.name)).toEqual([
+      "Hammer",
+    ]);
+    const taken = await findProductsBySkus(db(), tenant.ctx, ["HW-100", "HW-200", "HW-300"]);
+    expect(taken.map((p) => p.sku)).toEqual(["HW-100"]);
+    expect(await findProductsBySkus(db(), tenant.ctx, [])).toEqual([]);
+  });
+
+  it("restores archived products and lists only archived ones on request", async () => {
+    const tenant = await createTenant();
+    const product = await insertProduct(db(), tenant.ctx, {
+      name: "Nails",
+      unit: "KGS",
+      pricePaise: 1n,
+      rateBp: 0,
+    });
+    expect(await restoreProduct(db(), tenant.ctx, product.id)).toBeUndefined();
+    await archiveProduct(db(), tenant.ctx, product.id);
+    expect(await listProducts(db(), tenant.ctx)).toEqual([]);
+    expect(await listProducts(db(), tenant.ctx, { archivedOnly: true })).toHaveLength(1);
+    expect((await restoreProduct(db(), tenant.ctx, product.id))?.archivedAt).toBeNull();
+    expect(await insertProducts(db(), tenant.ctx, [])).toEqual([]);
   });
 });
 

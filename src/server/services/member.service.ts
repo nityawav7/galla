@@ -18,6 +18,7 @@ import {
   type MemberWithUser,
 } from "@/server/db/repos/members.repo";
 
+import { requireId } from "./ids";
 import { parseInput } from "./validate";
 
 /*
@@ -30,14 +31,6 @@ import { parseInput } from "./validate";
  */
 
 export type { Invitation, MemberWithUser };
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-/** Ids come from URLs and forms; a malformed one is simply not found (never a DB error). */
-function requireId(id: string, entity: string): string {
-  if (!UUID.test(id)) throw new NotFoundError(entity);
-  return id;
-}
 
 export function inviteLink(invitationId: string): string {
   return `${authBaseUrl()}/invite/${invitationId}`;
