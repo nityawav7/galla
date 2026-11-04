@@ -4,6 +4,28 @@
     "or": "or",
     "pleaseWait": "Please wait…"
   },
+  "validation": {
+    "nameRequired": "Enter your name",
+    "nameTooLong": "Use at most 100 characters",
+    "emailInvalid": "Enter a valid email address",
+    "passwordLength": "Use 8 to 128 characters",
+    "codeFormat": "Enter the 6-digit code from the email",
+    "textTooLong": "This is too long",
+    "legalNameRequired": "Enter the registered name of the business",
+    "addressRequired": "Enter the shop address",
+    "cityRequired": "Enter the city or town",
+    "pincodeInvalid": "Enter a 6-digit PIN code",
+    "stateRequired": "Choose a state",
+    "phoneInvalid": "Enter a 10-digit Indian phone number",
+    "gstinRequired": "Enter your GSTIN, or choose Not registered for GST",
+    "gstinFormat": "A GSTIN has 15 characters, like 27AAPFU0939F1ZV",
+    "gstinState": "This GSTIN starts with an unknown state code",
+    "gstinChecksum": "This GSTIN has a typo: its last character does not match",
+    "gstinStateMismatch": "This GSTIN belongs to a different state than the one chosen",
+    "prefixInvalid": "Use 1 to 5 letters, digits or hyphens",
+    "prefixesSame": "Invoice and credit note prefixes must be different",
+    "upiInvalid": "Enter a UPI ID like yourname@oksbi"
+  },
   "auth": {
     "fields": {
       "name": "Your name",
@@ -11,13 +33,6 @@
       "password": "Password",
       "newPassword": "New password",
       "code": "6-digit code"
-    },
-    "validation": {
-      "nameRequired": "Enter your name",
-      "nameTooLong": "Use at most 100 characters",
-      "emailInvalid": "Enter a valid email address",
-      "passwordLength": "Use 8 to 128 characters",
-      "codeFormat": "Enter the 6-digit code from the email"
     },
     "login": {
       "title": "Sign in",
@@ -62,7 +77,106 @@
   "home": {
     "title": "Your businesses",
     "signedInAs": "Signed in as {name}",
-    "noBusinessYet": "Business setup arrives in the next update. You are signed in and your account is ready."
+    "addBusiness": "Add another business"
+  },
+  "business": {
+    "fields": {
+      "legalName": "Registered business name",
+      "tradeName": "Shop name (if different)",
+      "addressLine1": "Address",
+      "addressLine2": "Address line 2 (optional)",
+      "city": "City or town",
+      "pincode": "PIN code",
+      "state": "State",
+      "phone": "Phone (optional)",
+      "email": "Email (optional)",
+      "gstScheme": "GST registration",
+      "gstin": "GSTIN",
+      "invoicePrefix": "Invoice number prefix",
+      "creditNotePrefix": "Credit note prefix",
+      "upiVpa": "UPI ID (optional)"
+    },
+    "hints": {
+      "legalName": "As on your GST certificate or shop licence",
+      "tradeName": "The name customers know, for example Sharma Hardware",
+      "gstin": "15 characters, printed on your GST certificate",
+      "invoicePrefix": "Your first invoice will be {example}",
+      "upiVpa": "Printed on invoices so customers can pay you by UPI"
+    },
+    "chooseState": "Choose a state",
+    "schemes": {
+      "REGULAR": "Regular GST",
+      "COMPOSITION": "Composition scheme",
+      "UNREGISTERED": "Not registered for GST"
+    },
+    "schemeHints": {
+      "REGULAR": "Your bills charge GST",
+      "COMPOSITION": "You pay GST at a flat rate and issue Bills of Supply without GST",
+      "UNREGISTERED": "Your bills carry no GST"
+    }
+  },
+  "onboarding": {
+    "title": "Set up your business",
+    "stepOf": "Step {step} of {total}",
+    "steps": {
+      "details": "Business details",
+      "gst": "GST",
+      "invoicing": "Invoices and payments"
+    },
+    "next": "Next",
+    "back": "Back",
+    "submit": "Create business"
+  },
+  "preview": {
+    "label": "Invoice preview",
+    "sample": "Sample only. Your real invoices start after setup.",
+    "titles": {
+      "TAX_INVOICE": "Tax Invoice",
+      "BILL_OF_SUPPLY": "Bill of Supply",
+      "INVOICE": "Invoice"
+    },
+    "yourBusiness": "Your business name",
+    "gstin": "GSTIN: {gstin}",
+    "unregistered": "Not registered under GST",
+    "compositionNote": "Composition taxable person, not eligible to collect tax on supplies",
+    "phone": "Phone: {phone}",
+    "number": "Invoice no.",
+    "date": "Date",
+    "billTo": "Bill to",
+    "sampleCustomer": "Your customer",
+    "itemsPlaceholder": "Items, GST and totals appear here",
+    "payByUpi": "Pay by UPI: {upi}"
+  },
+  "shell": {
+    "nav": "Main",
+    "dashboard": "Dashboard",
+    "settings": "Settings",
+    "switchBusiness": "Switch business"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcome": "Welcome to {name}",
+    "comingSoon": "Invoices, payments and udhaar arrive in the next updates. Until then you can review your business settings."
+  },
+  "settings": {
+    "title": "Business settings",
+    "profile": "Business profile",
+    "gst": "GST",
+    "invoicing": "Invoices and payments",
+    "save": "Save changes",
+    "saved": "Changes saved",
+    "ownerOnly": "Only the owner can change business settings."
+  },
+  "roles": {
+    "OWNER": "Owner",
+    "ACCOUNTANT": "Accountant",
+    "STAFF": "Staff"
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "This page does not exist, or you do not have access to it.",
+    "goHome": "Go to your businesses"
   },
   "emails": {
     "otp": {

@@ -1,0 +1,2 @@
+ALTER TABLE "businesses" ADD CONSTRAINT "businesses_upi_vpa_format" CHECK ("businesses"."upi_vpa" ~ '^[a-z0-9][a-z0-9._-]{1,255}@[a-z][a-z0-9]{1,63}$');--> statement-breakpoint
+ALTER TABLE "businesses" ADD CONSTRAINT "businesses_email_format" CHECK ("businesses"."email" ~ '^[^@[:space:]]+@[^@[:space:]]+[.][^@[:space:]]+$');

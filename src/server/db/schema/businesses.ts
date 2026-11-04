@@ -74,6 +74,15 @@ export const businesses = pgTable(
       "businesses_prefixes_differ",
       sql`lower(${t.invoicePrefix}) <> lower(${t.creditNotePrefix})`,
     ),
+    // Same rules as src/server/domain/upi.ts; values are stored lower-cased.
+    check(
+      "businesses_upi_vpa_format",
+      sql`${t.upiVpa} ~ '^[a-z0-9][a-z0-9._-]{1,255}@[a-z][a-z0-9]{1,63}$'`,
+    ),
+    check(
+      "businesses_email_format",
+      sql`${t.email} ~ '^[^@[:space:]]+@[^@[:space:]]+[.][^@[:space:]]+$'`,
+    ),
     check("businesses_hsn_digits", sql`${t.hsnDigitsRequired} in (4, 6)`),
     check("businesses_locale", sql`${t.locale} in ('en', 'hi')`),
     index("businesses_state_code_idx").on(t.stateCode),

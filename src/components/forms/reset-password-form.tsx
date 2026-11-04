@@ -18,14 +18,14 @@ import {
 } from "@/lib/validation/auth";
 
 import { TextField } from "./text-field";
-import { useAuthTranslations } from "./use-auth-translations";
+import { useFormMessages } from "./use-form-messages";
 
 type Step = "email" | "code" | "done";
 
 export function ResetPasswordForm() {
   const t = useTranslations("auth");
   const common = useTranslations("common");
-  const { fieldError, formError } = useAuthTranslations();
+  const { fieldError, formError } = useFormMessages();
   const [step, setStep] = useState<Step>("email");
   const [error, setError] = useState<AuthErrorKey>();
 

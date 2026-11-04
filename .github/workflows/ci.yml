@@ -42,7 +42,7 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:coverage
+      - run: pnpm test:unit
 
   integration:
     name: Integration tests
@@ -72,7 +72,9 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm test:integration
+      # Unit and integration together: services are covered by integration tests, so the
+      # SPEC §7.6 gates (domain 100%, services 85%) are measured over both.
+      - run: pnpm test:coverage
 
   build-e2e:
     name: Build and e2e (local server)
@@ -104,6 +106,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm db:migrate
+      # States, tax rates and units: onboarding cannot save a business without them.
+      - run: pnpm db:seed:reference
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v7

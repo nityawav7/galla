@@ -23,12 +23,12 @@ import {
 
 import { GoogleButton } from "./google-button";
 import { TextField } from "./text-field";
-import { useAuthTranslations } from "./use-auth-translations";
+import { useFormMessages } from "./use-form-messages";
 
 const AFTER_SIGN_IN = "/b";
 
 function FormError({ error }: { error: AuthErrorKey | undefined }) {
-  const { formError } = useAuthTranslations();
+  const { formError } = useFormMessages();
   if (!error) return null;
   return (
     <Alert variant="destructive" aria-live="polite">
@@ -40,7 +40,7 @@ function FormError({ error }: { error: AuthErrorKey | undefined }) {
 function PasswordSignIn() {
   const t = useTranslations("auth");
   const common = useTranslations("common");
-  const { fieldError } = useAuthTranslations();
+  const { fieldError } = useFormMessages();
   const router = useRouter();
   const [error, setError] = useState<AuthErrorKey>();
   const form = useForm<PasswordSignInInput>({
@@ -91,7 +91,7 @@ function PasswordSignIn() {
 function CodeSignIn() {
   const t = useTranslations("auth");
   const common = useTranslations("common");
-  const { fieldError } = useAuthTranslations();
+  const { fieldError } = useFormMessages();
   const router = useRouter();
   const [error, setError] = useState<AuthErrorKey>();
   const [sentTo, setSentTo] = useState<string>();
