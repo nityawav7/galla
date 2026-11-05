@@ -15,8 +15,10 @@ import {
 import {
   archiveProduct,
   findProductById,
+  findProductsBySkus,
   insertProduct,
   listProducts,
+  restoreProduct,
   updateProduct,
 } from "@/server/db/repos/products.repo";
 
@@ -41,7 +43,14 @@ const createProduct = (owner: Tenant) =>
     unit: "KGS",
     pricePaise: 12000n,
     rateBp: 500,
+    sku: "OWNER-RICE",
   });
+
+const createArchivedProduct = async (owner: Tenant) => {
+  const product = await createProduct(owner);
+  await archiveProduct(db(), owner.ctx, product.id);
+  return product;
+};
 
 const createCustomer = (owner: Tenant) =>
   insertCustomer(db(), owner.ctx, { name: "Owner's Customer", phoneE164: "+919811111111" });
@@ -75,6 +84,28 @@ describe("products repo", () => {
     "listProducts with search": isolationCase({
       arrange: createProduct,
       act: (intruder) => listProducts(db(), intruder.ctx, { search: "basmati" }),
+    }),
+    "listProducts archived only": isolationCase({
+      arrange: createArchivedProduct,
+      act: (intruder) => listProducts(db(), intruder.ctx, { archivedOnly: true }),
+    }),
+    "listProducts after a cursor": isolationCase({
+      arrange: createProduct,
+      act: (intruder) =>
+        listProducts(db(), intruder.ctx, {
+          after: { name: "", id: "00000000-0000-0000-0000-000000000000" },
+        }),
+    }),
+    restoreProduct: isolationCase({
+      arrange: createArchivedProduct,
+      act: (intruder, product) => restoreProduct(db(), intruder.ctx, product.id),
+      verify: async (owner, product) => {
+        expect((await findProductById(db(), owner.ctx, product.id))?.archivedAt).not.toBeNull();
+      },
+    }),
+    findProductsBySkus: isolationCase({
+      arrange: createProduct,
+      act: (intruder) => findProductsBySkus(db(), intruder.ctx, ["OWNER-RICE"]),
     }),
   });
 });

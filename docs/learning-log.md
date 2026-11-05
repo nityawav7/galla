@@ -59,3 +59,11 @@ What I learned and what broke while building Galla, phase by phase.
 - An id from a URL must be checked before it reaches a `uuid` column, or a typo becomes a 500 (`invalid input syntax for type uuid`) instead of a 404.
 - Vitest's global setup failing (here: Docker not running) shows up only as "code.charCodeAt is not a function". Check `docker ps` first.
 - After a restart the dev server compiles each page on first visit (4–30 s), which breaks 5 s Playwright assertions. Local runs now wait 15 s; CI uses a production build.
+
+## Phase 5a: products and CSV import
+
+- Audit diffs are JSON, and `JSON.stringify` throws on `bigint`. Money goes into the diff as a string of paise.
+- `z.union([z.boolean(), z.string().refine(…)])` reports a failed refine as "Invalid input", which loses the message key. A single `transform` that adds the issue itself keeps it.
+- Keyset pagination compares `(name, id) > (last name, last id)`, so rows with the same name are neither skipped nor repeated. It needs an index on `(business_id, name, id)`.
+- Writing `"\uFEFF"` through some tools stores the invisible byte order mark itself in the source. Keep it as the escape, so reviewers can see it.
+- The in-app browser can't attach files, and scripts run in an isolated world, so React never sees a faked `change` event. Playwright's `setInputFiles` is the reliable way to test an upload.

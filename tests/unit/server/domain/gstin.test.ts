@@ -48,7 +48,11 @@ describe("validateGstin", () => {
     ["27AAPFUA939F1ZV", "FORMAT"], // PAN digits
     ["27AAPFU093911ZV", "FORMAT"], // PAN last char
     ["27AAPFU0939F0ZV", "FORMAT"], // entity number 0
-    ["27AAPFU0939F1YV", "FORMAT"], // 14th char must be Z in v1
+    ["27AAPFU0939F1YV", "UNSUPPORTED"], // 14th char must be Z in v1
+    ["07DELA12345B1D5", "UNSUPPORTED"], // TDS deductor shape
+    ["0717UNO00157UNO", "UNSUPPORTED"], // UN body shape
+    ["9917USA00001OSD", "UNSUPPORTED"], // non-resident shape
+    ["0X17UNO00157UNO", "FORMAT"], // not even a GSTIN-like shape
     ["27AAPFU0939F1Z-", "FORMAT"],
     ["99AAPFU0939F1ZV", "STATE"], // unknown state code
     ["28AAPFU0939F1ZV", "STATE"], // inactive legacy code
@@ -108,6 +112,7 @@ describe("parseGstin", () => {
     ["27AAPFU0939F1Z", "GSTIN must be 15 characters in the format 22AAAAA0000A1Z5"],
     ["99AAPFU0939F1ZV", "GSTIN starts with an unknown state code"],
     ["27AAPFU0939F1ZW", "GSTIN check digit does not match. Check for typos"],
+    ["0717UNO00157UNO", "Only regular GSTINs (14th character Z) are supported for now"],
   ])("explains why %j is invalid", (input, message) => {
     expect(() => parseGstin(input)).toThrow(message);
   });

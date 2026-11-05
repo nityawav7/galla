@@ -42,6 +42,20 @@ export async function insertAuditLog(
   return row;
 }
 
+/** Several entries in one statement (one per imported row), in the same transaction. */
+export async function insertAuditLogs(
+  db: Executor,
+  ctx: TenantContext,
+  entries: readonly AuditEntry[],
+): Promise<void> {
+  if (entries.length === 0) return;
+  await db
+    .insert(auditLogs)
+    .values(
+      entries.map((entry) => ({ ...entry, businessId: ctx.businessId, actorUserId: ctx.userId })),
+    );
+}
+
 export function listAuditLogs(
   db: Executor,
   ctx: TenantContext,

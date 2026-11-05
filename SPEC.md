@@ -105,7 +105,7 @@ Permissions are defined **once** in `src/server/authz/permissions.ts` and checke
 - 15 characters: `SS` state code (2 digits) + PAN (10) + entity number (1) + `Z` (default) + check character (1).
 - Validate the regex **and the check character** (mod-36 checksum algorithm). Write unit tests using known-valid GSTINs and mutated invalid ones.
 - Derive the customer's state from the first two digits. Block a mismatch between the GSTIN state and the chosen state (with an override plus a warning).
-- v1 accepts only the regular taxpayer format (14th character `Z`) with an active state code. Other formats (TDS/TCS, UN bodies, non-resident) get a clear "not supported yet" message.
+- v1 accepts only the regular taxpayer format (14th character `Z`) with an active state code. Other formats (TDS/TCS, UN bodies, non-resident) get a clear "not supported yet" message. Any 15-character value that starts with 2 digits and has another 14th character gets this message.
 
 ### 4.2 States & place of supply
 - Seed the official **GST state code list** (01 Jammu & Kashmir … 37 Andhra Pradesh, 38 Ladakh, 97 Other Territory). Verify it against the GST portal and store it in a `states` reference table with a `is_ut_without_legislature` flag.
@@ -207,8 +207,10 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 
 ### F2. Products
 - Fields: name, HSN/SAC, unit (UQC: NOS, PCS, KGS, GMS, LTR, MTR, BOX, SET, DOZ, PAC …), price, tax rate, price-includes-tax, SKU (optional), active.
-- Fuzzy search with Postgres `pg_trgm`. CSV import with a preview, per-row errors and a downloadable template.
-- Soft delete (archive) if the product was used on any invoice.
+- HSN/SAC is optional on the product and has 4, 6 or 8 digits. The digits an invoice needs are checked when it is issued (Phase 6). SKUs are unique among a business's active products.
+- The list is A–Z with cursor pagination (50 a page). Fuzzy search with Postgres `pg_trgm` on the name, plus an SKU prefix, returns the best 50 matches.
+- CSV import with a preview, per-row errors (line and column) and a downloadable template ([ADR 0005](docs/adr/0005-csv-import.md)). The server checks the file again on import, which creates new products only. At most 1,000 rows and 900 KB per file.
+- Products are always archived, never deleted, and can be restored unless an active product has taken the SKU. Archived products are hidden from lists and new invoices; past invoices keep their own copy.
 - **AC:** importing 500 rows takes < 10 s. Bad rows are reported with line numbers and nothing partial is committed.
 
 ### F3. Customers

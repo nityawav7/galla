@@ -29,6 +29,13 @@
       "when": 1793776387948,
       "tag": "0003_business_formats",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793786792286,
+      "tag": "0004_catalog_list_indexes",
+      "breakpoints": true
     }
   ]
 }

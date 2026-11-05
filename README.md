@@ -2,7 +2,7 @@
 
 GST billing and udhaar for small Indian shops. Create a GST-correct invoice in under 60 seconds on a phone, share it on WhatsApp with a UPI QR, track who owes what, and hand your CA a one-click GST sales export.
 
-> **Status:** early development (Phase 4 of [BUILD_PLAN.md](BUILD_PLAN.md)): you can create an account, set up your business, edit its settings and invite your team; products and customers are next. Not tax or legal advice.
+> **Status:** early development (Phase 4 of [BUILD_PLAN.md](BUILD_PLAN.md)): you can create an account, set up your business, edit its settings, invite your team, and add or import products from a CSV file; customers are next. Not tax or legal advice.
 
 - **Live demo:** _coming in Phase 12_
 - **2-minute video:** _coming in Phase 12_
