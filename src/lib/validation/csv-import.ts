@@ -29,12 +29,39 @@ export interface ImportReport<S> {
   issueCount: number;
   /** The first issues, ordered by line; `issueCount` says how many there were in all. */
   issues: ImportIssue[];
+  /** Things to check that don't block the import (a phone another customer has). */
+  warnings: ImportIssue[];
   /** The first rows as they would be saved, formatted for display. */
   sample: S[];
 }
 
 export type ImportResult<S> =
   { status: "imported"; count: number } | { status: "invalid"; report: ImportReport<S> };
+
+/** Rows of the file shown in the import preview. */
+export const PREVIEW_SAMPLE_SIZE = 20;
+/** Issues sent back to the browser; the counts say how many there were in all. */
+export const MAX_REPORTED_ISSUES = 200;
+
+const byLine = (a: ImportIssue, b: ImportIssue) => (a.line ?? 0) - (b.line ?? 0);
+
+/** The report for the browser: issues in line order (capped), and the first rows formatted. */
+export function buildImportReport<T, S>(
+  total: number,
+  valid: readonly { line: number; value: T }[],
+  issues: readonly ImportIssue[],
+  warnings: readonly ImportIssue[],
+  toSample: (row: { line: number; value: T }) => S,
+): ImportReport<S> {
+  return {
+    total,
+    valid: valid.length,
+    issueCount: issues.length,
+    issues: [...issues].sort(byLine).slice(0, MAX_REPORTED_ISSUES),
+    warnings: [...warnings].sort(byLine).slice(0, MAX_REPORTED_ISSUES),
+    sample: valid.slice(0, PREVIEW_SAMPLE_SIZE).map(toSample),
+  };
+}
 
 export interface ImportRow<C extends string> {
   line: number;

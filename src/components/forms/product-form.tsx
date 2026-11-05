@@ -86,6 +86,8 @@ export function ProductForm({
     }
     const result = await createProductAction(businessSlug, values);
     if (result.ok) {
+      // Next keeps visited pages mounted, so clear the form for the next "Add product".
+      form.reset(defaultValues);
       router.push(`/b/${businessSlug}/products`);
       return;
     }

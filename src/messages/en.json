@@ -45,7 +45,13 @@
     "csvDuplicateColumn": "This column appears twice",
     "csvUnclosedQuote": "A quote (\") opened on this line is never closed",
     "csvDuplicateInFile": "The same value is on an earlier row of this file",
-    "csvRowInvalid": "This row could not be read"
+    "csvRowInvalid": "This row could not be read",
+    "customerNameRequired": "Enter the customer's name",
+    "customerStateMismatch": "This state is different from the state in the GSTIN. Tick the box below if it is right",
+    "gstinTaken": "Another customer already has this GSTIN",
+    "balanceInvalid": "Enter an amount like 1500 or 1500.50",
+    "creditDaysInvalid": "Enter a whole number of days from 0 to 365",
+    "phoneDuplicate": "Another customer has this phone number. Check it is not the same person"
   },
   "auth": {
     "fields": {
@@ -174,7 +180,8 @@
     "settings": "Settings",
     "switchBusiness": "Switch business",
     "members": "Members",
-    "products": "Products"
+    "products": "Products",
+    "customers": "Customers"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -342,6 +349,86 @@
     "importing": "Importing…",
     "imported": "Imported {count} products.",
     "conflict": "Someone added a product with one of these SKUs just now. Choose the file again to re-check it.",
-    "viewList": "See the products"
+    "viewList": "See the products",
+    "customersTitle": "Import customers",
+    "customersImported": "Imported {count} customers.",
+    "customersConflict": "Someone added a customer with one of these GSTINs just now. Choose the file again to re-check it.",
+    "viewCustomers": "See the customers",
+    "warningsTitle": "Please check these (they don't stop the import)"
+  },
+  "customers": {
+    "title": "Customers",
+    "archivedTitle": "Archived customers",
+    "search": "Search customers",
+    "searchPlaceholder": "Name, phone or GSTIN",
+    "searchButton": "Search",
+    "clearSearch": "Clear",
+    "add": "Add customer",
+    "import": "Import CSV",
+    "showArchived": "Show archived",
+    "showActive": "Show active customers",
+    "empty": "No customers yet. Add one, or import a CSV file.",
+    "emptyArchived": "No archived customers.",
+    "noMatches": "No customers match “{q}”.",
+    "nextPage": "Next page",
+    "firstPage": "Back to the start",
+    "archived": "Archived",
+    "owes": "Owes {amount}",
+    "advance": "Advance {amount}",
+    "newTitle": "Add customer",
+    "editTitle": "Edit customer",
+    "back": "All customers",
+    "readOnly": "Only the owner and staff can change customers.",
+    "sections": {
+      "contact": "Contact",
+      "gst": "GST",
+      "billing": "Billing address",
+      "shipping": "Shipping address (if different)",
+      "balance": "Opening balance and credit"
+    },
+    "fields": {
+      "name": "Customer name",
+      "phone": "Phone (optional)",
+      "email": "Email (optional)",
+      "gstin": "GSTIN (optional)",
+      "addressLine1": "Address (optional)",
+      "addressLine2": "Address line 2 (optional)",
+      "city": "City or town (optional)",
+      "pincode": "PIN code (optional)",
+      "billingState": "Billing state",
+      "shippingState": "Shipping state",
+      "balanceType": "Opening balance",
+      "openingBalance": "Amount (₹)",
+      "creditDays": "Credit days",
+      "stateOverride": "I've checked: keep this state",
+      "confirmDuplicatePhone": "Save anyway",
+      "shippingAddressLine1": "Shipping address",
+      "shippingAddressLine2": "Shipping address line 2",
+      "shippingCity": "Shipping city or town",
+      "shippingPincode": "Shipping PIN code"
+    },
+    "hints": {
+      "gstin": "For a registered business. The state fills in from it.",
+      "billingState": "Decides CGST + SGST or IGST on invoices. Leave empty for a walk-in customer.",
+      "openingBalance": "What was owed before you started using Galla.",
+      "creditDays": "Days until an invoice is due. 0 means on the spot.",
+      "stateMismatch": "This state is different from the state in the GSTIN. Tick only if the customer really bills from here."
+    },
+    "balanceTypes": {
+      "OWES": "Customer owes you",
+      "ADVANCE": "Advance paid to you"
+    },
+    "chooseState": "No state",
+    "duplicateTitle": "Someone already has this phone number",
+    "duplicateBody": "Check it isn't the same customer:",
+    "saveAnyway": "Save anyway",
+    "create": "Add customer",
+    "save": "Save changes",
+    "saved": "Saved.",
+    "archive": "Archive",
+    "restore": "Restore",
+    "archiveHint": "Archived customers are hidden from lists and new invoices. Their past invoices are not changed.",
+    "archivedNotice": "This customer is archived.",
+    "restoreConflict": "Another active customer now has this GSTIN. Change one of them first."
   }
 }

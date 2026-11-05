@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import { ConflictError, NotFoundError, ValidationError } from "@/lib/errors";
 import {
+  buildImportReport,
   duplicatesInFile,
   type ImportIssue,
   type ImportReport as Report,
@@ -9,10 +10,10 @@ import {
   readImportRows,
   validateImportRows,
 } from "@/lib/validation/csv-import";
+import { listQuerySchema } from "@/lib/validation/list-query";
 import {
   type CatalogOptions,
   type ImportPreviewRow,
-  listQuerySchema,
   PRODUCT_CSV_COLUMNS,
   PRODUCT_CSV_REQUIRED,
   PRODUCT_FIELD_COLUMNS,
@@ -54,10 +55,6 @@ import { parseInput } from "./validate";
 export type { ImportPreviewRow, Product };
 
 export const PRODUCTS_PAGE_SIZE = 50;
-/** Rows of the file shown in the import preview. */
-const PREVIEW_SAMPLE_SIZE = 20;
-/** Issues sent back to the browser; the count says how many there were in all. */
-const MAX_REPORTED_ISSUES = 200;
 const SKU_UNIQUE = "products_business_id_sku_unique";
 
 const AUDITED_FIELDS = [
@@ -260,21 +257,14 @@ function report(
   valid: { line: number; value: ProductInput }[],
   issues: ImportIssue[],
 ): ImportReport {
-  const sorted = [...issues].sort((a, b) => (a.line ?? 0) - (b.line ?? 0));
-  return {
-    total,
-    valid: valid.length,
-    issueCount: sorted.length,
-    issues: sorted.slice(0, MAX_REPORTED_ISSUES),
-    sample: valid.slice(0, PREVIEW_SAMPLE_SIZE).map(({ line, value }) => ({
-      line,
-      name: value.name,
-      unit: value.unit,
-      price: formatINR(value.pricePaise),
-      rate: formatRatePercent(value.rateBp),
-      sku: value.sku,
-    })),
-  };
+  return buildImportReport(total, valid, issues, [], ({ line, value }) => ({
+    line,
+    name: value.name,
+    unit: value.unit,
+    price: formatINR(value.pricePaise),
+    rate: formatRatePercent(value.rateBp),
+    sku: value.sku,
+  }));
 }
 
 /** Reads and checks the whole file against this business's products. Writes nothing. */

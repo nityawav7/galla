@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 import { type GstinInvalidReason } from "@/server/domain/gstin";
+import { normalizeIndianPhone } from "@/server/domain/phone";
 
 import { type ValidationKey } from "./messages";
 
@@ -12,6 +13,21 @@ export const requiredText = (max: number, error: ValidationKey) => text(max).min
 
 /** Empty becomes null, so saving a form can clear the field. */
 export const optionalText = (max: number) => text(max).transform((value) => value || null);
+
+/** An Indian phone number in any common format, stored as E.164; empty becomes null. */
+export const optionalPhone = z
+  .string()
+  .trim()
+  .refine((value) => !value || normalizeIndianPhone(value) !== null, { error: "phoneInvalid" })
+  .transform((value) => (value ? normalizeIndianPhone(value) : null));
+
+/** Lower-cased; empty becomes null. */
+export const optionalEmail = z
+  .string()
+  .trim()
+  .toLowerCase()
+  .refine((value) => !value || z.email().safeParse(value).success, { error: "emailInvalid" })
+  .transform((value) => value || null);
 
 export const GSTIN_ERRORS = {
   FORMAT: "gstinFormat",

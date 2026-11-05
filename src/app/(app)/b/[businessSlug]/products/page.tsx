@@ -7,7 +7,7 @@ import { ProductList } from "@/components/catalog/product-list";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { listQuerySchema } from "@/lib/validation/products";
+import { listQuerySchema } from "@/lib/validation/list-query";
 import { requireTenant } from "@/server/auth/session";
 import { can } from "@/server/authz/permissions";
 import { listProducts } from "@/server/services/product.service";

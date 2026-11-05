@@ -44,6 +44,9 @@ async function onboard(page: Page, shopName: string): Promise<string> {
 // At 360 px: onboarding is the first thing a shop owner sees, usually on a phone.
 test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, testInfo) => {
   onlyOn(testInfo, "mobile");
+  // One account walks through onboarding, members, products and customers (sign-ups are
+  // rate-limited), so this test runs longer than the 30 s default.
+  test.setTimeout(90_000);
   const shopName = `E2E Shop ${randomUUID().slice(0, 6)}`;
   await signUp(page, "E2E Owner");
   await onboard(page, shopName);
@@ -93,6 +96,10 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     await field(page, "SKU (optional)").fill("CEM-50");
     await page.getByRole("button", { name: "Add product" }).click();
     await expect(page).toHaveURL(/\/products$/);
+    // Next keeps visited pages mounted: opening the form again must start empty.
+    await page.getByRole("link", { name: "Add product" }).click();
+    await expect(field(page, "Product name")).toHaveValue("");
+    await page.getByRole("link", { name: "All products" }).click();
     await field(page, "Search products").fill("cemnt");
     await page.getByRole("button", { name: "Search", exact: true }).click();
     await expect(page.getByRole("link", { name: /Cement 50 kg/ })).toBeVisible();
@@ -123,6 +130,30 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     for (const name of ["Cement 50 kg", "Milk 1 L", "Nails", "Sand 1 bag"]) {
       await expect(page.getByRole("link", { name: new RegExp(name) })).toBeVisible();
     }
+  });
+
+  // Customers (SPEC F3).
+  await test.step("add a customer: the GSTIN fills the state; a shared phone asks first", async () => {
+    await page.getByRole("link", { name: "Customers", exact: true }).click();
+    await page.getByRole("link", { name: "Add customer" }).click();
+    await field(page, "Customer name").fill("Ramesh Traders");
+    await field(page, "Phone (optional)").fill("98765 43210");
+    await field(page, "GSTIN (optional)").fill("29AAACI1681G1ZL");
+    await expect(field(page, "Billing state")).toHaveValue("29");
+    await field(page, "Amount (₹)").fill("1500");
+    await page.getByRole("button", { name: "Add customer" }).click();
+    await expect(page).toHaveURL(/\/customers$/);
+    await expect(page.getByRole("link", { name: /Ramesh Traders/ })).toBeVisible();
+    await expect(page.getByText("Owes ₹1,500.00")).toBeVisible();
+
+    await page.getByRole("link", { name: "Add customer" }).click();
+    await field(page, "Customer name").fill("Ramesh Junior");
+    await field(page, "Phone (optional)").fill("9876543210");
+    await page.getByRole("button", { name: "Add customer" }).click();
+    await expect(page.getByText("Someone already has this phone number")).toBeVisible();
+    await page.getByRole("button", { name: "Save anyway" }).click();
+    await expect(page).toHaveURL(/\/customers$/);
+    await expect(page.getByRole("link", { name: /Ramesh Junior/ })).toBeVisible();
   });
 });
 

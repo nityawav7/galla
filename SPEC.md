@@ -214,8 +214,14 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 - **AC:** importing 500 rows takes < 10 s. Bad rows are reported with line numbers and nothing partial is committed.
 
 ### F3. Customers
-- Fields: name, phone (E.164, +91 default), email, GSTIN (validated), billing address and state, shipping address, opening balance, credit days (for the due date).
-- Duplicate detection on phone and GSTIN. CSV import.
+- Fields: name, phone (E.164, +91 default), email, GSTIN (validated), billing address and state, shipping address, opening balance, credit days (for the due date). Only the name is required, so a walk-in customer needs nothing else.
+- A valid GSTIN fills the billing state. A different state is refused unless the user ticks "keep this state" (SPEC §4.1), and that override is recorded in the audit log. A CSV file can't override it.
+- The opening balance is entered as "customer owes you" or "advance paid to you" plus an amount, and stored signed (negative means an advance). In a CSV, a negative amount means an advance. Credit days run from 0 to 365.
+- Duplicate detection:
+  - A GSTIN identifies one active customer per business, so a second one is refused.
+  - A phone number may be shared (families, shops), so the form names the other customers who have it and asks "Save anyway". In an import it is a warning that doesn't block.
+- The list works like products: A–Z, cursor pages, archive and restore. Search finds a name with typos, phone digits (4 or more) and a GSTIN prefix.
+- CSV import is the same as for products ([ADR 0005](docs/adr/0005-csv-import.md)). States may be written as a code (`27`, `7`) or a name (`Maharashtra`).
 - **AC:** an invalid GSTIN checksum is rejected with a clear message. The state auto-fills from the GSTIN.
 
 ### F4. Invoice builder (the most important screen; mobile-first)

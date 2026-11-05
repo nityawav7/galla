@@ -4,9 +4,14 @@ import { closeDb, getDb } from "@/server/db/client";
 import { insertAuditLog, listAuditLogs } from "@/server/db/repos/audit.repo";
 import { getCurrentBusiness } from "@/server/db/repos/businesses.repo";
 import {
+  archiveCustomer,
+  findCustomersByGstins,
   findCustomersByPhone,
+  findCustomersByPhones,
   insertCustomer,
+  insertCustomers,
   listCustomers,
+  restoreCustomer,
 } from "@/server/db/repos/customers.repo";
 import {
   archiveProduct,
@@ -169,6 +174,51 @@ describe("customers repo", () => {
     expect((await listCustomers(db(), tenant.ctx, { search: "rav" })).map((c) => c.name)).toEqual([
       "Ravi",
     ]);
+  });
+
+  it("finds customers by phone digits and GSTIN prefix, and pages A–Z", async () => {
+    const tenant = await createTenant();
+    const [asha, ravi] = await insertCustomers(db(), tenant.ctx, [
+      { name: "Asha", phoneE164: "+919833333333" },
+      { name: "Ravi", gstin: "29AAACI1681G1ZL" },
+      { name: "Bina" },
+    ]);
+    const names = async (search: string) =>
+      (await listCustomers(db(), tenant.ctx, { search })).map((c) => c.name);
+    expect(await names("98333 33333")).toEqual(["Asha"]);
+    expect(await names("333")).toEqual([]); // too few digits to search phones
+    expect(await names("29aaaci")).toEqual(["Ravi"]);
+
+    const first = await listCustomers(db(), tenant.ctx, { limit: 2 });
+    expect(first.map((c) => c.name)).toEqual(["Asha", "Bina"]);
+    const last = first.at(-1);
+    const next = await listCustomers(db(), tenant.ctx, {
+      limit: 2,
+      after: last ? { name: last.name, id: last.id } : undefined,
+    });
+    expect(next.map((c) => c.name)).toEqual(["Ravi"]);
+
+    expect(
+      (await findCustomersByGstins(db(), tenant.ctx, ["29AAACI1681G1ZL"])).map((c) => c.id),
+    ).toEqual([ravi?.id]);
+    expect(
+      (await findCustomersByPhones(db(), tenant.ctx, ["+919833333333"])).map((c) => c.id),
+    ).toEqual([asha?.id]);
+    expect(await findCustomersByGstins(db(), tenant.ctx, [])).toEqual([]);
+    expect(await findCustomersByPhones(db(), tenant.ctx, [])).toEqual([]);
+    expect(await insertCustomers(db(), tenant.ctx, [])).toEqual([]);
+  });
+
+  it("leaves the edited customer out of phone matches, and restores archived ones", async () => {
+    const tenant = await createTenant();
+    const phone = "+919844444444";
+    const asha = await insertCustomer(db(), tenant.ctx, { name: "Asha", phoneE164: phone });
+    expect(await findCustomersByPhone(db(), tenant.ctx, phone, asha.id)).toEqual([]);
+    expect(await restoreCustomer(db(), tenant.ctx, asha.id)).toBeUndefined();
+    await archiveCustomer(db(), tenant.ctx, asha.id);
+    expect(await findCustomersByPhone(db(), tenant.ctx, phone)).toEqual([]);
+    expect(await listCustomers(db(), tenant.ctx, { archivedOnly: true })).toHaveLength(1);
+    expect((await restoreCustomer(db(), tenant.ctx, asha.id))?.archivedAt).toBeNull();
   });
 });
 
