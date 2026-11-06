@@ -62,6 +62,7 @@ export interface InvoiceAmounts {
   totals: InvoiceTotals;
 }
 
+/** Issue messages are `validation.*` keys, so the invoice builder can show them as they are. */
 function invalid(issues: FieldIssue[]): ValidationError {
   return new ValidationError("Check the highlighted line values", issues);
 }
@@ -69,16 +70,16 @@ function invalid(issues: FieldIssue[]): ValidationError {
 function validateLineFields(line: LineInput): void {
   const issues: FieldIssue[] = [];
   if (line.qtyMilli <= 0n) {
-    issues.push({ path: "qtyMilli", message: "Quantity must be more than 0" });
+    issues.push({ path: "qtyMilli", message: "qtyPositive" });
   }
   if (line.unitPricePaise < 0n) {
-    issues.push({ path: "unitPricePaise", message: "Price cannot be negative" });
+    issues.push({ path: "unitPricePaise", message: "priceInvalid" });
   }
   if (!Number.isInteger(line.rateBp) || line.rateBp < 0 || line.rateBp > MAX_RATE_BP) {
-    issues.push({ path: "rateBp", message: "Choose a valid tax rate" });
+    issues.push({ path: "rateBp", message: "rateRequired" });
   }
   if (line.discountPaise < 0n) {
-    issues.push({ path: "discountPaise", message: "Discount cannot be negative" });
+    issues.push({ path: "discountPaise", message: "discountInvalid" });
   }
   if (issues.length > 0) throw invalid(issues);
 }
@@ -95,9 +96,7 @@ export function computeLine(line: LineInput, taxMode: TaxMode): LineAmounts {
       : grossPaise;
 
   if (line.discountPaise > taxableBeforeDiscountPaise) {
-    throw invalid([
-      { path: "discountPaise", message: "Discount cannot be more than the line value before tax" },
-    ]);
+    throw invalid([{ path: "discountPaise", message: "discountTooLarge" }]);
   }
   const taxablePaise = taxableBeforeDiscountPaise - line.discountPaise;
 

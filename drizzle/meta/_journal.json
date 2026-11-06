@@ -36,6 +36,20 @@
       "when": 1793786792286,
       "tag": "0004_catalog_list_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793948357224,
+      "tag": "0005_invoice_issue",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1793948368342,
+      "tag": "0006_immutable_documents",
+      "breakpoints": true
     }
   ]
 }

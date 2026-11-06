@@ -27,7 +27,7 @@ const HSN_MISSING_ZERO = /^[0-9]{3}([0-9]{2}){0,2}$/;
 const SKU = /^[A-Za-z0-9._/-]+$/;
 const CURRENCY_PREFIX = /^(₹|rs\.?)\s*/i;
 
-const hsnSac = z
+export const hsnSac = z
   .string()
   .trim()
   .superRefine((value, ctx) => {
@@ -39,7 +39,7 @@ const hsnSac = z
   })
   .transform((value) => value || null);
 
-const price = z
+export const price = z
   .string()
   .trim()
   .transform((value) => value.replace(CURRENCY_PREFIX, ""))

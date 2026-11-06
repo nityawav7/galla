@@ -5,23 +5,12 @@ import { milli, paise } from "./common";
 
 // Columns and CHECKs shared by invoices and credit notes (same shape, SPEC §7.4).
 
-export interface AddressSnapshot {
-  line1: string | null;
-  line2: string | null;
-  city: string | null;
-  pincode: string | null;
-  stateCode: string | null;
-}
-
-/** The customer as printed on an issued document; later edits to the customer never change it. */
-export interface CustomerSnapshot {
-  name: string;
-  gstin: string | null;
-  phoneE164: string | null;
-  email: string | null;
-  billing: AddressSnapshot | null;
-  shipping: AddressSnapshot | null;
-}
+// Relative import: drizzle-kit loads this file without the "@/" path alias. Types only.
+export type {
+  AddressSnapshot,
+  CustomerSnapshot,
+  SupplierSnapshot,
+} from "../../domain/invoice/snapshot";
 
 export const documentTotals = () => ({
   discountPaise: paise()

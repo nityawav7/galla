@@ -156,13 +156,16 @@ Invoice totals are **sums of the line values** (never recomputed from aggregates
 - The number is assigned **only when issuing** (drafts have none). Numbers are **consecutive and gapless per business, per series, per FY**.
 - Format: `{prefix}/{FY}/{seq}`, for example `GAL/26-27/0042`. **Max 16 characters**, allowed characters `A–Z a–z 0–9 - /` (Rule 46). Validate the prefix length so the full number always fits.
 - Series: `INV` (tax invoice / bill of supply) and `CN` (credit notes), each with its own counter. Both prefixes are set by the business (defaults `INV` and `CN`), are 1–5 letters, digits or hyphens, and must differ (ignoring case), e.g. `CN/26-27/0001`. A 5-character prefix fits 9,999 documents per FY; shorter prefixes fit more.
-- **Concurrency-safe:** use a `number_sequences` row locked with `SELECT … FOR UPDATE` (or `UPDATE … RETURNING`) inside the same transaction that issues the invoice. An integration test fires 50 parallel issues and asserts the resulting numbers are unique and gapless.
+- **Concurrency-safe:** the `number_sequences` row is incremented with one upsert (`INSERT … ON CONFLICT DO UPDATE … RETURNING`), which also locks it, as the last step of the transaction that issues the invoice ([ADR 0006](docs/adr/0006-gapless-numbering-and-immutable-invoices.md)). A rollback gives the number back. An integration test fires 50 parallel issues and asserts the resulting numbers are unique and gapless.
+- The invoice date is the day it is issued, in IST; there is no backdating in v1, so numbers stay in date order.
 - Cancelled invoices **keep** their number. Numbers are never reused.
 
 ### 4.7 Mandatory invoice contents (Rule 46, verify)
 Supplier name, address and GSTIN; invoice number and date; recipient name and address, and GSTIN if registered; for unregistered recipients with value ≥ ₹50,000, recipient name, address and state; place of supply (state name and code) for inter-state; HSN/SAC, description, quantity and unit (UQC), taxable value, rate and amount of each tax; total; "Whether tax is payable on reverse charge: No"; signature (image or "Authorised Signatory"). Also print the amount in words using the Indian system (lakh, crore), in English in v1: "Rupees One Lakh Twenty Thousand and Fifty Paise Only".
 
-**HSN digits:** a business with AATO ≤ ₹5 cr needs a 4-digit HSN on B2B invoices; above that, 6 digits (verify). Enforce this with a business-level setting.
+**HSN digits:** a business with AATO ≤ ₹5 cr needs a 4-digit HSN on B2B invoices; above that, 6 digits (verify). Enforce this with a business-level setting. Issuing checks it: with 4, every line to a registered customer needs an HSN; with 6, every line needs at least 6 digits. A Bill of Supply follows the same rule, a plain Invoice from an unregistered business never needs one (CA question 5 in `docs/golden-fixtures.md`).
+
+**Unregistered recipients at ₹50,000 or more:** issuing needs a customer with name, billing address and state, so such a sale can't be a walk-in. The invoice total is compared, and the amount lives in config (CA question 4).
 
 **Composition scheme:** the title is "Bill of Supply" with the line "Composition taxable person, not eligible to collect tax on supplies".
 
@@ -173,9 +176,11 @@ DRAFT ──issue──▶ ISSUED ──payment──▶ PARTIALLY_PAID ──pa
  delete          cancel (owner, reason required) ──▶ CANCELLED
                     └─ credit note (full/partial) reduces balance
 ```
-- **Issued invoices are immutable.** Corrections are made by cancelling or issuing a credit note. Every change is written to the audit log.
+- **Issued invoices are immutable.** Corrections are made by cancelling or issuing a credit note. Every change is written to the audit log. Database triggers refuse any other change to an issued invoice or its lines, and any change to a credit note.
+- A draft is a working copy (`invoices.draft`, JSON) that may hold half-typed lines. Its lines become `invoice_lines` snapshots when it is issued. Creating and deleting a draft are audited; autosaves are not, because the issue row records the final invoice.
 - `OVERDUE` is **derived** (due_date < today in IST, and balance > 0), not stored.
-- `balance = grand_total − Σ payments allocated − Σ credit notes`.
+- `balance = grand_total − Σ payments allocated − Σ credit notes`. The invoice keeps `amount_paid_paise` and `amount_credited_paise`, and a CHECK keeps their sum within the grand total.
+- `CREDITED` (balance cleared by credit notes only) is also derived for display.
 
 ### 4.9 Udhaar / customer ledger
 - Ledger = opening balance + issued invoices − payments − credit notes, in date order with a running balance.
@@ -228,7 +233,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 - Pick or create a customer inline; add lines by searching products (or typing a one-off item); edit qty, price and discount; totals update live.
 - Place of supply and tax type are shown automatically ("Intra-state: CGST + SGST") with an override.
 - Keyboard-friendly on desktop and thumb-friendly on mobile. Autosave drafts.
-- "Issue" assigns the number and locks the invoice. A confirmation sheet offers: Share on WhatsApp, Copy link, Download PDF, Print, Record payment.
+- "Issue" assigns the number and locks the invoice. A warning that is allowed but needs a second look (an unregistered business billing another state) must be ticked first. A confirmation sheet offers: Share on WhatsApp, Copy link, Download PDF, Print, Record payment.
 - **AC:** the e2e test creates and issues an invoice with 3 lines (one tax-inclusive, one with a discount, one fractional qty). The totals match the expected fixture to the paisa.
 
 ### F5. PDF & public link
@@ -384,7 +389,7 @@ All tenant tables have: `id uuid pk (v7)`, `business_id uuid not null fk`, `crea
 | `products` | name, hsn_sac, unit, price_paise, rate_bp, price_includes_tax, sku, archived_at |
 | `customers` | name, phone_e164, email, gstin, billing_* , billing_state_code, shipping_* , opening_balance_paise, credit_days, archived_at |
 | `number_sequences` | business_id, series (`INV`/`CN`), fy (`26-27`), next_value — **unique(business_id, series, fy)** |
-| `invoices` | type (`TAX_INVOICE`/`BILL_OF_SUPPLY`/`INVOICE`), status, number (nullable until issued; **unique(business_id, number)**), fy, invoice_date (date), due_date, customer_id, **customer snapshot JSON** (name, GSTIN, addresses as at issue), place_of_supply_state_code, is_inter_state, reverse_charge (false), discount, taxable, cgst, sgst, utgst, igst, round_off, grand_total, amount_paid (all `_paise`), notes, public_token (unique), token_revoked_at, issued_at, cancelled_at, cancel_reason, version |
+| `invoices` | type (`TAX_INVOICE`/`BILL_OF_SUPPLY`/`INVOICE`), status, number (nullable until issued; **unique(business_id, number)**), fy, invoice_date (date), due_date, customer_id, **customer snapshot JSON** (name, GSTIN, addresses as at issue), **supplier snapshot JSON** (the business as printed), draft (JSON working copy, drafts only), place_of_supply_state_code, is_inter_state, reverse_charge (false), discount, taxable, cgst, sgst, utgst, igst, round_off, grand_total, amount_paid, amount_credited (all `_paise`), notes, public_token (unique), token_revoked_at, issued_at, cancelled_at, cancel_reason, version |
 | `invoice_lines` | invoice_id, position, product_id (nullable), **snapshot**: description, hsn_sac, unit, qty_milli, unit_price_paise, price_includes_tax, discount_paise, rate_bp, taxable, cgst, sgst, utgst, igst, line_total |
 | `credit_notes` (+ lines) | same shape, linked `invoice_id`, reason, own CN number series. Issued directly (no drafts), so number, fy and snapshot are always set |
 | `payments` | customer_id, date, amount_paise, mode, reference, notes |

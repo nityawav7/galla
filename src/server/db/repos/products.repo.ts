@@ -106,6 +106,19 @@ export async function restoreProduct(
   return row;
 }
 
+/** Products by id (archived ones too: a draft may still hold one), for invoice lines. */
+export async function findProductsByIds(
+  db: Executor,
+  ctx: TenantContext,
+  ids: readonly string[],
+): Promise<Product[]> {
+  if (ids.length === 0) return [];
+  return db
+    .select()
+    .from(products)
+    .where(tenantScope(ctx, products, inArray(products.id, [...ids])));
+}
+
 /** Active products holding any of these SKUs (import duplicate check). */
 export async function findProductsBySkus(
   db: Executor,

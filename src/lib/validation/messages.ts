@@ -50,6 +50,21 @@ export const VALIDATION_KEYS = [
   "balanceInvalid",
   "creditDaysInvalid",
   "phoneDuplicate",
+  "qtyPositive",
+  "qtyInvalid",
+  "qtyTooHigh",
+  "discountInvalid",
+  "discountTooLarge",
+  "compositionInterState",
+  "hsnRequired",
+  "hsnSixDigitsRequired",
+  "recipientDetailsRequired",
+  "invoiceLinesRequired",
+  "lineDescriptionRequired",
+  "invoiceTooManyLines",
+  "dueDateInvalid",
+  "dueDateBeforeInvoiceDate",
+  "placeOfSupplyInvalid",
 ] as const;
 
 export type ValidationKey = (typeof VALIDATION_KEYS)[number];

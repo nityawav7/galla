@@ -22,6 +22,7 @@ import {
   documentTotals,
   lineChecks,
   lineSnapshot,
+  type SupplierSnapshot,
 } from "./document-columns";
 import { invoices } from "./invoices";
 import { states } from "./reference";
@@ -44,6 +45,7 @@ export const creditNotes = pgTable(
     noteDate: date({ mode: "string" }).notNull(),
     reason: text().notNull(),
     customerSnapshot: jsonb().$type<CustomerSnapshot>().notNull(),
+    supplierSnapshot: jsonb().$type<SupplierSnapshot>().notNull(),
     placeOfSupplyStateCode: text()
       .notNull()
       .references(() => states.code, { onDelete: "restrict" }),

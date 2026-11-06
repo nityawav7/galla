@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import { ValidationError } from "@/lib/errors";
 import {
+  addDays,
   fyForDate,
   fyForInstant,
   fyRange,
@@ -99,5 +100,26 @@ describe("isValidIsoDate", () => {
     expect(isValidIsoDate("2028-02-29")).toBe(true);
     expect(isValidIsoDate("2100-02-29")).toBe(false);
     expect(isValidIsoDate("2000-02-29")).toBe(true);
+  });
+});
+
+describe("addDays", () => {
+  it.each([
+    ["2026-03-30", 3, "2026-04-02"],
+    ["2026-12-31", 1, "2027-01-01"],
+    ["2028-02-28", 1, "2028-02-29"],
+    ["2027-02-28", 1, "2027-03-01"],
+    ["2026-06-15", 0, "2026-06-15"],
+    ["2026-06-15", 365, "2027-06-15"],
+  ])("%s + %i days is %s", (date, days, expected) => {
+    expect(addDays(date, days)).toBe(expected);
+  });
+
+  it.each([
+    ["2026-02-30", 1],
+    ["nope", 1],
+    ["2026-06-15", 1.5],
+  ])("rejects %s + %s", (date, days) => {
+    expect(() => addDays(date, days)).toThrow(ValidationError);
   });
 });

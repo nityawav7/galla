@@ -48,6 +48,18 @@ export function istDateFromInstant(instant: Date): string {
   return new Date(time + IST_OFFSET_MS).toISOString().slice(0, 10);
 }
 
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+/** A calendar date plus whole days ("2026-03-30" + 3 → "2026-04-02"); used for due dates. */
+export function addDays(date: string, days: number): string {
+  const parts = parseIsoDateParts(date);
+  if (!parts || !Number.isSafeInteger(days)) {
+    throw new ValidationError("Enter a valid date", [{ path: "date", message: "Invalid date" }]);
+  }
+  const time = Date.UTC(parts.year, parts.month - 1, parts.day) + days * MS_PER_DAY;
+  return new Date(time).toISOString().slice(0, 10);
+}
+
 function twoDigits(year: number): string {
   return String(year % 100).padStart(2, "0");
 }

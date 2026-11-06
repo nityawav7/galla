@@ -74,3 +74,11 @@ What I learned and what broke while building Galla, phase by phase.
 - Docker Compose names its project after the folder. Running `pnpm db:up` from a git worktree started a second, empty Postgres (`customers-postgres-1`) instead of the usual `galla-postgres-1`. Start the existing container instead (`docker start galla-postgres-1`).
 - The Neon free plan allows 10 database branches, and every Vercel preview makes one. Merged PRs' preview branches have to be deleted, or the next preview fails with "Branch limit reached".
 - GitHub uses the PR title as the squash commit message, so the title should already be a Conventional Commit (`feat(customers): …`).
+
+## Phase 6a: drafts and issuing
+
+- A Postgres upsert (`INSERT … ON CONFLICT DO UPDATE … RETURNING`) both creates a missing counter and locks it until commit, so it replaces "SELECT … FOR UPDATE, then INSERT if missing", which races when two issues start a new financial year at once.
+- Taking the number as the _last_ step of the issue transaction keeps the counter locked for a few milliseconds instead of the whole issue.
+- `to_jsonb(NEW) - ARRAY[...]` compares a whole row except some columns in a trigger, so a column added later is protected without touching the trigger.
+- New CHECK constraints fail on rows written before them. The migration backfills old test and dev rows first, then adds the constraint.
+- Python's text mode on Windows writes CRLF. Writing files with `newline=""` keeps them LF, which Prettier and git expect.
