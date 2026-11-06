@@ -21,3 +21,8 @@ export function violatedConstraint(error: unknown): string | undefined {
 export function isUniqueViolation(error: unknown, constraint: string): boolean {
   return postgresField(error, "code") === "23505" && violatedConstraint(error) === constraint;
 }
+
+/** True when a trigger refused to change an issued document (restrict_violation, ADR 0006). */
+export function isImmutableViolation(error: unknown): boolean {
+  return postgresField(error, "code") === "23001";
+}

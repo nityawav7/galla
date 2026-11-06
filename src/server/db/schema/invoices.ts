@@ -17,14 +17,17 @@ import {
 import { businesses } from "./businesses";
 import { customers, products } from "./catalog";
 import { audited, id, paise } from "./common";
+// Relative import: drizzle-kit loads schema files without the "@/" path alias. Type only.
 import {
   type CustomerSnapshot,
   documentChecks,
   documentTotals,
   lineChecks,
   lineSnapshot,
+  type SupplierSnapshot,
 } from "./document-columns";
 import { states } from "./reference";
+import { type InvoiceDraft } from "../../../lib/validation/invoices";
 
 export const DOCUMENT_SERIES = ["INV", "CN"] as const;
 export const INVOICE_TYPES = ["TAX_INVOICE", "BILL_OF_SUPPLY", "INVOICE"] as const;
@@ -69,6 +72,10 @@ export const invoices = pgTable(
     /** Null for a walk-in customer. */
     customerId: uuid(),
     customerSnapshot: jsonb().$type<CustomerSnapshot>(),
+    /** The business as printed, copied at issue (Rule 46 supplier fields). */
+    supplierSnapshot: jsonb().$type<SupplierSnapshot>(),
+    /** The builder's working copy; only drafts have one. Lines are written at issue (ADR 0006). */
+    draft: jsonb().$type<InvoiceDraft>(),
     placeOfSupplyStateCode: text()
       .notNull()
       .references(() => states.code, { onDelete: "restrict" }),
@@ -76,6 +83,10 @@ export const invoices = pgTable(
     reverseCharge: boolean().notNull().default(false),
     ...documentTotals(),
     amountPaidPaise: paise()
+      .notNull()
+      .default(sql`0`),
+    /** Σ credit notes against this invoice, kept under the invoice row lock. */
+    amountCreditedPaise: paise()
       .notNull()
       .default(sql`0`),
     notes: text(),
@@ -107,9 +118,10 @@ export const invoices = pgTable(
       sql`${t.type} = 'TAX_INVOICE' or (${t.cgstPaise} = 0 and ${t.sgstPaise} = 0 and ${t.utgstPaise} = 0 and ${t.igstPaise} = 0)`,
     ),
     ...documentChecks("invoices", t),
+    // balance = grand total − paid − credited never goes below zero (SPEC §4.8).
     check(
-      "invoices_amount_paid_range",
-      sql`${t.amountPaidPaise} >= 0 and ${t.amountPaidPaise} <= ${t.grandTotalPaise}`,
+      "invoices_settled_range",
+      sql`${t.amountPaidPaise} >= 0 and ${t.amountCreditedPaise} >= 0 and ${t.amountPaidPaise} + ${t.amountCreditedPaise} <= ${t.grandTotalPaise}`,
     ),
     // Drafts have no number; everything issued has a number, FY and issue time.
     check("invoices_number_iff_issued", sql`(${t.status} = 'DRAFT') = (${t.number} is null)`),
@@ -119,6 +131,11 @@ export const invoices = pgTable(
       "invoices_snapshot_when_issued",
       sql`${t.status} = 'DRAFT' or ${t.customerSnapshot} is not null`,
     ),
+    check(
+      "invoices_supplier_snapshot_when_issued",
+      sql`${t.status} = 'DRAFT' or ${t.supplierSnapshot} is not null`,
+    ),
+    check("invoices_draft_iff_draft", sql`(${t.status} = 'DRAFT') = (${t.draft} is not null)`),
     check("invoices_number_format", sql`${t.number} ~ '^[A-Za-z0-9/-]{1,16}$'`),
     check("invoices_fy_format", sql`${t.fy} ~ '^[0-9]{2}-[0-9]{2}$'`),
     check(
@@ -135,6 +152,12 @@ export const invoices = pgTable(
     index("invoices_business_id_created_at_idx").on(t.businessId, t.createdAt),
     index("invoices_business_id_status_idx").on(t.businessId, t.status),
     index("invoices_business_id_invoice_date_idx").on(t.businessId, t.invoiceDate),
+    // Keyset pages of the invoice list: newest date first, id breaks ties.
+    index("invoices_business_id_invoice_date_id_idx").on(t.businessId, t.invoiceDate, t.id),
+    // Overdue filter: only invoices that can still owe money.
+    index("invoices_business_id_due_date_open_idx")
+      .on(t.businessId, t.dueDate)
+      .where(sql`${t.status} in ('ISSUED', 'PARTIALLY_PAID')`),
     index("invoices_business_id_customer_id_idx").on(t.businessId, t.customerId),
     index("invoices_place_of_supply_state_code_idx").on(t.placeOfSupplyStateCode),
   ],

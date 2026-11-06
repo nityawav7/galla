@@ -1,6 +1,27 @@
 # Runbook
 
-To be written in Phase 11: rolling back a deploy, restoring the database, rotating secrets, and handling invoice numbers out of sequence (SPEC §6.4).
+To be written in Phase 11: rolling back a deploy, restoring the database and rotating secrets (SPEC §6.4).
+
+## Invoice numbers out of sequence
+
+Numbers are assigned only when issuing, from `number_sequences` (one row per business, series `INV`/`CN` and FY), in the same transaction as the invoice ([ADR 0006](adr/0006-gapless-numbering-and-immutable-invoices.md)). A failed issue rolls the counter back, so gaps should never happen.
+
+If someone reports a gap or a duplicate:
+
+1. **Never edit or delete an issued invoice or a number.** The database refuses it anyway (SQLSTATE `23001`). Cancelled invoices keep their number on purpose.
+2. Compare the counter with what was issued, in the Neon SQL editor (replace the business id):
+   ```sql
+   select s.series, s.fy, s.next_value - 1 as last_taken,
+          count(i.id) as issued, max(split_part(i.number, '/', 3)::int) as highest
+   from number_sequences s
+   left join invoices i on i.business_id = s.business_id and i.fy = s.fy
+     and s.series = 'INV' and i.status <> 'DRAFT'
+   where s.business_id = '<business id>'
+   group by s.series, s.fy, s.next_value;
+   ```
+   For `INV`, `last_taken`, `issued` and `highest` should be equal.
+3. A "gap" the owner sees is usually a changed prefix (the counter continues across prefixes), a new FY starting at 0001, or a cancelled invoice. Explain it; don't fix it.
+4. If the counter really is behind the highest number (only possible after a manual database change), set `next_value` to `highest + 1` in a transaction, and write down why in `docs/learning-log.md`. Never lower it.
 
 ## E2E after deploys
 

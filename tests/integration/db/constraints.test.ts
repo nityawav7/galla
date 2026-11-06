@@ -1,9 +1,13 @@
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { EMPTY_DRAFT } from "@/lib/validation/invoices";
 import { closeDb, getDb } from "@/server/db/client";
+import { isImmutableViolation } from "@/server/db/errors";
 import {
   businesses,
+  creditNoteLines,
+  creditNotes,
   customers,
   invoiceLines,
   invoices,
@@ -12,6 +16,7 @@ import {
   payments,
   products,
   remindersSent,
+  type SupplierSnapshot,
 } from "@/server/db/schema";
 
 import { expectViolation } from "../support/db-errors";
@@ -55,9 +60,23 @@ function draftInvoice(overrides: Partial<InvoiceInsert> = {}): InvoiceInsert {
     invoiceDate: "2026-11-02",
     placeOfSupplyStateCode: "27",
     isInterState: false,
+    draft: EMPTY_DRAFT,
     ...overrides,
   };
 }
+
+const SUPPLIER: SupplierSnapshot = {
+  legalName: "Test Traders",
+  tradeName: null,
+  gstin: "27AAPFU0939F1ZV",
+  gstScheme: "REGULAR",
+  stateCode: "27",
+  address: { line1: null, line2: null, city: null, pincode: null, stateCode: "27" },
+  phoneE164: null,
+  email: null,
+  logoUrl: null,
+  signatureUrl: null,
+};
 
 /** ₹100 @ 18% intra-state, issued: 100 + 9 + 9 = ₹118. */
 function issuedInvoice(overrides: Partial<InvoiceInsert> = {}): InvoiceInsert {
@@ -66,6 +85,8 @@ function issuedInvoice(overrides: Partial<InvoiceInsert> = {}): InvoiceInsert {
     number: `INV/26-27/${String(++lastNumber)}`,
     fy: "26-27",
     issuedAt: new Date(),
+    draft: null,
+    supplierSnapshot: SUPPLIER,
     customerSnapshot: {
       name: "Walk-in",
       gstin: null,
@@ -266,8 +287,12 @@ describe("invoices", () => {
     ["invoices_grand_total", { grandTotalPaise: 11799n }],
     ["invoices_round_off_range", { roundOffPaise: 51n, grandTotalPaise: 11851n }],
     ["invoices_round_off_range", { roundOffPaise: -50n, grandTotalPaise: 11750n }],
-    ["invoices_amount_paid_range", { amountPaidPaise: 11801n }],
-    ["invoices_amount_paid_range", { amountPaidPaise: -1n }],
+    ["invoices_settled_range", { amountPaidPaise: 11801n }],
+    ["invoices_settled_range", { amountPaidPaise: -1n }],
+    ["invoices_settled_range", { amountCreditedPaise: -1n }],
+    ["invoices_settled_range", { amountPaidPaise: 6000n, amountCreditedPaise: 5801n }],
+    ["invoices_supplier_snapshot_when_issued", { supplierSnapshot: null }],
+    ["invoices_draft_iff_draft", { draft: EMPTY_DRAFT }],
     ["invoices_amounts_non_negative", { taxablePaise: -100n, grandTotalPaise: 1700n }],
     [
       "invoices_cancelled_at_iff_cancelled",
@@ -522,3 +547,153 @@ describe("tenant rows", () => {
     expect(a.openingBalancePaise).toBe(0n);
   });
 });
+
+describe("immutability triggers (ADR 0006)", () => {
+  async function issuedWithLine(): Promise<string> {
+    // Lines go in while the invoice is a draft, then it is issued, as invoice.service does.
+    const id = await insertInvoice(draftInvoice());
+    await db().insert(invoiceLines).values(line(id));
+    const issued = issuedInvoice();
+    await db()
+      .update(invoices)
+      .set({
+        status: "ISSUED",
+        number: issued.number,
+        fy: issued.fy,
+        issuedAt: issued.issuedAt,
+        draft: null,
+        supplierSnapshot: issued.supplierSnapshot,
+        customerSnapshot: issued.customerSnapshot,
+        taxablePaise: 10000n,
+        cgstPaise: 900n,
+        sgstPaise: 900n,
+        grandTotalPaise: 11800n,
+      })
+      .where(eq(invoices.id, id));
+    return id;
+  }
+
+  async function frozen(write: Promise<unknown>): Promise<void> {
+    const error = await write.then(
+      () => undefined,
+      (reason: unknown) => reason,
+    );
+    expect(isImmutableViolation(error), "expected the immutability trigger to refuse").toBe(true);
+  }
+
+  it.each<[string, Partial<InvoiceInsert>]>([
+    ["totals", { grandTotalPaise: 11900n, cgstPaise: 950n, sgstPaise: 950n }],
+    ["number", { number: "INV/26-27/9999" }],
+    ["invoice date", { invoiceDate: "2026-11-03" }],
+    ["customer snapshot", { customerSnapshot: null }],
+    ["notes", { notes: "changed" }],
+  ])("refuses to change the %s of an issued invoice", async (_what, patch) => {
+    const id = await issuedWithLine();
+    await frozen(db().update(invoices).set(patch).where(eq(invoices.id, id)));
+  });
+
+  it("refuses to move an issued invoice back to draft or un-cancel it", async () => {
+    const id = await issuedWithLine();
+    await frozen(
+      db()
+        .update(invoices)
+        .set({ status: "DRAFT", number: null, fy: null, issuedAt: null, draft: EMPTY_DRAFT })
+        .where(eq(invoices.id, id)),
+    );
+    await db()
+      .update(invoices)
+      .set({ status: "CANCELLED", cancelledAt: new Date(), cancelReason: "Wrong customer" })
+      .where(eq(invoices.id, id));
+    await frozen(
+      db()
+        .update(invoices)
+        .set({ status: "ISSUED", cancelledAt: null, cancelReason: null })
+        .where(eq(invoices.id, id)),
+    );
+  });
+
+  it("allows payment, credit and link changes on an issued invoice", async () => {
+    const id = await issuedWithLine();
+    await db()
+      .update(invoices)
+      .set({
+        status: "PARTIALLY_PAID",
+        amountPaidPaise: 5000n,
+        amountCreditedPaise: 1000n,
+        tokenRevokedAt: new Date(),
+        version: 3,
+        updatedAt: new Date(),
+      })
+      .where(eq(invoices.id, id));
+  });
+
+  it("refuses to delete an issued invoice", async () => {
+    const id = await issuedWithLine();
+    await frozen(db().delete(invoiceLines).where(eq(invoiceLines.invoiceId, id)));
+    await frozen(db().delete(invoices).where(eq(invoices.id, id)));
+  });
+
+  it("refuses to add, change or remove lines of an issued invoice", async () => {
+    const id = await issuedWithLine();
+    await frozen(
+      db()
+        .insert(invoiceLines)
+        .values(line(id, { position: 2 })),
+    );
+    await frozen(
+      db().update(invoiceLines).set({ description: "Other" }).where(eq(invoiceLines.invoiceId, id)),
+    );
+  });
+
+  it("lets a draft and its lines be deleted", async () => {
+    const id = await insertInvoice(draftInvoice());
+    await db().insert(invoiceLines).values(line(id));
+    await db().delete(invoiceLines).where(eq(invoiceLines.invoiceId, id));
+    await db().delete(invoices).where(eq(invoices.id, id));
+  });
+
+  it("credit notes and their lines are append-only", async () => {
+    const invoiceId = await issuedWithLine();
+    const [note] = await db()
+      .insert(creditNotes)
+      .values({
+        businessId: shop.business.id,
+        invoiceId,
+        number: `CN/26-27/${String(++lastNumber)}`,
+        fy: "26-27",
+        noteDate: "2026-11-03",
+        reason: "Goods returned",
+        customerSnapshot: walkIn(),
+        supplierSnapshot: SUPPLIER,
+        placeOfSupplyStateCode: "27",
+        isInterState: false,
+        taxablePaise: 10000n,
+        cgstPaise: 900n,
+        sgstPaise: 900n,
+        grandTotalPaise: 11800n,
+      })
+      .returning();
+    if (!note) throw new Error("no row");
+    const { invoiceId: _ignored, ...lineValues } = line(invoiceId);
+    await db()
+      .insert(creditNoteLines)
+      .values({ ...lineValues, creditNoteId: note.id });
+    await frozen(
+      db().update(creditNotes).set({ reason: "Other" }).where(eq(creditNotes.id, note.id)),
+    );
+    await frozen(db().delete(creditNotes).where(eq(creditNotes.id, note.id)));
+    await frozen(
+      db()
+        .update(creditNoteLines)
+        .set({ description: "x" })
+        .where(eq(creditNoteLines.creditNoteId, note.id)),
+    );
+    await frozen(
+      db().execute(sql`delete from credit_note_lines where credit_note_id = ${note.id}`),
+    );
+  });
+});
+
+function walkIn() {
+  return { name: "", gstin: null, phoneE164: null, email: null, billing: null, shipping: null };
+}

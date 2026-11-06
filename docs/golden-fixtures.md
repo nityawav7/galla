@@ -145,3 +145,7 @@ Taxable 1518.38, IGST 196.34, sub-total **1714.72**, round off **+0.28**, grand 
 1. Is code **97 Other Territory** charged UTGST? (Assumed yes.)
 2. An **unregistered** business billing a customer in another state is allowed with a warning (decided 30 Oct 2026), because a shop selling only exempt goods may legitimately be unregistered. Is a warning enough, or should it be blocked like composition?
 3. Rounding of each CGST/SGST half separately (fixture 08) versus rounding the total tax and splitting it: which do CAs expect? SPEC §4.5 says separate equal halves.
+4. **Rule 46, unregistered recipient:** above ₹50,000, the invoice must name the recipient with an address and state. Is the invoice total or the taxable value compared, and does it apply within the same state too? (Phase 6 compares the invoice total on every invoice to an unregistered buyer, the stricter reading. The amount is in `src/lib/gst-config.ts`.)
+5. **HSN digits:** with turnover up to ₹5 cr, a 4-digit HSN is required on B2B invoices only; above it, 6 digits on every invoice. Does this also apply to a Bill of Supply, and never to a plain Invoice from an unregistered business? (Assumed yes to both.)
+6. **Cancelling** an invoice whose month may already be in a filed GSTR-1: is a warning enough, or should it be blocked? (Phase 6c plans a warning.)
+7. **Credit-note time limit** (CGST Act s.34(2), 30 November after the FY ends): should the app warn after it? (No check in Phase 6c.)

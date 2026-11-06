@@ -51,7 +51,22 @@
     "gstinTaken": "Another customer already has this GSTIN",
     "balanceInvalid": "Enter an amount like 1500 or 1500.50",
     "creditDaysInvalid": "Enter a whole number of days from 0 to 365",
-    "phoneDuplicate": "Another customer has this phone number. Check it is not the same person"
+    "phoneDuplicate": "Another customer has this phone number. Check it is not the same person",
+    "qtyPositive": "Quantity must be more than 0",
+    "qtyInvalid": "Enter a quantity like 2 or 1.5 (up to 3 decimals)",
+    "qtyTooHigh": "Quantity is too large",
+    "discountInvalid": "Enter a discount like 10 or 10.50",
+    "discountTooLarge": "Discount can't be more than the line value before tax",
+    "compositionInterState": "A composition business can't bill a customer in another state",
+    "hsnRequired": "Add the HSN/SAC code: it's required on bills to GST-registered customers",
+    "hsnSixDigitsRequired": "Use a 6-digit (or 8-digit) HSN/SAC code",
+    "recipientDetailsRequired": "For bills of ₹50,000 or more to an unregistered buyer, choose a customer with name, address and state",
+    "invoiceLinesRequired": "Add at least one item",
+    "lineDescriptionRequired": "Enter the item name",
+    "invoiceTooManyLines": "An invoice can have at most 100 items",
+    "dueDateInvalid": "Enter a valid due date",
+    "dueDateBeforeInvoiceDate": "The due date can't be before the invoice date",
+    "placeOfSupplyInvalid": "Choose a valid place of supply"
   },
   "auth": {
     "fields": {
@@ -430,5 +445,12 @@
     "archiveHint": "Archived customers are hidden from lists and new invoices. Their past invoices are not changed.",
     "archivedNotice": "This customer is archived.",
     "restoreConflict": "Another active customer now has this GSTIN. Change one of them first."
+  },
+  "invoices": {
+    "errors": {
+      "invoiceAlreadyIssued": "This invoice is already issued and can't be changed",
+      "draftEditedElsewhere": "This draft was changed in another tab. Reload to see the latest version",
+      "customerArchived": "This customer is archived. Restore them or choose another customer"
+    }
   }
 }

@@ -8,4 +8,4 @@ export * from "./invoices";
 export * from "./notifications";
 export * from "./payments";
 export * from "./reference";
-export type { AddressSnapshot, CustomerSnapshot } from "./document-columns";
+export type { AddressSnapshot, CustomerSnapshot, SupplierSnapshot } from "./document-columns";

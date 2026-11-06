@@ -28,3 +28,30 @@ export function decodeCursor(text: string | undefined): NameCursor | undefined {
     return undefined;
   }
 }
+
+/** Keyset cursor for lists ordered by a date, newest first (invoices). */
+export interface DateCursor {
+  date: string;
+  id: string;
+}
+
+const dateCursorSchema = z.object({
+  date: z.iso.date(),
+  id: z.uuid(),
+});
+
+export function encodeDateCursor(cursor: DateCursor): string {
+  return Buffer.from(JSON.stringify({ date: cursor.date, id: cursor.id })).toString("base64url");
+}
+
+export function decodeDateCursor(text: string | undefined): DateCursor | undefined {
+  if (!text) return undefined;
+  try {
+    const result = dateCursorSchema.safeParse(
+      JSON.parse(Buffer.from(text, "base64url").toString()),
+    );
+    return result.success ? result.data : undefined;
+  } catch {
+    return undefined;
+  }
+}

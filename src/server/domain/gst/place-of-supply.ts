@@ -65,7 +65,7 @@ export function determinePlaceOfSupply(input: PlaceOfSupplyInput): PlaceOfSupply
   if (input.scheme === "COMPOSITION" && isInterState) {
     // CGST Act s.10(2)(c): composition taxpayers cannot make inter-state supplies of goods.
     throw new ValidationError("A composition business cannot bill a customer in another state", [
-      { path: "placeOfSupply", message: "Inter-state sale not allowed under composition" },
+      { path: "placeOfSupply", message: "compositionInterState" },
     ]);
   }
 
