@@ -46,7 +46,7 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
   onlyOn(testInfo, "mobile");
   // One account walks through onboarding, members, products and customers (sign-ups are
   // rate-limited), so this test runs longer than the 30 s default.
-  test.setTimeout(90_000);
+  test.setTimeout(150_000);
   const shopName = `E2E Shop ${randomUUID().slice(0, 6)}`;
   await signUp(page, "E2E Owner");
   await onboard(page, shopName);
@@ -155,6 +155,54 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     await expect(page).toHaveURL(/\/customers$/);
     await expect(page.getByRole("link", { name: /Ramesh Junior/ })).toBeVisible();
   });
+
+  // Invoices (SPEC F4 AC): 3 lines, totals to the paisa as tests/fixtures/invoices/11.
+  await test.step("build and issue a 3-line invoice that matches fixture 11", async () => {
+    await page.getByRole("link", { name: "Invoices", exact: true }).click();
+    await page.getByRole("link", { name: "New invoice" }).click();
+
+    await page.getByRole("button", { name: "Choose customer" }).click();
+    await field(page, "Search customers").fill("Ramesh Traders");
+    await page.getByRole("button", { name: /Ramesh Traders/ }).click();
+    await expect(page.getByTestId("tax-mode")).toHaveText("Inter-state: IGST");
+
+    const addProduct = async (search: string, name: RegExp) => {
+      await page.getByRole("button", { name: "Add item" }).click();
+      await field(page, "Search products").fill(search);
+      await page.getByRole("button", { name }).click();
+    };
+    // 1. A product with a discount before tax.
+    await addProduct("Cement", /^Cement 50 kg/);
+    const cement = page.getByRole("listitem", { name: "Item 1" });
+    await cement.getByLabel("Discount (before tax, ₹)").fill("20");
+    await expect(page.getByTestId("line-total-0")).toHaveText("₹472.00");
+    // 2. A fractional quantity.
+    await addProduct("Nails", /^Nails/);
+    await page.getByRole("listitem", { name: "Item 2" }).getByLabel("Qty").fill("1.5");
+    await expect(page.getByTestId("line-total-1")).toHaveText("₹212.40");
+    // 3. A one-off item whose price includes GST.
+    await page.getByRole("button", { name: "Add item" }).click();
+    await field(page, "Search products").fill("Paint 1 L");
+    await page.getByRole("button", { name: "Add “Paint 1 L” as a one-off item" }).click();
+    const paint = page.getByRole("listitem", { name: "Item 3" });
+    await paint.getByLabel("HSN/SAC").fill("3208");
+    await paint.getByLabel("Price (₹)").fill("590");
+    await paint.getByLabel("Price includes GST").check();
+    await expect(page.getByTestId("line-total-2")).toHaveText("₹590.00");
+    await expect(page.getByTestId("grand-total")).toHaveText("Total ₹1,274.00");
+
+    await page.getByRole("button", { name: "Issue invoice" }).click();
+    const issued = page.getByRole("dialog");
+    await expect(
+      issued.getByRole("heading", { name: /^Invoice SH\/\d{2}-\d{2}\/0001 issued$/ }),
+    ).toBeVisible();
+    await issued.getByRole("link", { name: "View invoice" }).click();
+    await expect(page.getByTestId("invoice-total")).toHaveText("₹1,274.00");
+    await expect(page.getByText("Rupees One Thousand Two Hundred Seventy Four Only")).toBeVisible();
+
+    await page.getByRole("link", { name: "Back to invoices" }).click();
+    await expect(page.getByRole("link", { name: /SH\/\d{2}-\d{2}\/0001/ })).toBeVisible();
+  });
 });
 
 test("a user with no membership gets 404 for another business (SPEC F1)", async ({
@@ -166,13 +214,18 @@ test("a user with no membership gets 404 for another business (SPEC F1)", async 
   await signUp(owner, "E2E Owner");
   const dashboard = await onboard(owner, `E2E Private ${randomUUID().slice(0, 6)}`);
   const slug = dashboard.split("/")[2] ?? "";
+  // A draft invoice, so an invoice page can be tried as the stranger too.
+  await owner.goto(`/b/${slug}/invoices/new`);
+  await field(owner, "Walk-in customer name (optional)").fill("Counter sale");
+  await expect(owner).toHaveURL(/\/invoices\/[0-9a-f-]{36}\/edit$/, { timeout: 15_000 });
+  const draftPath = new URL(owner.url()).pathname;
   await ownerContext.close();
 
   const strangerContext = await browser.newContext();
   const stranger = await strangerContext.newPage();
   await signUp(stranger, "E2E Stranger");
 
-  for (const path of [dashboard, `/b/${slug}/settings`, `/b/${slug}`]) {
+  for (const path of [dashboard, `/b/${slug}/settings`, `/b/${slug}`, draftPath]) {
     const response = await stranger.goto(path);
     expect(response?.status(), path).toBe(404);
     await expect(stranger.getByRole("heading", { name: "Page not found" })).toBeVisible();

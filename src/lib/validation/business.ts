@@ -39,6 +39,11 @@ export const businessFields = {
     .trim()
     .refine((value) => !value || isValidUpiVpa(value), { error: "upiInvalid" })
     .transform((value) => (value ? normalizeUpiVpa(value) : null)),
+  /** HSN digits issuing checks (SPEC §4.7): 4 up to ₹5 cr turnover, 6 above. Settings only. */
+  hsnDigitsRequired: z
+    .enum(["4", "6"], { error: "hsnDigitsInvalid" })
+    .default("4")
+    .transform((value) => (value === "6" ? 6 : 4)),
 };
 
 /** The fields each onboarding step shows (and validates before "Next"). */
@@ -103,4 +108,5 @@ export const EMPTY_BUSINESS_FORM: BusinessFormValues = {
   invoicePrefix: "INV",
   creditNotePrefix: "CN",
   upiVpa: "",
+  hsnDigitsRequired: "4",
 };

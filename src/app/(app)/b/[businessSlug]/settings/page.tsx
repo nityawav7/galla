@@ -31,6 +31,7 @@ function toFormValues(business: Business): BusinessFormValues {
     invoicePrefix: business.invoicePrefix,
     creditNotePrefix: business.creditNotePrefix,
     upiVpa: business.upiVpa ?? "",
+    hsnDigitsRequired: business.hsnDigitsRequired === 6 ? "6" : "4",
   };
 }
 

@@ -65,6 +65,7 @@ export const VALIDATION_KEYS = [
   "dueDateInvalid",
   "dueDateBeforeInvoiceDate",
   "placeOfSupplyInvalid",
+  "hsnDigitsInvalid",
 ] as const;
 
 export type ValidationKey = (typeof VALIDATION_KEYS)[number];

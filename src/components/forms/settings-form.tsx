@@ -17,7 +17,9 @@ import {
 } from "@/lib/validation/business";
 
 import { DetailsFields, EmailField, GstFields, InvoicingFields } from "./business-fields";
+import { SelectField } from "./select-field";
 import { applyServerErrors } from "./server-errors";
+import { useFormMessages } from "./use-form-messages";
 
 interface SettingsFormProps {
   businessSlug: string;
@@ -31,6 +33,7 @@ export function SettingsForm({ businessSlug, defaultValues }: SettingsFormProps)
   const common = useTranslations("common");
   const errors = useTranslations("errors");
   const router = useRouter();
+  const { fieldError } = useFormMessages();
   const [status, setStatus] = useState<Status>("idle");
   const form = useForm<BusinessFormValues, unknown, BusinessInput>({
     resolver: zodResolver(businessSchema),
@@ -63,6 +66,15 @@ export function SettingsForm({ businessSlug, defaultValues }: SettingsFormProps)
           <section className="flex flex-col gap-4">
             <h2 className="text-lg font-semibold">{t("gst")}</h2>
             <GstFields />
+            <SelectField
+              label={t("hsnDigits")}
+              hint={t("hsnDigitsHint")}
+              error={fieldError(form.formState.errors.hsnDigitsRequired)}
+              {...form.register("hsnDigitsRequired")}
+            >
+              <option value="4">{t("hsnDigits4")}</option>
+              <option value="6">{t("hsnDigits6")}</option>
+            </SelectField>
           </section>
           <section className="flex flex-col gap-4">
             <h2 className="text-lg font-semibold">{t("invoicing")}</h2>

@@ -50,6 +50,14 @@ export function istDateFromInstant(instant: Date): string {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+/** Display format for business dates (SPEC §6.5): "2026-11-06" → "06-11-2026". */
+export function formatIndianDate(date: string): string {
+  const parts = parseIsoDateParts(date);
+  if (!parts) return date;
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${pad(parts.day)}-${pad(parts.month)}-${String(parts.year)}`;
+}
+
 /** A calendar date plus whole days ("2026-03-30" + 3 → "2026-04-02"); used for due dates. */
 export function addDays(date: string, days: number): string {
   const parts = parseIsoDateParts(date);

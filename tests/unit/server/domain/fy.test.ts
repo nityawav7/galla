@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { ValidationError } from "@/lib/errors";
 import {
   addDays,
+  formatIndianDate,
   fyForDate,
   fyForInstant,
   fyRange,
@@ -121,5 +122,12 @@ describe("addDays", () => {
     ["2026-06-15", 1.5],
   ])("rejects %s + %s", (date, days) => {
     expect(() => addDays(date, days)).toThrow(ValidationError);
+  });
+});
+
+describe("formatIndianDate", () => {
+  it("shows DD-MM-YYYY and leaves anything else as it is", () => {
+    expect(formatIndianDate("2026-04-01")).toBe("01-04-2026");
+    expect(formatIndianDate("nope")).toBe("nope");
   });
 });
