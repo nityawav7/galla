@@ -44,6 +44,12 @@ export const VALIDATION_KEYS = [
   "csvUnclosedQuote",
   "csvDuplicateInFile",
   "csvRowInvalid",
+  "customerNameRequired",
+  "customerStateMismatch",
+  "gstinTaken",
+  "balanceInvalid",
+  "creditDaysInvalid",
+  "phoneDuplicate",
 ] as const;
 
 export type ValidationKey = (typeof VALIDATION_KEYS)[number];

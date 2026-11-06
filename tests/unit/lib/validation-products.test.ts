@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 
+import { listQuerySchema } from "@/lib/validation/list-query";
 import {
   EMPTY_PRODUCT_FORM,
-  listQuerySchema,
   PRODUCT_CSV_TEMPLATE,
   PRODUCT_FIELD_COLUMNS,
   productRowToForm,

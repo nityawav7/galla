@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { type ActionResult } from "@/lib/action-result";
 import {
+  type ImportIssue,
   type ImportReport,
   type ImportResult,
   importSize,
@@ -37,6 +38,31 @@ type State<S> =
   | { step: "done"; count: number }
   | { step: "failed"; message: string };
 
+/** "Line 3 · price: Enter a price like 120", one per issue or warning. */
+function IssueList({ issues }: { issues: ImportIssue[] }) {
+  const t = useTranslations("import");
+  const validation = useTranslations("validation");
+  return (
+    <ul className="flex flex-col gap-1 text-sm">
+      {issues.map((issue, index) => (
+        <li key={`${String(issue.line)}-${issue.column ?? ""}-${String(index)}`}>
+          <span className="font-medium">
+            {issue.line === null ? t("fileProblem") : t("line", { line: issue.line })}
+            {issue.column ? (
+              <>
+                {" · "}
+                <code className="rounded bg-muted px-1">{issue.column}</code>
+              </>
+            ) : null}
+            {": "}
+          </span>
+          {validation(issue.key)}
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 /** Excel only reads a CSV as UTF-8 (₹, Hindi) when it starts with a byte order mark. */
 function templateHref(rows: readonly (readonly string[])[]): string {
   return `data:text/csv;charset=utf-8,${encodeURIComponent(`\uFEFF${toCsv(rows)}`)}`;
@@ -47,6 +73,7 @@ const tooLarge = <S,>(): ImportReport<S> => ({
   valid: 0,
   issueCount: 1,
   issues: [{ line: null, column: null, key: "csvTooLarge" }],
+  warnings: [],
   sample: [],
 });
 
@@ -66,7 +93,6 @@ export function CsvImport<S>({
   doneLabel,
 }: CsvImportProps<S>) {
   const t = useTranslations("import");
-  const validation = useTranslations("validation");
   const errors = useTranslations("errors");
   const router = useRouter();
   const inputId = useId();
@@ -171,28 +197,20 @@ export function CsvImport<S>({
                 <h2 id={`${inputId}-issues`} className="text-base font-semibold text-destructive">
                   {t("issuesTitle")}
                 </h2>
-                <ul className="flex flex-col gap-1 text-sm">
-                  {report.issues.map((issue, index) => (
-                    <li key={`${String(issue.line)}-${issue.column ?? ""}-${String(index)}`}>
-                      <span className="font-medium">
-                        {issue.line === null ? t("fileProblem") : t("line", { line: issue.line })}
-                        {issue.column ? (
-                          <>
-                            {" · "}
-                            <code className="rounded bg-muted px-1">{issue.column}</code>
-                          </>
-                        ) : null}
-                        {": "}
-                      </span>
-                      {validation(issue.key)}
-                    </li>
-                  ))}
-                </ul>
+                <IssueList issues={report.issues} />
                 {report.issueCount > report.issues.length ? (
                   <p className="text-sm text-muted-foreground">
                     {t("moreIssues", { count: report.issueCount - report.issues.length })}
                   </p>
                 ) : null}
+              </section>
+            ) : null}
+            {report.warnings.length > 0 ? (
+              <section className="flex flex-col gap-2" aria-labelledby={`${inputId}-warnings`}>
+                <h2 id={`${inputId}-warnings`} className="text-base font-semibold">
+                  {t("warningsTitle")}
+                </h2>
+                <IssueList issues={report.warnings} />
               </section>
             ) : null}
             {report.sample.length > 0 ? (

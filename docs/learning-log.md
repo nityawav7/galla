@@ -67,3 +67,10 @@ What I learned and what broke while building Galla, phase by phase.
 - Keyset pagination compares `(name, id) > (last name, last id)`, so rows with the same name are neither skipped nor repeated. It needs an index on `(business_id, name, id)`.
 - Writing `"\uFEFF"` through some tools stores the invisible byte order mark itself in the source. Keep it as the escape, so reviewers can see it.
 - The in-app browser can't attach files, and scripts run in an isolated world, so React never sees a faked `change` event. Playwright's `setInputFiles` is the reliable way to test an upload.
+
+## Phase 5b: customers
+
+- Next keeps pages visited earlier mounted (hidden), React state included. After "Add customer" saved and went back to the list, opening the form again showed the old values. Forms now `reset()` before navigating away, and the e2e test checks that the form is empty when reopened.
+- Docker Compose names its project after the folder. Running `pnpm db:up` from a git worktree started a second, empty Postgres (`customers-postgres-1`) instead of the usual `galla-postgres-1`. Start the existing container instead (`docker start galla-postgres-1`).
+- The Neon free plan allows 10 database branches, and every Vercel preview makes one. Merged PRs' preview branches have to be deleted, or the next preview fails with "Branch limit reached".
+- GitHub uses the PR title as the squash commit message, so the title should already be a Conventional Commit (`feat(customers): …`).

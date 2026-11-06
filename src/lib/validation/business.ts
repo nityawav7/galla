@@ -3,11 +3,10 @@ import { z } from "zod";
 import { GST_SCHEMES } from "@/server/domain/gst/place-of-supply";
 import { normalizeGstin, validateGstin } from "@/server/domain/gstin";
 import { MAX_PREFIX_LENGTH } from "@/server/domain/numbering";
-import { normalizeIndianPhone } from "@/server/domain/phone";
 import { isActiveStateCode } from "@/server/domain/states";
 import { isValidUpiVpa, normalizeUpiVpa } from "@/server/domain/upi";
 
-import { GSTIN_ERRORS, optionalText, requiredText } from "./fields";
+import { GSTIN_ERRORS, optionalEmail, optionalPhone, optionalText, requiredText } from "./fields";
 
 /**
  * Business details, shared by onboarding, settings and business.service. Messages are keys
@@ -29,17 +28,8 @@ export const businessFields = {
     .trim()
     .regex(/^[1-9][0-9]{5}$/, { error: "pincodeInvalid" }),
   stateCode: z.string().refine(isActiveStateCode, { error: "stateRequired" }),
-  phone: z
-    .string()
-    .trim()
-    .refine((value) => !value || normalizeIndianPhone(value) !== null, { error: "phoneInvalid" })
-    .transform((value) => (value ? normalizeIndianPhone(value) : null)),
-  email: z
-    .string()
-    .trim()
-    .toLowerCase()
-    .refine((value) => !value || z.email().safeParse(value).success, { error: "emailInvalid" })
-    .transform((value) => value || null),
+  phone: optionalPhone,
+  email: optionalEmail,
   gstScheme: z.enum(GST_SCHEMES),
   gstin: z.string().trim().transform(normalizeGstin),
   invoicePrefix: prefix,

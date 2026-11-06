@@ -282,6 +282,7 @@ describe("CSV import", () => {
       valid: 2,
       issueCount: 0,
       issues: [],
+      warnings: [],
       sample: [
         { line: 2, name: "Item 1", unit: "BAG", price: "₹101.50", rate: "18%", sku: "SKU-1" },
         { line: 3, name: "Milk", unit: "LTR", price: "₹56.50", rate: "0%", sku: null },

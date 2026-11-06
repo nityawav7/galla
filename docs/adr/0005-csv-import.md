@@ -13,6 +13,7 @@ Shops arrive with their products (and later customers) in Excel or another billi
 - **Two steps, checked twice.** The browser reads the file and sends its text to `previewProductImport`, which validates every row and writes nothing. "Import" sends the same text to `importProducts`, which **validates it again** inside the transaction. The preview is never trusted, so a changed file or a product added meanwhile can't slip through.
 - **All or nothing.** If any row has a problem, the import returns the report and saves nothing. Otherwise it inserts every row in one statement, plus one audit row per product, in one transaction. A unique violation from a race (someone adding the same SKU) rolls everything back and is reported as a conflict.
 - **The same rules as the form.** Each row is turned into form values and checked with the shared Zod schema (`productSchema`). Errors are `validation.*` message keys, with the line and the column, so they show in English or Hindi.
+- **Errors block, warnings don't.** Customers (Phase 5b) use the same flow. A phone another customer already has, in the file or in the shop, is shown as a warning and doesn't stop the import. A repeated or taken GSTIN, or a GSTIN whose state differs from the row's state, is an error.
 - **Create only.** A row whose SKU an active product already has is an error. Updating products from a file is not supported (decision 5 of the Phase 5 plan).
 - **Clear errors instead of guesses.**
   - A 3-, 5- or 7-digit HSN is reported as a likely lost leading zero (`hsnLeadingZero`) and never padded.

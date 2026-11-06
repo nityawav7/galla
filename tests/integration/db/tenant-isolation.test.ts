@@ -7,9 +7,12 @@ import { getCurrentBusiness } from "@/server/db/repos/businesses.repo";
 import {
   archiveCustomer,
   findCustomerById,
+  findCustomersByGstins,
   findCustomersByPhone,
+  findCustomersByPhones,
   insertCustomer,
   listCustomers,
+  restoreCustomer,
   updateCustomer,
 } from "@/server/db/repos/customers.repo";
 import {
@@ -53,7 +56,11 @@ const createArchivedProduct = async (owner: Tenant) => {
 };
 
 const createCustomer = (owner: Tenant) =>
-  insertCustomer(db(), owner.ctx, { name: "Owner's Customer", phoneE164: "+919811111111" });
+  insertCustomer(db(), owner.ctx, {
+    name: "Owner's Customer",
+    phoneE164: "+919811111111",
+    gstin: "29AAACI1681G1ZL",
+  });
 
 describe("products repo", () => {
   itIsolatesTenants({
@@ -135,6 +142,37 @@ describe("customers repo", () => {
       verify: async (owner, customer) => {
         expect((await findCustomerById(db(), owner.ctx, customer.id))?.archivedAt).toBeNull();
       },
+    }),
+    findCustomersByPhones: isolationCase({
+      arrange: createCustomer,
+      act: (intruder) => findCustomersByPhones(db(), intruder.ctx, ["+919811111111"]),
+    }),
+    findCustomersByGstins: isolationCase({
+      arrange: createCustomer,
+      act: (intruder) => findCustomersByGstins(db(), intruder.ctx, ["29AAACI1681G1ZL"]),
+    }),
+    restoreCustomer: isolationCase({
+      arrange: async (owner) => {
+        const customer = await createCustomer(owner);
+        await archiveCustomer(db(), owner.ctx, customer.id);
+        return customer;
+      },
+      act: (intruder, customer) => restoreCustomer(db(), intruder.ctx, customer.id),
+      verify: async (owner, customer) => {
+        expect((await findCustomerById(db(), owner.ctx, customer.id))?.archivedAt).not.toBeNull();
+      },
+    }),
+    "listCustomers by phone, GSTIN and archived": isolationCase({
+      arrange: async (owner) => {
+        const customer = await createCustomer(owner);
+        await archiveCustomer(db(), owner.ctx, customer.id);
+        return customer;
+      },
+      act: async (intruder) => [
+        ...(await listCustomers(db(), intruder.ctx, { search: "9811111111" })),
+        ...(await listCustomers(db(), intruder.ctx, { search: "29AAACI", includeArchived: true })),
+        ...(await listCustomers(db(), intruder.ctx, { archivedOnly: true })),
+      ],
     }),
     listCustomers: isolationCase({
       arrange: createCustomer,

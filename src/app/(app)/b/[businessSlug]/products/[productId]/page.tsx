@@ -84,7 +84,7 @@ async function EditProduct({
       />
       <ProductArchiveToggle
         businessSlug={businessSlug}
-        productId={product.id}
+        id={product.id}
         archived={product.archivedAt !== null}
       />
     </>
