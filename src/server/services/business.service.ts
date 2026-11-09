@@ -36,6 +36,7 @@ const EDITABLE_FIELDS = [
   "invoicePrefix",
   "creditNotePrefix",
   "upiVpa",
+  "hsnDigitsRequired",
 ] as const satisfies readonly (keyof Business)[];
 
 type EditableField = (typeof EDITABLE_FIELDS)[number];

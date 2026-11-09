@@ -1,6 +1,6 @@
 # Golden invoices: hand calculations
 
-The ten invoices in `tests/fixtures/invoices/` were worked out by hand with the SPEC §4.5 formulas below. The test `tests/unit/server/domain/golden-fixtures.test.ts` checks that the code produces exactly these numbers.
+The eleven invoices in `tests/fixtures/invoices/` were worked out by hand with the SPEC §4.5 formulas below. The test `tests/unit/server/domain/golden-fixtures.test.ts` checks that the code produces exactly these numbers.
 
 **Please check at least five by hand (01, 03, 04, 06, 09 are a good set), ideally with an accountant.** A phone calculator is enough. Tick them off in the table at the end.
 
@@ -129,6 +129,18 @@ The shipping state (30 Goa) decides the place of supply, so the sale is inter-st
 Taxable 1518.38, IGST 196.34, sub-total **1714.72**, round off **+0.28**, grand total **₹1,715.00**.
 
 ---
+
+## 11 SPEC F4 acceptance: Maharashtra → Karnataka business (IGST, round-off on)
+
+The invoice the e2e test builds on screen (SPEC F4 AC). The customer's GSTIN is from Karnataka (**29**), so IGST at 18%.
+
+| Line                                  | Working                                    | Taxable | IGST  | Total  |
+| ------------------------------------- | ------------------------------------------ | ------- | ----- | ------ |
+| Cement 1 × ₹420.00, discount ₹20.00   | 420.00 − 20.00 = 400.00; × 18% = 72.00     | 400.00  | 72.00 | 472.00 |
+| Nails 1.5 × ₹120.00                   | 1.5 × 120.00 = 180.00; × 18% = 32.40       | 180.00  | 32.40 | 212.40 |
+| Paint 1 × ₹590.00, price includes GST | 590.00 × 100 / 118 = 500.00; × 18% = 90.00 | 500.00  | 90.00 | 590.00 |
+
+Sub-total 472.00 + 212.40 + 590.00 = **1,274.40**, so round off **−0.40**, giving a grand total of **₹1,274.00**.
 
 ## Sign-off
 

@@ -233,6 +233,10 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 - Pick or create a customer inline; add lines by searching products (or typing a one-off item); edit qty, price and discount; totals update live.
 - Place of supply and tax type are shown automatically ("Intra-state: CGST + SGST") with an override.
 - Keyboard-friendly on desktop and thumb-friendly on mobile. Autosave drafts.
+  - The builder runs the same evaluation as the server (`src/lib/invoice-evaluation.ts`, on the domain engine) for live totals and field errors; the server recomputes on every save and issue.
+  - A draft row is created on the first change, then saved 1.5 s after each change with a version check. Another tab's save is reported, never overwritten.
+  - A walk-in sale needs no customer (an optional name), up to the Rule 46 amount. Product lines show their HSN, unit and rate from the product; one-off lines are typed in full. In the item search, Enter adds the best match.
+  - Until Phases 7 and 8, the confirmation sheet offers "View invoice" and "New invoice"; the other actions arrive with those phases.
 - "Issue" assigns the number and locks the invoice. A warning that is allowed but needs a second look (an unregistered business billing another state) must be ticked first. A confirmation sheet offers: Share on WhatsApp, Copy link, Download PDF, Print, Record payment.
 - **AC:** the e2e test creates and issues an invoice with 3 lines (one tax-inclusive, one with a discount, one fractional qty). The totals match the expected fixture to the paisa.
 

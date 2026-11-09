@@ -82,3 +82,11 @@ What I learned and what broke while building Galla, phase by phase.
 - `to_jsonb(NEW) - ARRAY[...]` compares a whole row except some columns in a trigger, so a column added later is protected without touching the trigger.
 - New CHECK constraints fail on rows written before them. The migration backfills old test and dev rows first, then adds the constraint.
 - Python's text mode on Windows writes CRLF. Writing files with `newline=""` keeps them LF, which Prettier and git expect.
+
+## Phase 6b: invoice builder
+
+- Running the very same evaluation function in the browser and on the server (`evaluateDraft`) means the live totals can't drift from what gets issued, and the server still never trusts them.
+- `window.history.replaceState` changes the URL from `/new` to `/{id}/edit` after the first autosave without remounting the page, so typing isn't interrupted.
+- After adding a line from a search panel, the panel unmounts and takes focus with it. React Hook Form's `focusName` didn't win that race; focusing the new field in an effect after it renders does.
+- In Playwright, `getByRole("button", { name: /Nails/ })` also matched "Add “Nails” as a one-off item", which appears before the search results load. Anchored names (`/^Nails/`) wait for the real result.
+- A nested `<form>` inside a portal still bubbles its submit event through React to the outer form, so the builder is not a `<form>`; the inline customer form lives in a dialog.

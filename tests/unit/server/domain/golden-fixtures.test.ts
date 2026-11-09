@@ -74,8 +74,8 @@ function lineInRupees(line: LineAmounts) {
 }
 
 describe("golden invoices", () => {
-  it("has the 10 hand-checked fixtures", () => {
-    expect(fixtures).toHaveLength(10);
+  it("has the 11 hand-computed fixtures", () => {
+    expect(fixtures).toHaveLength(11);
   });
 
   it.each(fixtures.map((fixture) => [fixture.id, fixture] as const))("%s", (_id, fixture) => {

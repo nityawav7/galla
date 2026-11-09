@@ -36,12 +36,19 @@ interface CustomerFormProps {
   /** Absent when adding a customer. */
   customerId?: string;
   defaultValues: CustomerFormValues;
+  /** Adding inline (invoice builder): called with the new id instead of opening the list. */
+  onSaved?: (customerId: string) => void;
 }
 
 type Status = "idle" | "saved" | "error";
 type Match = Extract<SaveCustomerActionResult, { status: "possibleDuplicate" }>["matches"][number];
 
-export function CustomerForm({ businessSlug, customerId, defaultValues }: CustomerFormProps) {
+export function CustomerForm({
+  businessSlug,
+  customerId,
+  defaultValues,
+  onSaved,
+}: CustomerFormProps) {
   const t = useTranslations("customers");
   const common = useTranslations("common");
   const errors = useTranslations("errors");
@@ -90,6 +97,10 @@ export function CustomerForm({ businessSlug, customerId, defaultValues }: Custom
     if (!customerId) {
       // Next keeps visited pages mounted, so clear the form for the next "Add customer".
       form.reset(defaultValues);
+      if (onSaved) {
+        onSaved(result.data.id);
+        return;
+      }
       router.push(`/b/${businessSlug}/customers`);
       return;
     }

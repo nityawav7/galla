@@ -467,7 +467,7 @@ describe("issueInvoice", () => {
     );
     expect(await issuesOf(issue(tenant, draft))).toEqual([
       { path: "dueDate", message: "dueDateBeforeInvoiceDate" },
-      { path: "lines.0.discountPaise", message: "discountTooLarge" },
+      { path: "lines.0.discount", message: "discountTooLarge" },
     ]);
   });
 

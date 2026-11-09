@@ -1,0 +1,87 @@
+{
+  "id": "11-builder-acceptance",
+  "title": "SPEC F4 acceptance: Maharashtra to a Karnataka business, one discounted, one fractional, one tax-inclusive line",
+  "business": {
+    "stateCode": "27",
+    "scheme": "REGULAR"
+  },
+  "customer": {
+    "billingStateCode": "29",
+    "shippingStateCode": null
+  },
+  "overrideStateCode": null,
+  "roundOff": true,
+  "lines": [
+    {
+      "description": "Cement 50 kg",
+      "qty": "1",
+      "unitPrice": "420.00",
+      "rateBp": 1800,
+      "priceIncludesTax": false,
+      "discount": "20.00"
+    },
+    {
+      "description": "Nails",
+      "qty": "1.5",
+      "unitPrice": "120.00",
+      "rateBp": 1800,
+      "priceIncludesTax": false,
+      "discount": "0.00"
+    },
+    {
+      "description": "Paint 1 L",
+      "qty": "1",
+      "unitPrice": "590.00",
+      "rateBp": 1800,
+      "priceIncludesTax": true,
+      "discount": "0.00"
+    }
+  ],
+  "expected": {
+    "documentType": "TAX_INVOICE",
+    "placeOfSupply": "29",
+    "taxMode": "INTER",
+    "lines": [
+      {
+        "gross": "420.00",
+        "taxable": "400.00",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "72.00",
+        "total": "472.00"
+      },
+      {
+        "gross": "180.00",
+        "taxable": "180.00",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "32.40",
+        "total": "212.40"
+      },
+      {
+        "gross": "590.00",
+        "taxable": "500.00",
+        "cgst": "0.00",
+        "sgst": "0.00",
+        "utgst": "0.00",
+        "igst": "90.00",
+        "total": "590.00"
+      }
+    ],
+    "totals": {
+      "gross": "1190.00",
+      "discount": "20.00",
+      "taxable": "1080.00",
+      "cgst": "0.00",
+      "sgst": "0.00",
+      "utgst": "0.00",
+      "igst": "194.40",
+      "subTotal": "1274.40",
+      "roundOff": "-0.40",
+      "grandTotal": "1274.00"
+    },
+    "amountInWords": "Rupees One Thousand Two Hundred Seventy Four Only"
+  }
+}

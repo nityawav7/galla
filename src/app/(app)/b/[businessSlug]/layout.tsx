@@ -49,6 +49,12 @@ async function TenantShell({
             {t("shell.dashboard")}
           </Link>
           <Link
+            href={`${base}/invoices`}
+            className="text-sm font-medium underline-offset-4 hover:underline"
+          >
+            {t("shell.invoices")}
+          </Link>
+          <Link
             href={`${base}/products`}
             className="text-sm font-medium underline-offset-4 hover:underline"
           >

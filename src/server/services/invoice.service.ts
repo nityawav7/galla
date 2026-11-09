@@ -1,14 +1,12 @@
 import { randomBytes } from "node:crypto";
 
-import { ConflictError, type FieldIssue, NotFoundError, ValidationError } from "@/lib/errors";
+import { ConflictError, NotFoundError, ValidationError } from "@/lib/errors";
 import { RECIPIENT_DETAILS_THRESHOLD_PAISE } from "@/lib/gst-config";
+import { type DraftEvaluation, evaluateDraft } from "@/lib/invoice-evaluation";
 import {
-  type DraftLine,
   draftSchema,
   type InvoiceDraft,
   invoiceListQuerySchema,
-  type IssueLine,
-  issueLineSchema,
   issueSchema,
   type LineOptions,
   updateDraftSchema,
@@ -40,20 +38,8 @@ import { takeNextNumber } from "@/server/db/repos/number-sequences.repo";
 import { findProductsByIds, type Product } from "@/server/db/repos/products.repo";
 import { listStates, listTaxRates, listUnits } from "@/server/db/repos/reference.repo";
 import { type Executor, withTransaction } from "@/server/db/transaction";
-import { addDays, fyForDate, istDateFromInstant } from "@/server/domain/fy";
-import {
-  computeInvoice,
-  computeLine,
-  type InvoiceTotals,
-  type LineAmounts,
-} from "@/server/domain/gst/calc";
-import {
-  determinePlaceOfSupply,
-  type DocumentType,
-  documentTypeFor,
-  type PlaceOfSupply,
-  type TaxMode,
-} from "@/server/domain/gst/place-of-supply";
+import { fyForDate, istDateFromInstant } from "@/server/domain/fy";
+import { type InvoiceTotals } from "@/server/domain/gst/calc";
 import {
   checkIssuable,
   type HsnDigits,
@@ -66,7 +52,6 @@ import {
   walkInSnapshot,
 } from "@/server/domain/invoice/snapshot";
 import { formatDocumentNumber } from "@/server/domain/numbering";
-import { isActiveStateCode } from "@/server/domain/states";
 
 import { requireId } from "./ids";
 import { parseInput } from "./validate";
@@ -119,15 +104,8 @@ interface Context {
   invoiceDate: string;
 }
 
-interface Evaluation {
+interface Evaluation extends DraftEvaluation {
   columns: DraftColumns;
-  /** Every problem found; a draft is saved anyway, an issue is refused. */
-  issues: FieldIssue[];
-  /** The lines that passed, with their amounts, in order. */
-  lines: { line: IssueLine; amounts: LineAmounts }[];
-  placeOfSupply: PlaceOfSupply | null;
-  documentType: DocumentType;
-  totals: InvoiceTotals;
 }
 
 // --- helpers ------------------------------------------------------------------------------
@@ -144,10 +122,6 @@ function money(totals: InvoiceTotals): Record<string, string> {
 
 function hsnDigits(value: number): HsnDigits {
   return value === 6 ? 6 : 4;
-}
-
-function prefixIssues(path: string, issues: readonly FieldIssue[]): FieldIssue[] {
-  return issues.map((issue) => ({ ...issue, path: issue.path ? `${path}.${issue.path}` : path }));
 }
 
 async function businessOrThrow(db: Executor, ctx: TenantContext): Promise<Business> {
@@ -187,117 +161,26 @@ async function loadContext(
   };
 }
 
-/**
- * A product line takes its HSN, unit, GST rate and "price includes tax" from the product, so
- * the client can't change the rate of a catalogue item. Without GST (`NONE`) the rate is 0.
- */
-function resolveLine(line: DraftLine, context: Context, taxMode: TaxMode) {
-  const product = line.productId ? context.products.get(line.productId) : undefined;
-  const fromProduct = product
-    ? {
-        hsnSac: product.hsnSac ?? "",
-        unit: product.unit,
-        rateBp: product.rateBp,
-        priceIncludesTax: product.priceIncludesTax,
-      }
-    : {};
-  const resolved = { ...line, ...fromProduct };
-  return taxMode === "NONE" ? { ...resolved, rateBp: 0, priceIncludesTax: false } : resolved;
-}
-
-function placeOfSupplyFor(
-  draft: InvoiceDraft,
-  context: Context,
-): { placeOfSupply: PlaceOfSupply | null; issues: FieldIssue[] } {
-  const override = draft.placeOfSupplyOverride;
-  if (override !== null && !isActiveStateCode(override)) {
-    return {
-      placeOfSupply: null,
-      issues: [{ path: "placeOfSupplyOverride", message: "placeOfSupplyInvalid" }],
-    };
-  }
-  try {
-    return {
-      placeOfSupply: determinePlaceOfSupply({
-        businessStateCode: context.business.stateCode,
-        scheme: context.business.gstScheme,
-        customerShippingStateCode: context.customer?.shippingStateCode,
-        customerBillingStateCode: context.customer?.billingStateCode,
-        overrideStateCode: override,
-      }),
-      issues: [],
-    };
-  } catch (error) {
-    // Composition business billing another state (CGST Act s.10(2)(c)).
-    if (error instanceof ValidationError) return { placeOfSupply: null, issues: [...error.issues] };
-    throw error;
-  }
-}
-
-function dueDateFor(
-  draft: InvoiceDraft,
-  context: Context,
-): { dueDate: string | null; issues: FieldIssue[] } {
-  const chosen =
-    draft.dueDate ??
-    (context.customer ? addDays(context.invoiceDate, context.customer.creditDays) : null);
-  if (chosen !== null && chosen < context.invoiceDate) {
-    return { dueDate: null, issues: [{ path: "dueDate", message: "dueDateBeforeInvoiceDate" }] };
-  }
-  return { dueDate: chosen, issues: [] };
-}
-
 /** Recomputes everything about a draft from its lines (CLAUDE.md rule 2). */
 function evaluate(draft: InvoiceDraft, context: Context): Evaluation {
-  const documentType = documentTypeFor(context.business.gstScheme);
-  const pos = placeOfSupplyFor(draft, context);
-  const due = dueDateFor(draft, context);
-  // Without a valid place of supply the lines are still checked; taxes wait for a valid one.
-  const taxMode: TaxMode = pos.placeOfSupply?.taxMode ?? "NONE";
-  const schema = issueLineSchema(context.options);
-
-  const issues: FieldIssue[] = [...pos.issues, ...due.issues];
-  const lines: Evaluation["lines"] = [];
-  draft.lines.forEach((draftLine, index) => {
-    const path = `lines.${String(index)}`;
-    const parsed = schema.safeParse(resolveLine(draftLine, context, taxMode));
-    if (!parsed.success) {
-      issues.push(
-        ...parsed.error.issues.map((issue) => ({
-          path: [path, ...issue.path.map(String)].join("."),
-          message: issue.message,
-        })),
-      );
-      return;
-    }
-    try {
-      lines.push({ line: parsed.data, amounts: computeLine(parsed.data, taxMode) });
-    } catch (error) {
-      if (!(error instanceof ValidationError)) throw error;
-      issues.push(...prefixIssues(path, error.issues));
-    }
+  const evaluation = evaluateDraft({
+    draft,
+    business: context.business,
+    customer: context.customer,
+    products: context.products,
+    options: context.options,
+    invoiceDate: context.invoiceDate,
   });
-
-  const { totals } = computeInvoice({
-    lines: lines.map(({ line }) => line),
-    taxMode,
-    roundOff: context.business.roundOffEnabled,
-  });
-  const placeOfSupplyStateCode = pos.placeOfSupply?.stateCode ?? context.business.stateCode;
-
+  const { totals } = evaluation;
   return {
-    issues,
-    lines,
-    placeOfSupply: pos.placeOfSupply,
-    documentType,
-    totals,
+    ...evaluation,
     columns: {
-      type: documentType,
+      type: evaluation.documentType,
       invoiceDate: context.invoiceDate,
-      dueDate: due.dueDate,
+      dueDate: evaluation.dueDate,
       customerId: draft.customerId,
-      placeOfSupplyStateCode,
-      isInterState: placeOfSupplyStateCode !== context.business.stateCode,
+      placeOfSupplyStateCode: evaluation.placeOfSupplyStateCode,
+      isInterState: evaluation.isInterState,
       notes: draft.notes.trim() || null,
       draft,
       discountPaise: totals.discountPaise,
