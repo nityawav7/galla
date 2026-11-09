@@ -653,6 +653,26 @@
       "confirm": "Cancel invoice",
       "cancelling": "Cancelling…",
       "keep": "Keep invoice"
+    },
+    "link": {
+      "title": "Link for the customer",
+      "hint": "Anyone with this link can see this invoice, download it and pay. It is not listed anywhere.",
+      "label": "Invoice link",
+      "copy": "Copy link",
+      "copied": "Link copied",
+      "copyFailed": "Couldn't copy. Select the link above and copy it.",
+      "off": "The link is turned off. Anyone who opens it sees “not found”.",
+      "turnOff": "Turn off link",
+      "turnOffTitle": "Turn off this link?",
+      "turnOffBody": "Anyone who opens the link will see “not found”. You can make a new link later.",
+      "confirmTurnOff": "Turn off",
+      "newLink": "New link",
+      "turnOn": "Turn on with a new link",
+      "newLinkTitle": "Make a new link?",
+      "newLinkBody": "The current link stops working, and a new one replaces it. Send the new link to your customer.",
+      "confirmNewLink": "Make new link",
+      "keep": "Keep as it is",
+      "working": "Saving…"
     }
   },
   "creditNotes": {
@@ -764,5 +784,20 @@
       "thermal": "80 mm (thermal)",
       "opensInNewTab": "(opens in a new tab)"
     }
+  },
+  "publicInvoice": {
+    "metaTitle": "Invoice",
+    "heading": "Invoice from {shop}",
+    "amountDue": "Amount due",
+    "payWithUpi": "Pay {amount} via UPI",
+    "payHint": "Opens your UPI app. Check the amount and the shop's name before you pay.",
+    "scanToPay": "Or scan with any UPI app to pay {amount}",
+    "qrLabel": "UPI QR code to pay {amount} to {vpa}",
+    "upiId": "UPI ID: {vpa}",
+    "nothingDue": "Nothing is due on this invoice.",
+    "cancelled": "This invoice was cancelled.",
+    "download": "Download PDF",
+    "downloadThermal": "Download 80 mm slip",
+    "footer": "Sent with {app}. Questions about this invoice? Please contact the shop."
   }
 }

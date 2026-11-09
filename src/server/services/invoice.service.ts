@@ -1,5 +1,3 @@
-import { randomBytes } from "node:crypto";
-
 import { ConflictError, NotFoundError, ValidationError } from "@/lib/errors";
 import { RECIPIENT_DETAILS_THRESHOLD_PAISE } from "@/lib/gst-config";
 import { type DraftEvaluation, evaluateDraft } from "@/lib/invoice-evaluation";
@@ -59,6 +57,7 @@ import {
 import { formatDocumentNumber } from "@/server/domain/numbering";
 
 import { requireId } from "./ids";
+import { newPublicToken } from "./tokens";
 import { parseInput } from "./validate";
 
 /*
@@ -332,11 +331,6 @@ export async function deleteDraft(ctx: TenantContext, id: string): Promise<void>
 }
 
 // --- issue -------------------------------------------------------------------------------
-
-/** 128 random bits for the public link (SPEC F5), 22 base64url characters. */
-function newPublicToken(): string {
-  return randomBytes(16).toString("base64url");
-}
 
 /**
  * Issues a draft (SPEC §4.6, §4.8): assigns the next gapless number and makes it immutable.

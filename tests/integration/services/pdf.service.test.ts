@@ -6,6 +6,7 @@ import { type DraftLine } from "@/lib/validation/invoices";
 import { type Role } from "@/server/authz/context";
 import { closeDb, getDb } from "@/server/db/client";
 import { updateCurrentBusiness } from "@/server/db/repos/businesses.repo";
+import { paymentFor } from "@/server/pdf/invoice-pdf";
 import {
   cancelInvoice,
   createCreditNote,
@@ -18,7 +19,6 @@ import {
   issueInvoice,
 } from "@/server/services/invoice.service";
 import {
-  paymentFor,
   renderCreditNotePdf,
   renderInvoicePdf,
   type RenderedPdf,

@@ -13,6 +13,8 @@ const SPEC_MATRIX: Record<Action, Record<Role, boolean>> = {
   "catalog:write": { OWNER: true, ACCOUNTANT: false, STAFF: true },
   "invoice:issue": { OWNER: true, ACCOUNTANT: false, STAFF: true },
   "invoice:cancel": { OWNER: true, ACCOUNTANT: false, STAFF: false },
+  "invoice:share": { OWNER: true, ACCOUNTANT: false, STAFF: true },
+  "invoice:manageLink": { OWNER: true, ACCOUNTANT: false, STAFF: false },
   "payment:record": { OWNER: true, ACCOUNTANT: true, STAFF: true },
   "records:view": { OWNER: true, ACCOUNTANT: true, STAFF: true },
   "dashboard:viewTotals": { OWNER: true, ACCOUNTANT: true, STAFF: false },

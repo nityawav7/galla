@@ -10,6 +10,12 @@ const adminDbImports = {
   message: "Cross-tenant DB access is only allowed from src/server/jobs. Use tenant-scoped repos.",
 };
 
+// The public-link token lookup is the one query without a TenantContext (ADR 0009).
+const publicDbImports = {
+  group: ["@/server/db/public", "@/server/db/public/*", "**/db/public", "**/db/public/*"],
+  message: "Only src/server/services/public-invoice.service.ts may look up invoices by token.",
+};
+
 // Queries live in src/server/db (repos); everything else calls repo functions (ADR 0003).
 const dbOnlyMessage =
   "Build queries only in src/server/db. Call a tenant-scoped repo from src/server/db/repos.";
@@ -120,6 +126,15 @@ export default defineConfig([
   {
     files: ["src/**/*.{ts,tsx}"],
     ignores: ["src/server/jobs/**", "src/server/db/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        { paths: dbDriverImports, patterns: [adminDbImports, dbInternalImports, publicDbImports] },
+      ],
+    },
+  },
+  {
+    files: ["src/server/services/public-invoice.service.ts"],
     rules: {
       "no-restricted-imports": [
         "error",

@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, gte, inArray, lte, or, type SQL, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, inArray, lte, ne, or, type SQL, sql } from "drizzle-orm";
 
 import { type InvoiceListStatus } from "@/lib/validation/invoices";
 import { type TenantContext } from "@/server/authz/context";
@@ -301,6 +301,24 @@ export async function addCredited(
       version: sql`${invoices.version} + 1`,
     })
     .where(tenantScope(ctx, invoices, eq(invoices.id, id)))
+    .returning();
+  return row;
+}
+
+/**
+ * Turns an issued invoice's public link off (`revokedAt` set) or gives it a new token (`revokedAt`
+ * null), which ends the old link (ADR 0009). The immutability trigger allows only these columns.
+ */
+export async function setPublicLink(
+  tx: Transaction,
+  ctx: TenantContext,
+  id: string,
+  link: { publicToken: string; tokenRevokedAt: Date | null },
+): Promise<Invoice | undefined> {
+  const [row] = await tx
+    .update(invoices)
+    .set(link)
+    .where(tenantScope(ctx, invoices, eq(invoices.id, id), ne(invoices.status, "DRAFT")))
     .returning();
   return row;
 }

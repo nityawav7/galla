@@ -1,6 +1,7 @@
 "use server";
 
 import { type ActionResult } from "@/lib/action-result";
+import { publicInvoiceUrl } from "@/lib/app-url";
 import { type CustomerOption, type ProductOption, toCustomerOption } from "@/lib/invoice-options";
 import { runAction } from "@/server/action";
 import { requireTenant } from "@/server/auth/session";
@@ -14,6 +15,11 @@ import {
   updateDraft,
 } from "@/server/services/invoice.service";
 import { listProducts } from "@/server/services/product.service";
+import {
+  type PublicLink,
+  regeneratePublicLink,
+  revokePublicLink,
+} from "@/server/services/public-link.service";
 
 // Thin: membership from the URL's slug; the services check roles, validate and recompute.
 
@@ -23,7 +29,14 @@ export interface SavedDraft {
 }
 
 export type IssueActionResult =
-  | { status: "issued"; id: string; number: string; grandTotalPaise: string }
+  | {
+      status: "issued";
+      id: string;
+      number: string;
+      grandTotalPaise: string;
+      /** The customer's link (SPEC F5). Issuers (owner, staff) are exactly who may share it. */
+      publicUrl: string | null;
+    }
   | { status: "needsConfirmation"; warnings: string[] };
 
 export async function createDraftAction(
@@ -74,6 +87,7 @@ export async function issueInvoiceAction(
       id: result.invoice.id,
       number: result.invoice.number ?? "",
       grandTotalPaise: result.invoice.grandTotalPaise.toString(),
+      publicUrl: result.invoice.publicToken ? publicInvoiceUrl(result.invoice.publicToken) : null,
     };
   });
 }
@@ -142,5 +156,25 @@ export async function createCreditNoteAction(
     const { ctx } = await requireTenant(businessSlug);
     const note = await createCreditNote(ctx, invoiceId, input);
     return { id: note.id, number: note.number };
+  });
+}
+
+export async function revokePublicLinkAction(
+  businessSlug: string,
+  invoiceId: string,
+): Promise<ActionResult<PublicLink>> {
+  return runAction(async () => {
+    const { ctx } = await requireTenant(businessSlug);
+    return revokePublicLink(ctx, invoiceId);
+  });
+}
+
+export async function regeneratePublicLinkAction(
+  businessSlug: string,
+  invoiceId: string,
+): Promise<ActionResult<PublicLink>> {
+  return runAction(async () => {
+    const { ctx } = await requireTenant(businessSlug);
+    return regeneratePublicLink(ctx, invoiceId);
   });
 }

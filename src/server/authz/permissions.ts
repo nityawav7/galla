@@ -15,6 +15,10 @@ const MATRIX = {
   "invoice:issue": ["OWNER", "STAFF"],
   /** Cancel an invoice or issue a credit note. */
   "invoice:cancel": ["OWNER"],
+  /** Copy an invoice's public link or share it on WhatsApp (Phase 7). */
+  "invoice:share": ["OWNER", "STAFF"],
+  /** Turn an invoice's public link off or replace it with a new one (SPEC F5). */
+  "invoice:manageLink": ["OWNER"],
   "payment:record": ["OWNER", "ACCOUNTANT", "STAFF"],
   /** View invoices, the ledger and the dashboard. */
   "records:view": ["OWNER", "ACCOUNTANT", "STAFF"],

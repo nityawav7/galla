@@ -105,3 +105,10 @@ What I learned and what broke while building Galla, phase by phase.
 - In react-pdf, `wrap={false}` ("don't split this block") on a page with no fixed height starts a new page for every such block: the 80 mm slip came out as five pages until it was removed.
 - `useSyncExternalStore` with a server snapshot reads `localStorage` without a hydration mismatch and without a "setState in an effect" lint warning.
 - Cutting a payee name to 50 characters with `[...text]` can split a Hindi letter from its vowel sign; `Intl.Segmenter` cuts by grapheme.
+
+## Phase 7b: public link
+
+- A streamed page can't change its status code once it starts, so "this link is dead → 404" has to happen in the proxy, before rendering. The page still calls `notFound()` as a backup.
+- Headers set on `NextResponse.next()` in the proxy reach the final response, so one place adds `noindex`, `no-referrer` and `no-store` for every `/i/*` answer.
+- ESLint's `no-restricted-imports` can enforce an architecture rule ("only this one service may look up invoices by token") with a later config block that relaxes the rule for exactly one file.
+- A new link is a new token, not a flag: turning the old one back on would revive every copy ever forwarded.

@@ -3,6 +3,7 @@ import { nextCookies } from "better-auth/next-js";
 import { emailOTP } from "better-auth/plugins/email-otp";
 import { organization } from "better-auth/plugins/organization";
 
+import { appOrigin } from "@/lib/app-url";
 import { APP_NAME } from "@/lib/config";
 import { env } from "@/lib/env";
 import { ROLES } from "@/server/authz/context";
@@ -18,13 +19,7 @@ const SEVEN_DAYS_SECONDS = 7 * 24 * 60 * 60;
 const https = (host: string | undefined) => (host ? `https://${host}` : undefined);
 
 /** BETTER_AUTH_URL if set; on Vercel the production domain or this deployment's URL. */
-export function authBaseUrl(): string {
-  if (env.BETTER_AUTH_URL) return env.BETTER_AUTH_URL;
-  if (env.VERCEL_ENV === "production" && env.VERCEL_PROJECT_PRODUCTION_URL) {
-    return `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`;
-  }
-  return https(env.VERCEL_URL) ?? "http://localhost:3000";
-}
+export const authBaseUrl = appOrigin;
 
 /** A deployment answers on its own URL, its branch URL and (in production) the main domain. */
 function trustedOrigins(): string[] {

@@ -63,6 +63,27 @@ sequenceDiagram
 
 `OVERDUE` (due date before today in IST, money still owed) and `CREDITED` are shown, never stored (`src/server/domain/invoice/status.ts`).
 
+## The public invoice link
+
+A customer opens `/i/{token}` without an account. The token is the only key, so this is the one lookup that doesn't start from a `TenantContext` ([ADR 0009](adr/0009-public-invoice-links.md)).
+
+```mermaid
+sequenceDiagram
+  participant C as Customer (phone)
+  participant P as proxy.ts
+  participant S as public-invoice.service
+  participant DB as Postgres
+  C->>P: GET /i/{token}
+  P->>P: Upstash: 60 a minute per hashed IP, else 429
+  P->>S: isLiveInvoiceLink(token)
+  S->>DB: SELECT … WHERE public_token = $1 AND token_revoked_at IS NULL AND status <> 'DRAFT'
+  P-->>C: 404 if dead (noindex, no-referrer, no-store on every answer)
+  P->>S: page: getSharedInvoice(token)
+  S->>DB: invoice, its own lines, the shop's UPI ID
+  S-->>C: invoice, balance, upi://pay link and QR, PDF links
+  Note over C: Owner "Turn off link" or "New link": the old token is dead (audited)
+```
+
 ## Code layers for data access
 
 ```
