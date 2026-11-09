@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
+import { PdfActions } from "@/components/invoice/pdf-actions";
 import { NotFoundError } from "@/lib/errors";
 import { requireTenant } from "@/server/auth/session";
 import { amountInWords } from "@/server/domain/amount-in-words";
@@ -47,6 +48,7 @@ async function CreditNoteDetail({
       >
         {t("backToInvoice", { number: invoice.number ?? "" })}
       </Link>
+      <PdfActions href={`/b/${businessSlug}/credit-notes/${creditNote.id}/pdf`} />
       <article className="flex flex-col gap-5 rounded-xl border bg-card p-4 text-sm shadow-sm">
         <header className="flex flex-col gap-1 border-b pb-3">
           <h2 className="text-lg font-semibold">{t("documentTitle")}</h2>

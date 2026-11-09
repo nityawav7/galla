@@ -6,6 +6,7 @@ import { Suspense } from "react";
 
 import { CancelInvoice } from "@/components/invoice/cancel-invoice";
 import { InvoiceView } from "@/components/invoice/invoice-view";
+import { PdfActions } from "@/components/invoice/pdf-actions";
 import { Button } from "@/components/ui/button";
 import { NotFoundError } from "@/lib/errors";
 import { requireTenant } from "@/server/auth/session";
@@ -98,6 +99,7 @@ async function InvoiceDetail({
       {owner && live && !canCancel ? (
         <p className="text-sm text-muted-foreground">{t("detail.cannotCancel")}</p>
       ) : null}
+      <PdfActions href={`/b/${businessSlug}/invoices/${invoice.id}/pdf`} />
       <InvoiceView invoice={invoice} lines={lines} status={status} />
       {creditNotes.length > 0 ? (
         <section aria-labelledby="invoice-credit-notes" className="flex flex-col gap-2">

@@ -8,6 +8,12 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // react-pdf loads fonts and its layout engine at runtime; keep it out of the bundle (ADR 0008).
+  serverExternalPackages: ["@react-pdf/renderer"],
+  // The PDF fonts are read from disk, so Vercel must copy them into the routes that render PDFs.
+  outputFileTracingIncludes: {
+    "/**/pdf": ["./src/server/pdf/fonts/*.ttf"],
+  },
   turbopack: {
     rules: {
       "*.css": {

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import { type Page, type TestInfo } from "@playwright/test";
+import { expect, type Page, type TestInfo } from "@playwright/test";
 
 /**
  * The visible input labelled exactly `label`. Tab panels are labelled "Password" too, and
@@ -34,4 +34,12 @@ export async function signUp(
   // The first sign-up of a local run waits for the dev server to compile the next pages.
   await page.waitForURL((url) => !url.pathname.endsWith("/signup"), { timeout: 30_000 });
   return { email, password };
+}
+
+/** Fetches a PDF route with the page's session and checks it really is a PDF (SPEC F5). */
+export async function expectPdf(page: Page, href: string): Promise<void> {
+  const response = await page.request.get(href);
+  expect(response.status(), href).toBe(200);
+  expect(response.headers()["content-type"]).toBe("application/pdf");
+  expect((await response.body()).subarray(0, 5).toString("latin1")).toBe("%PDF-");
 }

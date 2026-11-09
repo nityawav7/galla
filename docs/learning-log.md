@@ -97,3 +97,11 @@ What I learned and what broke while building Galla, phase by phase.
 - A migration that must touch rows guarded by an append-only trigger can pause that one trigger (`DISABLE TRIGGER name`) around the update and turn it back on in the same migration.
 - A Postgres constraint that a foreign key points at must exist before the foreign key: drizzle-kit generated them in the wrong order, so the migration was reordered by hand before merge.
 - The first e2e run on a cold dev server can time out while pages compile; the same test passes warm and in CI, which runs a production build.
+
+## Phase 7a: PDFs
+
+- A short spike settled the biggest risk first: react-pdf 4.9 (fontkit) shapes Devanagari conjuncts, reph and pre-base vowel signs correctly, and `fontFamily` takes an array, so a line can mix Latin and Hindi with per-character fallback.
+- Text extracted from a PDF comes out in visual glyph order for Devanagari, so text snapshots can't compare Hindi; the Latin text is snapshotted and the Hindi checked by eye.
+- In react-pdf, `wrap={false}` ("don't split this block") on a page with no fixed height starts a new page for every such block: the 80 mm slip came out as five pages until it was removed.
+- `useSyncExternalStore` with a server snapshot reads `localStorage` without a hydration mismatch and without a "setState in an effect" lint warning.
+- Cutting a payee name to 50 characters with `[...text]` can split a Hindi letter from its vowel sign; `Intl.Segmenter` cuts by grapheme.

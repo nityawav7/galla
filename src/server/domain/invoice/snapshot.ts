@@ -35,6 +35,11 @@ export interface SupplierSnapshot {
   email: string | null;
   logoUrl: string | null;
   signatureUrl: string | null;
+  /**
+   * The business's terms as printed. Added in Phase 7, so documents issued before it have none
+   * (undefined) and print no terms.
+   */
+  terms?: string | null;
 }
 
 export interface CustomerFields {
@@ -68,6 +73,7 @@ export interface BusinessFields {
   email: string | null;
   logoUrl: string | null;
   signatureUrl: string | null;
+  terms: string | null;
 }
 
 function address(
@@ -136,5 +142,6 @@ export function supplierSnapshot(business: BusinessFields): SupplierSnapshot {
     email: business.email,
     logoUrl: business.logoUrl,
     signatureUrl: business.signatureUrl,
+    terms: business.terms?.trim() ? business.terms.trim() : null,
   };
 }

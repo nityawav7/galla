@@ -687,5 +687,82 @@
       "issue": "क्रेडिट नोट जारी करें",
       "issuing": "जारी हो रहा है…"
     }
+  },
+  "pdf": {
+    "title": {
+      "TAX_INVOICE": "टैक्स इनवॉइस",
+      "BILL_OF_SUPPLY": "बिल ऑफ़ सप्लाई",
+      "INVOICE": "इनवॉइस",
+      "CREDIT_NOTE": "क्रेडिट नोट"
+    },
+    "compositionLine": "कंपोज़िशन करदाता, सप्लाई पर टैक्स वसूलने के पात्र नहीं",
+    "cancelled": "रद्द",
+    "invoiceNumber": "इनवॉइस नं.",
+    "creditNoteNumber": "क्रेडिट नोट नं.",
+    "date": "तारीख",
+    "dueDate": "भुगतान की तारीख",
+    "placeOfSupply": "सप्लाई का स्थान",
+    "reverseCharge": "रिवर्स चार्ज पर टैक्स देय",
+    "no": "नहीं",
+    "againstInvoice": "इनवॉइस के बदले",
+    "againstInvoiceValue": "{number}, तारीख {date}",
+    "reason": "कारण",
+    "billedTo": "बिल पाने वाला",
+    "shipTo": "डिलीवरी का पता",
+    "walkIn": "काउंटर ग्राहक",
+    "gstin": "GSTIN: {gstin}",
+    "phone": "फ़ोन: {phone}",
+    "columns": {
+      "position": "#",
+      "item": "सामान",
+      "hsn": "HSN/SAC",
+      "qty": "मात्रा",
+      "price": "दर",
+      "discount": "छूट",
+      "taxable": "टैक्स योग्य मूल्य",
+      "total": "राशि"
+    },
+    "tax": {
+      "cgst": "CGST",
+      "sgst": "SGST",
+      "utgst": "UTGST",
+      "igst": "IGST"
+    },
+    "taxSummary": "दर के अनुसार टैक्स",
+    "gstRate": "GST दर",
+    "totals": {
+      "taxable": "टैक्स योग्य मूल्य",
+      "cgst": "CGST",
+      "sgst": "SGST",
+      "utgst": "UTGST",
+      "igst": "IGST",
+      "roundOff": "राउंड ऑफ़"
+    },
+    "grandTotal": "कुल",
+    "creditTotal": "कुल क्रेडिट",
+    "hsnLine": "HSN/SAC {hsn}",
+    "lineDetail": "{qty} {unit} × {price}",
+    "lineDiscount": "छूट {amount}",
+    "payTitle": "UPI से भुगतान",
+    "scanToPay": "{amount} चुकाने के लिए किसी भी UPI ऐप से स्कैन करें",
+    "upiId": "UPI ID: {vpa}",
+    "bankTitle": "बैंक विवरण",
+    "bankAccountName": "खाते का नाम",
+    "bankAccountNumber": "खाता नं.",
+    "bankIfsc": "IFSC",
+    "bankName": "बैंक",
+    "notes": "नोट",
+    "terms": "नियम और शर्तें",
+    "forSupplier": "{name} की ओर से",
+    "signatory": "अधिकृत हस्ताक्षरकर्ता",
+    "page": "पेज {page} / {total}",
+    "actions": {
+      "download": "PDF डाउनलोड करें",
+      "print": "प्रिंट करें",
+      "paper": "काग़ज़ का साइज़",
+      "a4": "A4",
+      "thermal": "80 mm (थर्मल)",
+      "opensInNewTab": "(नए टैब में खुलेगा)"
+    }
   }
 }
