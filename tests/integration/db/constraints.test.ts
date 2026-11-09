@@ -674,10 +674,15 @@ describe("immutability triggers (ADR 0006)", () => {
       })
       .returning();
     if (!note) throw new Error("no row");
+    const [invoiceLine] = await db()
+      .select()
+      .from(invoiceLines)
+      .where(eq(invoiceLines.invoiceId, invoiceId));
+    if (!invoiceLine) throw new Error("no line");
     const { invoiceId: _ignored, ...lineValues } = line(invoiceId);
     await db()
       .insert(creditNoteLines)
-      .values({ ...lineValues, creditNoteId: note.id });
+      .values({ ...lineValues, creditNoteId: note.id, invoiceLineId: invoiceLine.id });
     await frozen(
       db().update(creditNotes).set({ reason: "Other" }).where(eq(creditNotes.id, note.id)),
     );

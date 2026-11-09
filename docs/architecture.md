@@ -1,6 +1,6 @@
 # Architecture
 
-The full write-up comes in Phase 11. Until then, see [SPEC.md §7](../SPEC.md#7-architecture), [ADR 0001](adr/0001-nextjs-monolith-on-vercel.md) (one Next.js app on Vercel), [ADR 0002](adr/0002-integer-money.md) (integer money) and [ADR 0003](adr/0003-tenant-isolation.md) (tenant isolation), [ADR 0004](adr/0004-auth-and-tenancy.md) (sign-in and memberships) and [ADR 0005](adr/0005-csv-import.md) (CSV import) and [ADR 0006](adr/0006-gapless-numbering-and-immutable-invoices.md) (numbering and immutable invoices).
+The full write-up comes in Phase 11. Until then, see [SPEC.md §7](../SPEC.md#7-architecture), [ADR 0001](adr/0001-nextjs-monolith-on-vercel.md) (one Next.js app on Vercel), [ADR 0002](adr/0002-integer-money.md) (integer money) and [ADR 0003](adr/0003-tenant-isolation.md) (tenant isolation), [ADR 0004](adr/0004-auth-and-tenancy.md) (sign-in and memberships) and [ADR 0005](adr/0005-csv-import.md) (CSV import) [ADR 0006](adr/0006-gapless-numbering-and-immutable-invoices.md) (numbering and immutable invoices) and [ADR 0007](adr/0007-credit-notes-by-returned-quantity.md) (credit notes).
 
 ## Data model
 
@@ -23,6 +23,7 @@ erDiagram
   products |o--o{ invoice_lines : "copied into"
   invoices ||--o{ credit_notes : "reduced by"
   credit_notes ||--|{ credit_note_lines : contains
+  invoice_lines ||--o{ credit_note_lines : "returned by"
   customers |o--o{ payments : pays
   payments ||--o{ payment_allocations : "split into"
   invoices ||--o{ payment_allocations : "settled by"

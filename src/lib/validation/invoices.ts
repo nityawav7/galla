@@ -128,6 +128,41 @@ export function issueLineSchema({ units, rateBps }: LineOptions) {
 
 export type IssueLine = z.output<ReturnType<typeof issueLineSchema>>;
 
+/** Cancelling an issued invoice (owner only): a reason is required (SPEC §4.8). */
+export const cancelSchema = z.object({
+  reason: z
+    .string()
+    .trim()
+    .min(3, { error: "cancelReasonRequired" })
+    .max(200, { error: "textTooLong" }),
+});
+
+export const MAX_CREDIT_NOTE_LINES = MAX_INVOICE_LINES;
+
+/** A credit note returns quantities of the invoice's lines (ADR 0007). */
+export const creditNoteSchema = z.object({
+  reason: z
+    .string()
+    .trim()
+    .min(3, { error: "creditReasonRequired" })
+    .max(200, { error: "textTooLong" }),
+  lines: z
+    .array(
+      z.object({
+        invoiceLineId: z.uuid({ error: "lineNotOnInvoice" }),
+        qty: z
+          .string()
+          .trim()
+          .transform(scaled(3, "qtyInvalid"))
+          .refine((milli) => milli > 0n, { error: "qtyPositive" }),
+      }),
+    )
+    .min(1, { error: "creditLinesRequired" })
+    .max(MAX_CREDIT_NOTE_LINES, { error: "invoiceTooManyLines" }),
+});
+
+export type CreditNoteValues = z.input<typeof creditNoteSchema>;
+
 /** Which invoices a list shows. OVERDUE, UNPAID and PAID look at the balance (SPEC §4.8). */
 export const INVOICE_LIST_STATUSES = ["DRAFT", "UNPAID", "OVERDUE", "PAID", "CANCELLED"] as const;
 export type InvoiceListStatus = (typeof INVOICE_LIST_STATUSES)[number];
@@ -155,6 +190,10 @@ export const INVOICE_ERROR_KEYS = [
   "invoiceAlreadyIssued",
   "draftEditedElsewhere",
   "customerArchived",
+  "invoiceNotIssued",
+  "invoiceCancelled",
+  "invoiceHasPayments",
+  "invoiceHasCredits",
 ] as const;
 export type InvoiceErrorKey = (typeof INVOICE_ERROR_KEYS)[number];
 

@@ -17,6 +17,11 @@ import { now } from "@/server/clock";
 import { getDb } from "@/server/db/client";
 import { insertAuditLog } from "@/server/db/repos/audit.repo";
 import { type Business, getCurrentBusiness } from "@/server/db/repos/businesses.repo";
+import {
+  type CreditNote,
+  listCreditNotesForInvoice,
+  returnedByInvoiceLine,
+} from "@/server/db/repos/credit-notes.repo";
 import { decodeDateCursor, encodeDateCursor } from "@/server/db/repos/cursor";
 import { type Customer, findCustomerById } from "@/server/db/repos/customers.repo";
 import {
@@ -83,6 +88,10 @@ export interface BuilderOptions {
 export interface InvoiceDetail {
   invoice: Invoice;
   lines: InvoiceLine[];
+  /** Newest first. */
+  creditNotes: CreditNote[];
+  /** Quantity already returned by credit notes, per invoice line id (milli-units). */
+  returnedMilli: Map<string, bigint>;
 }
 
 export interface InvoicePage {
@@ -234,7 +243,12 @@ export async function getInvoice(ctx: TenantContext, id: string): Promise<Invoic
   const db = getDb();
   const invoice = await findInvoiceById(db, ctx, requireId(id, "Invoice"));
   if (!invoice) throw new NotFoundError("Invoice");
-  return { invoice, lines: await findInvoiceLines(db, ctx, invoice.id) };
+  const [lines, creditNotes, returnedMilli] = await Promise.all([
+    findInvoiceLines(db, ctx, invoice.id),
+    listCreditNotesForInvoice(db, ctx, invoice.id),
+    returnedByInvoiceLine(db, ctx, invoice.id),
+  ]);
+  return { invoice, lines, creditNotes, returnedMilli };
 }
 
 export async function listInvoices(ctx: TenantContext, query: unknown): Promise<InvoicePage> {

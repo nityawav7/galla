@@ -178,6 +178,8 @@ export const invoiceLines = pgTable(
   },
   (t) => [
     unique("invoice_lines_invoice_position_unique").on(t.businessId, t.invoiceId, t.position),
+    // Target of credit_note_lines' composite foreign key.
+    unique("invoice_lines_business_id_id_unique").on(t.businessId, t.id),
     foreignKey({
       name: "invoice_lines_invoice_fk",
       columns: [t.businessId, t.invoiceId],

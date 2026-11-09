@@ -256,3 +256,51 @@ export async function listInvoices(
     .limit(limit);
   return rows;
 }
+
+/** Cancels an issued invoice with nothing paid or credited (SPEC §4.8). It keeps its number. */
+export async function markCancelled(
+  tx: Transaction,
+  ctx: TenantContext,
+  id: string,
+  reason: string,
+  at: Date,
+): Promise<Invoice | undefined> {
+  const [row] = await tx
+    .update(invoices)
+    .set({
+      status: "CANCELLED",
+      cancelledAt: at,
+      cancelReason: reason,
+      version: sql`${invoices.version} + 1`,
+    })
+    .where(
+      tenantScope(
+        ctx,
+        invoices,
+        eq(invoices.id, id),
+        eq(invoices.status, "ISSUED"),
+        eq(invoices.amountPaidPaise, 0n),
+        eq(invoices.amountCreditedPaise, 0n),
+      ),
+    )
+    .returning();
+  return row;
+}
+
+/** Adds a credit note's total to the invoice. Call with the invoice row locked. */
+export async function addCredited(
+  tx: Transaction,
+  ctx: TenantContext,
+  id: string,
+  amountPaise: bigint,
+): Promise<Invoice | undefined> {
+  const [row] = await tx
+    .update(invoices)
+    .set({
+      amountCreditedPaise: sql`${invoices.amountCreditedPaise} + ${amountPaise}`,
+      version: sql`${invoices.version} + 1`,
+    })
+    .where(tenantScope(ctx, invoices, eq(invoices.id, id)))
+    .returning();
+  return row;
+}

@@ -181,6 +181,8 @@ DRAFT ──issue──▶ ISSUED ──payment──▶ PARTIALLY_PAID ──pa
 - `OVERDUE` is **derived** (due_date < today in IST, and balance > 0), not stored.
 - `balance = grand_total − Σ payments allocated − Σ credit notes`. The invoice keeps `amount_paid_paise` and `amount_credited_paise`, and a CHECK keeps their sum within the grand total.
 - `CREDITED` (balance cleared by credit notes only) is also derived for display.
+- **Cancel** (owner only): only an issued invoice with nothing paid or credited. It keeps its number and lines; the reason is required. The dialog warns to use a credit note if the invoice is already in a filed GSTR-1 (CA question 6).
+- **Credit notes** (owner only) return quantities of the invoice's lines at their own amounts ([ADR 0007](docs/adr/0007-credit-notes-by-returned-quantity.md)): never more than is left on a line or owed on the invoice. Only the note that returns the last unit carries the invoice's round-off, so a full return credits exactly the grand total. Each takes the next number of the `CN` series.
 
 ### 4.9 Udhaar / customer ledger
 - Ledger = opening balance + issued invoices − payments − credit notes, in date order with a running balance.
@@ -395,7 +397,7 @@ All tenant tables have: `id uuid pk (v7)`, `business_id uuid not null fk`, `crea
 | `number_sequences` | business_id, series (`INV`/`CN`), fy (`26-27`), next_value — **unique(business_id, series, fy)** |
 | `invoices` | type (`TAX_INVOICE`/`BILL_OF_SUPPLY`/`INVOICE`), status, number (nullable until issued; **unique(business_id, number)**), fy, invoice_date (date), due_date, customer_id, **customer snapshot JSON** (name, GSTIN, addresses as at issue), **supplier snapshot JSON** (the business as printed), draft (JSON working copy, drafts only), place_of_supply_state_code, is_inter_state, reverse_charge (false), discount, taxable, cgst, sgst, utgst, igst, round_off, grand_total, amount_paid, amount_credited (all `_paise`), notes, public_token (unique), token_revoked_at, issued_at, cancelled_at, cancel_reason, version |
 | `invoice_lines` | invoice_id, position, product_id (nullable), **snapshot**: description, hsn_sac, unit, qty_milli, unit_price_paise, price_includes_tax, discount_paise, rate_bp, taxable, cgst, sgst, utgst, igst, line_total |
-| `credit_notes` (+ lines) | same shape, linked `invoice_id`, reason, own CN number series. Issued directly (no drafts), so number, fy and snapshot are always set |
+| `credit_notes` (+ lines) | same shape, linked `invoice_id`, reason, own CN number series. Issued directly (no drafts), so number, fy and snapshot are always set. Each line links the `invoice_line_id` it returns part of |
 | `payments` | customer_id, date, amount_paise, mode, reference, notes |
 | `payment_allocations` | payment_id, invoice_id, amount_paise |
 | `reminders_sent` | invoice_id, kind (`DUE`, `D1`, `D7`, `D14`), channel, sent_at — **unique(invoice_id, kind, channel)** for idempotency |
