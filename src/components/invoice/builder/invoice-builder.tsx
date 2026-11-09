@@ -14,6 +14,7 @@ import {
 import { CheckboxField } from "@/components/forms/checkbox-field";
 import { SelectField } from "@/components/forms/select-field";
 import { TextField } from "@/components/forms/text-field";
+import { PdfActions } from "@/components/invoice/pdf-actions";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
@@ -548,6 +549,7 @@ export function InvoiceBuilder({ businessSlug, options, today, initial }: Invoic
               <a href={`/b/${businessSlug}/invoices/new`}>{t("newInvoice")}</a>
             </Button>
           </div>
+          {issued ? <PdfActions href={`/b/${businessSlug}/invoices/${issued.id}/pdf`} /> : null}
         </DialogContent>
       </Dialog>
 

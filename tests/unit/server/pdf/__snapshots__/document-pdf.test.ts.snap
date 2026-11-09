@@ -1,0 +1,260 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`credit note PDF > prints the credit note title, its invoice and reason (80mm) 1`] = `
+"Sharma Hardware
+Sharma Hardware LLP
+4 Station Road
+Nashik 422001
+Maharashtra (27)
+GSTIN: 27AAPFU0939F1ZV
+Phone: +91 98765 00000
+Credit Note
+Credit note no. CN/26-27/0001
+Date 09-11-2026
+Against invoice SH/26-27/0001 dated 09-11-2026
+Reason Goods returned
+Place of supply Karnataka (29)
+Tax payable on reverse charge No
+Billed to
+Ramesh Traders
+12 MG Road
+Bengaluru 560001
+Karnataka (29)
+GSTIN: 29AABCU9603R1ZM
+Phone: +91 98765 43210
+1. Cement 50 kg
+1 BAG × ₹420.00 ₹472.00
+Discount ₹20.00
+HSN/SAC 2523 · IGST 18%
+Taxable value ₹1,080.00
+IGST ₹194.40
+Round off -₹0.40
+Total credited ₹1,274.00
+Rupees One Thousand Two Hundred Seventy Four Only
+Tax by rate
+18% ₹400.00 ₹72.00
+Authorised Signatory"
+`;
+
+exports[`credit note PDF > prints the credit note title, its invoice and reason (a4) 1`] = `
+"Sharma Hardware
+Sharma Hardware LLP
+4 Station Road
+Nashik 422001
+Maharashtra (27)
+GSTIN: 27AAPFU0939F1ZV
+Phone: +91 98765 00000
+Credit Note
+BILLED TO
+Ramesh Traders
+12 MG Road
+Bengaluru 560001
+Karnataka (29)
+GSTIN: 29AABCU9603R1ZM
+Phone: +91 98765 43210
+Credit note no. CN/26-27/0001
+Date 09-11-2026
+Against invoice SH/26-27/0001 dated 09-11-2026
+Reason Goods returned
+Place of supply Karnataka (29)
+Tax payable on reverse charge No
+# Item HSN/SAC Qty Rate Discount Taxable value IGST Amount
+1 Cement 50 kg 2523 1 BAG ₹420.00 ₹20.00 ₹400.00 18%
+₹72.00
+₹472.00
+TAX BY RATE
+GST rate Taxable value IGST
+18% ₹400.00 ₹72.00
+Rupees One Thousand Two Hundred Seventy Four Only
+Taxable value ₹1,080.00
+IGST ₹194.40
+Round off -₹0.40
+Total credited ₹1,274.00
+For Sharma Hardware
+Authorised Signatory
+Page 1 of 1"
+`;
+
+exports[`invoice PDF > prints UTGST and a walk-in customer, and stamps a cancelled invoice (80 mm) 1`] = `
+"Sharma Hardware
+Sharma Hardware LLP
+Sector 17
+Chandigarh 160017
+Chandigarh (04)
+GSTIN: 04AAPFU0939F1ZX
+Phone: +91 98765 00000
+Tax Invoice
+CANCELLED
+Invoice no. CH/26-27/0001
+Date 09-11-2026
+Place of supply Chandigarh (04)
+Tax payable on reverse charge No
+Billed to
+Walk-in customer
+1. Tile adhesive
+2 BAG × ₹350.00 ₹826.00
+HSN/SAC 3214 · CGST 9% + UTGST 9%
+Taxable value ₹700.00
+CGST ₹63.00
+UTGST ₹63.00
+Total ₹826.00
+Rupees Eight Hundred Twenty Six Only
+Tax by rate
+18% ₹700.00 ₹63.00 ₹63.00
+Goods once sold are not taken back.
+Authorised Signatory"
+`;
+
+exports[`invoice PDF > prints every Rule 46 field of fixture 11 (80mm) 1`] = `
+"Sharma Hardware
+Sharma Hardware LLP
+4 Station Road
+Nashik 422001
+Maharashtra (27)
+GSTIN: 27AAPFU0939F1ZV
+Phone: +91 98765 00000
+Tax Invoice
+Invoice no. SH/26-27/0001
+Date 09-11-2026
+Due date 24-11-2026
+Place of supply Karnataka (29)
+Tax payable on reverse charge No
+Billed to
+Ramesh Traders
+12 MG Road
+Bengaluru 560001
+Karnataka (29)
+GSTIN: 29AABCU9603R1ZM
+Phone: +91 98765 43210
+1. Cement 50 kg
+1 BAG × ₹420.00 ₹472.00
+Discount ₹20.00
+HSN/SAC 2523 · IGST 18%
+2. Nails
+1.5 KGS × ₹120.00 ₹212.40
+HSN/SAC 7317 · IGST 18%
+3. Paint 1 L
+1 LTR × ₹590.00 ₹590.00
+HSN/SAC 3208 · IGST 18%
+Taxable value ₹1,080.00
+IGST ₹194.40
+Round off -₹0.40
+Total ₹1,274.00
+Rupees One Thousand Two Hundred Seventy Four Only
+Tax by rate
+18% ₹1,080.00 ₹194.40
+Pay by UPI
+Scan with any UPI app to pay ₹1,274.00
+UPI ID: shop@oksbi
+Goods once sold are not taken back.
+Authorised Signatory"
+`;
+
+exports[`invoice PDF > prints every Rule 46 field of fixture 11 (a4) 1`] = `
+"Sharma Hardware
+Sharma Hardware LLP
+4 Station Road
+Nashik 422001
+Maharashtra (27)
+GSTIN: 27AAPFU0939F1ZV
+Phone: +91 98765 00000
+Tax Invoice
+BILLED TO
+Ramesh Traders
+12 MG Road
+Bengaluru 560001
+Karnataka (29)
+GSTIN: 29AABCU9603R1ZM
+Phone: +91 98765 43210
+Invoice no. SH/26-27/0001
+Date 09-11-2026
+Due date 24-11-2026
+Place of supply Karnataka (29)
+Tax payable on reverse charge No
+# Item HSN/SAC Qty Rate Discount Taxable value IGST Amount
+1 Cement 50 kg 2523 1 BAG ₹420.00 ₹20.00 ₹400.00 18%
+₹72.00
+₹472.00
+2 Nails 7317 1.5 KGS ₹120.00 ₹0.00 ₹180.00 18%
+₹32.40
+₹212.40
+3 Paint 1 L 3208 1 LTR ₹590.00 ₹0.00 ₹500.00 18%
+₹90.00
+₹590.00
+TAX BY RATE
+GST rate Taxable value IGST
+18% ₹1,080.00 ₹194.40
+Rupees One Thousand Two Hundred Seventy Four Only
+Taxable value ₹1,080.00
+IGST ₹194.40
+Round off -₹0.40
+Total ₹1,274.00
+PAY BY UPI
+Scan with any UPI app to pay ₹1,274.00
+UPI ID: shop@oksbi
+BANK DETAILS
+Account name Sharma Hardware LLP
+Account no. 50100012345678
+IFSC HDFC0000123
+Bank HDFC Bank
+TERMS AND CONDITIONS
+Goods once sold are not taken back.
+For Sharma Hardware
+Authorised Signatory
+Page 1 of 1"
+`;
+
+exports[`invoice PDF > splits CGST and SGST, prints the ship-to address and notes (A4) 1`] = `
+"Sharma Hardware
+Sharma Hardware LLP
+4 Station Road
+Nashik 422001
+Maharashtra (27)
+GSTIN: 27AAPFU0939F1ZV
+Phone: +91 98765 00000
+Tax Invoice
+BILLED TO
+Patil Constructions
+Plot 7, MIDC
+Satpur
+Nashik 422007
+Maharashtra (27)
+GSTIN: 27AAACP1234C1Z5
+SHIP TO
+Site 3, Gangapur Road
+Nashik 422013
+Maharashtra (27)
+Invoice no. SH/26-27/0002
+Date 09-11-2026
+Due date 24-11-2026
+Place of supply Maharashtra (27)
+Tax payable on reverse charge No
+# Item HSN/SAC Qty Rate Discount Taxable value CGST SGST Amount
+1 PVC pipe 1 inch 3917 12.5 MTR ₹85.50 ₹0.00 ₹1,068.75 9%
+₹96.19
+9%
+₹96.19
+₹1,261.13
+2 Exercise book 4820 3 NOS ₹45.00 ₹0.00 ₹135.00 2.5%
+₹3.38
+2.5%
+₹3.38
+₹141.76
+TAX BY RATE
+GST rate Taxable value CGST SGST
+5% ₹135.00 ₹3.38 ₹3.38
+18% ₹1,068.75 ₹96.19 ₹96.19
+Rupees One Thousand Four Hundred Three Only
+Taxable value ₹1,203.75
+CGST ₹99.57
+SGST ₹99.57
+Round off ₹0.11
+Total ₹1,403.00
+NOTES
+Delivered by tempo MH15 AB 1234.
+TERMS AND CONDITIONS
+Goods once sold are not taken back.
+For Sharma Hardware
+Authorised Signatory
+Page 1 of 1"
+`;

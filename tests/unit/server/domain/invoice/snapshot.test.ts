@@ -83,6 +83,7 @@ describe("supplierSnapshot", () => {
       email: null,
       logoUrl: null,
       signatureUrl: null,
+      terms: "  Goods once sold are not taken back.  ",
     };
     expect(supplierSnapshot(business)).toEqual({
       legalName: "Sharma Hardware LLP",
@@ -101,6 +102,28 @@ describe("supplierSnapshot", () => {
       email: null,
       logoUrl: null,
       signatureUrl: null,
+      terms: "Goods once sold are not taken back.",
     });
+  });
+
+  it("prints no terms when they are blank", () => {
+    const business: BusinessFields = {
+      legalName: "Sharma Hardware",
+      tradeName: null,
+      gstin: null,
+      gstScheme: "UNREGISTERED",
+      stateCode: "27",
+      addressLine1: null,
+      addressLine2: null,
+      city: null,
+      pincode: null,
+      phoneE164: null,
+      email: null,
+      logoUrl: null,
+      signatureUrl: null,
+      terms: "   ",
+    };
+    expect(supplierSnapshot(business).terms).toBeNull();
+    expect(supplierSnapshot({ ...business, terms: null }).terms).toBeNull();
   });
 });

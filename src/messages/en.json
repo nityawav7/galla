@@ -687,5 +687,82 @@
       "issue": "Issue credit note",
       "issuing": "Issuing…"
     }
+  },
+  "pdf": {
+    "title": {
+      "TAX_INVOICE": "Tax Invoice",
+      "BILL_OF_SUPPLY": "Bill of Supply",
+      "INVOICE": "Invoice",
+      "CREDIT_NOTE": "Credit Note"
+    },
+    "compositionLine": "Composition taxable person, not eligible to collect tax on supplies",
+    "cancelled": "CANCELLED",
+    "invoiceNumber": "Invoice no.",
+    "creditNoteNumber": "Credit note no.",
+    "date": "Date",
+    "dueDate": "Due date",
+    "placeOfSupply": "Place of supply",
+    "reverseCharge": "Tax payable on reverse charge",
+    "no": "No",
+    "againstInvoice": "Against invoice",
+    "againstInvoiceValue": "{number} dated {date}",
+    "reason": "Reason",
+    "billedTo": "Billed to",
+    "shipTo": "Ship to",
+    "walkIn": "Walk-in customer",
+    "gstin": "GSTIN: {gstin}",
+    "phone": "Phone: {phone}",
+    "columns": {
+      "position": "#",
+      "item": "Item",
+      "hsn": "HSN/SAC",
+      "qty": "Qty",
+      "price": "Rate",
+      "discount": "Discount",
+      "taxable": "Taxable value",
+      "total": "Amount"
+    },
+    "tax": {
+      "cgst": "CGST",
+      "sgst": "SGST",
+      "utgst": "UTGST",
+      "igst": "IGST"
+    },
+    "taxSummary": "Tax by rate",
+    "gstRate": "GST rate",
+    "totals": {
+      "taxable": "Taxable value",
+      "cgst": "CGST",
+      "sgst": "SGST",
+      "utgst": "UTGST",
+      "igst": "IGST",
+      "roundOff": "Round off"
+    },
+    "grandTotal": "Total",
+    "creditTotal": "Total credited",
+    "hsnLine": "HSN/SAC {hsn}",
+    "lineDetail": "{qty} {unit} × {price}",
+    "lineDiscount": "Discount {amount}",
+    "payTitle": "Pay by UPI",
+    "scanToPay": "Scan with any UPI app to pay {amount}",
+    "upiId": "UPI ID: {vpa}",
+    "bankTitle": "Bank details",
+    "bankAccountName": "Account name",
+    "bankAccountNumber": "Account no.",
+    "bankIfsc": "IFSC",
+    "bankName": "Bank",
+    "notes": "Notes",
+    "terms": "Terms and conditions",
+    "forSupplier": "For {name}",
+    "signatory": "Authorised Signatory",
+    "page": "Page {page} of {total}",
+    "actions": {
+      "download": "Download PDF",
+      "print": "Print",
+      "paper": "Paper size",
+      "a4": "A4",
+      "thermal": "80 mm (thermal)",
+      "opensInNewTab": "(opens in a new tab)"
+    }
   }
 }

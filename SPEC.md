@@ -238,12 +238,16 @@ Each feature is done only when its acceptance criteria pass as automated tests.
   - The builder runs the same evaluation as the server (`src/lib/invoice-evaluation.ts`, on the domain engine) for live totals and field errors; the server recomputes on every save and issue.
   - A draft row is created on the first change, then saved 1.5 s after each change with a version check. Another tab's save is reported, never overwritten.
   - A walk-in sale needs no customer (an optional name), up to the Rule 46 amount. Product lines show their HSN, unit and rate from the product; one-off lines are typed in full. In the item search, Enter adds the best match.
-  - Until Phases 7 and 8, the confirmation sheet offers "View invoice" and "New invoice"; the other actions arrive with those phases.
+  - The confirmation sheet offers "View invoice", "New invoice", "Download PDF" and "Print" (Phase 7a). Sharing arrives with the public link and WhatsApp (Phase 7b, 7c), "Record payment" with Phase 8.
 - "Issue" assigns the number and locks the invoice. A warning that is allowed but needs a second look (an unregistered business billing another state) must be ticked first. A confirmation sheet offers: Share on WhatsApp, Copy link, Download PDF, Print, Record payment.
 - **AC:** the e2e test creates and issues an invoice with 3 lines (one tax-inclusive, one with a discount, one fractional qty). The totals match the expected fixture to the paisa.
 
 ### F5. PDF & public link
-- Generate PDFs with `@react-pdf/renderer` (no headless Chrome, so it is serverless-friendly). A4 and 80 mm thermal layouts. Embed Noto Sans and Noto Sans Devanagari fonts so ₹ and Hindi render.
+- Generate PDFs with `@react-pdf/renderer` (no headless Chrome, so it is serverless-friendly). A4 and 80 mm thermal layouts. Embed Noto Sans and Noto Sans Devanagari fonts so ₹ and Hindi render ([ADR 0008](docs/adr/0008-pdf-with-react-pdf.md)).
+  - Signed-in PDFs: `/b/{slug}/invoices/{id}/pdf` and `/b/{slug}/credit-notes/{id}/pdf`, `?format=a4|80mm`, `&download=1` to save (otherwise shown, to print). Every role can open them; other businesses and drafts get 404. Rendered on demand, never stored.
+  - Both layouts print the same Rule 46 fields (§4.7) from one printable model: each tax's rate and amount per line (A4) or by rate (80 mm), tax by rate, round-off, amount in words, notes, the business's terms, and "Authorised Signatory". A cancelled invoice is stamped "CANCELLED".
+  - Tax content comes from the snapshots. Payment details (UPI ID and bank account) are read live from settings. The UPI QR asks for the balance due and is printed only while something is due on an invoice that isn't cancelled. Credit notes carry no payment block.
+  - Labels are English in v1, until the business language setting exists; Hindi names and items print with the Devanagari font. Logos and signature images come with checked uploads (F10).
 - Public link `/i/{token}`: a 128-bit random token, `noindex`, rate-limited, with view, download and a **UPI QR / "Pay via UPI" button**.
 - UPI link format: `upi://pay?pa={vpa}&pn={name}&am={amount}&cu=INR&tn={invoiceNo}`.
 - The owner can revoke and regenerate the token.
@@ -369,7 +373,8 @@ UI (app/ routes, components)  →  Server Actions / Route Handlers (thin: auth, 
 │   │   ├── (auth)/  login/  signup/  invite/[token]/
 │   │   ├── (app)/b/[businessSlug]/  dashboard/ invoices/ customers/ products/ payments/ reports/ settings/ audit/
 │   │   ├── i/[token]/  (public invoice page)
-│   │   └── api/  health/  auth/[...all]/  cron/daily/  cron/demo-reset/  pdf/[id]/
+│   │   └── api/  health/  auth/[...all]/  cron/daily/  cron/demo-reset/
+│   │       (PDFs: (app)/b/[businessSlug]/invoices/[invoiceId]/pdf and credit-notes/[creditNoteId]/pdf)
 │   ├── components/  ui/ (shadcn)  invoice/  forms/  charts/
 │   ├── server/
 │   │   ├── domain/  money.ts  gst/  gstin.ts  states.ts  fy.ts  numbering.ts  amount-in-words.ts
@@ -395,7 +400,7 @@ All tenant tables have: `id uuid pk (v7)`, `business_id uuid not null fk`, `crea
 | `products` | name, hsn_sac, unit, price_paise, rate_bp, price_includes_tax, sku, archived_at |
 | `customers` | name, phone_e164, email, gstin, billing_* , billing_state_code, shipping_* , opening_balance_paise, credit_days, archived_at |
 | `number_sequences` | business_id, series (`INV`/`CN`), fy (`26-27`), next_value — **unique(business_id, series, fy)** |
-| `invoices` | type (`TAX_INVOICE`/`BILL_OF_SUPPLY`/`INVOICE`), status, number (nullable until issued; **unique(business_id, number)**), fy, invoice_date (date), due_date, customer_id, **customer snapshot JSON** (name, GSTIN, addresses as at issue), **supplier snapshot JSON** (the business as printed), draft (JSON working copy, drafts only), place_of_supply_state_code, is_inter_state, reverse_charge (false), discount, taxable, cgst, sgst, utgst, igst, round_off, grand_total, amount_paid, amount_credited (all `_paise`), notes, public_token (unique), token_revoked_at, issued_at, cancelled_at, cancel_reason, version |
+| `invoices` | type (`TAX_INVOICE`/`BILL_OF_SUPPLY`/`INVOICE`), status, number (nullable until issued; **unique(business_id, number)**), fy, invoice_date (date), due_date, customer_id, **customer snapshot JSON** (name, GSTIN, addresses as at issue), **supplier snapshot JSON** (the business as printed, with its terms since Phase 7), draft (JSON working copy, drafts only), place_of_supply_state_code, is_inter_state, reverse_charge (false), discount, taxable, cgst, sgst, utgst, igst, round_off, grand_total, amount_paid, amount_credited (all `_paise`), notes, public_token (unique), token_revoked_at, issued_at, cancelled_at, cancel_reason, version |
 | `invoice_lines` | invoice_id, position, product_id (nullable), **snapshot**: description, hsn_sac, unit, qty_milli, unit_price_paise, price_includes_tax, discount_paise, rate_bp, taxable, cgst, sgst, utgst, igst, line_total |
 | `credit_notes` (+ lines) | same shape, linked `invoice_id`, reason, own CN number series. Issued directly (no drafts), so number, fy and snapshot are always set. Each line links the `invoice_line_id` it returns part of |
 | `payments` | customer_id, date, amount_paise, mode, reference, notes |

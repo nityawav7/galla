@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { expect, type Page, test } from "@playwright/test";
 
-import { onlyOn, field, signUp } from "./support";
+import { expectPdf, field, onlyOn, signUp } from "./support";
 
 // Creates accounts and businesses, so never against production.
 test.skip(process.env.E2E_ENVIRONMENT === "production", "creates accounts");
@@ -196,8 +196,21 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     await expect(
       issued.getByRole("heading", { name: /^Invoice SH\/\d{2}-\d{2}\/0001 issued$/ }),
     ).toBeVisible();
+    // SPEC F5: the issued sheet offers the PDF straight away.
+    const download = issued.getByRole("link", { name: "Download PDF" });
+    await expect(download).toHaveAttribute(
+      "href",
+      /\/invoices\/[0-9a-f-]{36}\/pdf\?format=a4&download=1$/,
+    );
+    await expectPdf(page, (await download.getAttribute("href")) ?? "");
     await issued.getByRole("link", { name: "View invoice" }).click();
     await expect(page.getByTestId("invoice-total")).toHaveText("₹1,274.00");
+    // The 80 mm slip for a thermal printer: Print opens it in a new tab.
+    await field(page, "Paper size").selectOption("80mm");
+    const print = page.getByRole("link", { name: /^Print/ });
+    await expect(print).toHaveAttribute("href", /\/pdf\?format=80mm$/);
+    await expect(print).toHaveAttribute("target", "_blank");
+    await expectPdf(page, (await print.getAttribute("href")) ?? "");
     await expect(page.getByText("Rupees One Thousand Two Hundred Seventy Four Only")).toBeVisible();
 
     await page.getByRole("link", { name: "Back to invoices" }).click();
@@ -216,6 +229,10 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
 
     await expect(page.getByText(/^CN\/\d{2}-\d{2}\/0001$/)).toBeVisible();
     await expect(page.getByTestId("credit-note-total")).toHaveText("₹472.00");
+    await expectPdf(
+      page,
+      (await page.getByRole("link", { name: "Download PDF" }).getAttribute("href")) ?? "",
+    );
     await page.getByRole("link", { name: /^Back to invoice/ }).click();
     await expect(page.getByTestId("invoice-balance")).toHaveText("₹802.00");
     await expect(page.getByRole("button", { name: "Cancel invoice" })).toHaveCount(0);
@@ -247,6 +264,9 @@ test("a user with no membership gets 404 for another business (SPEC F1)", async 
     expect(response?.status(), path).toBe(404);
     await expect(stranger.getByRole("heading", { name: "Page not found" })).toBeVisible();
   }
+  // The draft's PDF route answers 404 too (SPEC F5: tenant-scoped).
+  const pdfPath = draftPath.replace(/\/edit$/, "/pdf");
+  expect((await stranger.request.get(pdfPath)).status(), pdfPath).toBe(404);
   // A slug nobody has looks exactly the same.
   const missing = await stranger.goto(`/b/no-such-shop-${randomUUID().slice(0, 6)}/dashboard`);
   expect(missing?.status()).toBe(404);
