@@ -24,7 +24,7 @@ import {
   lineSnapshot,
   type SupplierSnapshot,
 } from "./document-columns";
-import { invoices } from "./invoices";
+import { invoiceLines, invoices } from "./invoices";
 import { states } from "./reference";
 
 /**
@@ -87,6 +87,8 @@ export const creditNoteLines = pgTable(
       .notNull()
       .references(() => businesses.id, { onDelete: "restrict" }),
     creditNoteId: uuid().notNull(),
+    /** The invoice line this returns part of (ADR 0007). */
+    invoiceLineId: uuid().notNull(),
     productId: uuid(),
     ...lineSnapshot(),
     ...audited(),
@@ -103,11 +105,17 @@ export const creditNoteLines = pgTable(
       foreignColumns: [creditNotes.businessId, creditNotes.id],
     }).onDelete("restrict"),
     foreignKey({
+      name: "credit_note_lines_invoice_line_fk",
+      columns: [t.businessId, t.invoiceLineId],
+      foreignColumns: [invoiceLines.businessId, invoiceLines.id],
+    }).onDelete("restrict"),
+    foreignKey({
       name: "credit_note_lines_product_fk",
       columns: [t.businessId, t.productId],
       foreignColumns: [products.businessId, products.id],
     }).onDelete("restrict"),
     ...lineChecks("credit_note_lines", t),
     index("credit_note_lines_business_id_product_id_idx").on(t.businessId, t.productId),
+    index("credit_note_lines_business_id_invoice_line_id_idx").on(t.businessId, t.invoiceLineId),
   ],
 );

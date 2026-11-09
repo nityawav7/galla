@@ -90,3 +90,10 @@ What I learned and what broke while building Galla, phase by phase.
 - After adding a line from a search panel, the panel unmounts and takes focus with it. React Hook Form's `focusName` didn't win that race; focusing the new field in an effect after it renders does.
 - In Playwright, `getByRole("button", { name: /Nails/ })` also matched "Add “Nails” as a one-off item", which appears before the search results load. Anchored names (`/^Nails/`) wait for the real result.
 - A nested `<form>` inside a portal still bubbles its submit event through React to the outer form, so the builder is not a `<form>`; the inline customer form lives in a dialog.
+
+## Phase 6c: cancel and credit notes
+
+- Crediting part of a line as `F(after) − F(before)`, where F scales the stored line amounts, makes any series of partial returns add up to the original line to the paisa. Recomputing each return from the rate does not.
+- A migration that must touch rows guarded by an append-only trigger can pause that one trigger (`DISABLE TRIGGER name`) around the update and turn it back on in the same migration.
+- A Postgres constraint that a foreign key points at must exist before the foreign key: drizzle-kit generated them in the wrong order, so the migration was reordered by hand before merge.
+- The first e2e run on a cold dev server can time out while pages compile; the same test passes warm and in CI, which runs a production build.

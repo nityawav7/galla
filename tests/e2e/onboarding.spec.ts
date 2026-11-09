@@ -203,6 +203,23 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     await page.getByRole("link", { name: "Back to invoices" }).click();
     await expect(page.getByRole("link", { name: /SH\/\d{2}-\d{2}\/0001/ })).toBeVisible();
   });
+
+  // Credit notes (SPEC §4.8, ADR 0007): return the cement; the balance drops by its ₹472.00.
+  await test.step("credit a returned item; the invoice can no longer be cancelled", async () => {
+    await page.getByRole("link", { name: /SH\/\d{2}-\d{2}\/0001/ }).click();
+    await expect(page.getByRole("button", { name: "Cancel invoice" })).toBeVisible();
+    await page.getByRole("link", { name: "Issue credit note" }).click();
+    await page.getByLabel("Quantity returned of Cement 50 kg").fill("1");
+    await expect(page.getByTestId("credit-total")).toHaveText("₹472.00");
+    await page.getByRole("button", { name: "Goods returned" }).click();
+    await page.getByRole("button", { name: "Issue credit note" }).click();
+
+    await expect(page.getByText(/^CN\/\d{2}-\d{2}\/0001$/)).toBeVisible();
+    await expect(page.getByTestId("credit-note-total")).toHaveText("₹472.00");
+    await page.getByRole("link", { name: /^Back to invoice/ }).click();
+    await expect(page.getByTestId("invoice-balance")).toHaveText("₹802.00");
+    await expect(page.getByRole("button", { name: "Cancel invoice" })).toHaveCount(0);
+  });
 });
 
 test("a user with no membership gets 404 for another business (SPEC F1)", async ({

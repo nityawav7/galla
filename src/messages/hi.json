@@ -67,7 +67,14 @@
     "dueDateInvalid": "सही देय तारीख डालें",
     "dueDateBeforeInvoiceDate": "देय तारीख बिल की तारीख से पहले नहीं हो सकती",
     "placeOfSupplyInvalid": "आपूर्ति का सही स्थान चुनें",
-    "hsnDigitsInvalid": "4 या 6 अंक चुनें"
+    "hsnDigitsInvalid": "4 या 6 अंक चुनें",
+    "cancelReasonRequired": "बिल रद्द करने का कारण लिखें (कम से कम 3 अक्षर)",
+    "creditReasonRequired": "क्रेडिट नोट का कारण लिखें (कम से कम 3 अक्षर)",
+    "creditLinesRequired": "कम से कम एक आइटम की लौटाई गई मात्रा डालें",
+    "returnTooMany": "इस आइटम पर लौटाने के लिए बची मात्रा से ज़्यादा",
+    "creditExceedsBalance": "क्रेडिट नोट बिल पर बचे बकाया से ज़्यादा है",
+    "lineNotOnInvoice": "यह आइटम बिल पर नहीं है",
+    "duplicateLine": "यह आइटम दो बार है"
   },
   "auth": {
     "fields": {
@@ -623,7 +630,62 @@
     "errors": {
       "invoiceAlreadyIssued": "यह बिल जारी हो चुका है और बदला नहीं जा सकता",
       "draftEditedElsewhere": "यह ड्राफ़्ट किसी दूसरे टैब में बदला गया। नया संस्करण देखने के लिए पेज फिर से लोड करें",
-      "customerArchived": "यह ग्राहक संग्रहीत है। उन्हें वापस लाएँ या दूसरा ग्राहक चुनें"
+      "customerArchived": "यह ग्राहक संग्रहीत है। उन्हें वापस लाएँ या दूसरा ग्राहक चुनें",
+      "invoiceNotIssued": "यह बिल अभी ड्राफ़्ट है",
+      "invoiceCancelled": "यह बिल रद्द है",
+      "invoiceHasPayments": "इस बिल पर भुगतान हुआ है, इसलिए रद्द नहीं हो सकता। क्रेडिट नोट जारी करें",
+      "invoiceHasCredits": "इस बिल पर क्रेडिट नोट है, इसलिए रद्द नहीं हो सकता"
+    },
+    "detail": {
+      "cancelled": "{date} को रद्द: {reason}",
+      "credited": "क्रेडिट नोट",
+      "balance": "बकाया राशि",
+      "newCreditNote": "क्रेडिट नोट जारी करें",
+      "cannotCancel": "जिस बिल पर क्रेडिट नोट या भुगतान हो, वह रद्द नहीं हो सकता। क्रेडिट नोट जारी करें।",
+      "creditNotes": "क्रेडिट नोट"
+    },
+    "cancel": {
+      "button": "बिल रद्द करें",
+      "title": "बिल {number} रद्द करें?",
+      "explain": "इसका नंबर वही रहेगा और यह रद्द बिल के रूप में रिकॉर्ड में रहेगा। इसे वापस नहीं किया जा सकता।",
+      "gstr1Warning": "अगर यह बिल आपके भरे हुए GSTR-1 में आ चुका है, तो क्रेडिट नोट जारी करें। शक हो तो अपने CA से पूछें।",
+      "reason": "कारण (ज़रूरी)",
+      "confirm": "बिल रद्द करें",
+      "cancelling": "रद्द हो रहा है…",
+      "keep": "बिल रखें"
+    }
+  },
+  "creditNotes": {
+    "newTitle": "नया क्रेडिट नोट",
+    "detailTitle": "क्रेडिट नोट",
+    "backToInvoice": "बिल {number} पर वापस",
+    "ownerOnly": "क्रेडिट नोट केवल मालिक जारी कर सकते हैं।",
+    "notAllowed": "क्रेडिट नोट केवल जारी और बिना रद्द बिल पर जारी हो सकता है।",
+    "documentTitle": "क्रेडिट नोट",
+    "number": "क्रेडिट नोट नं.",
+    "date": "तारीख",
+    "againstInvoice": "बिल",
+    "reason": "कारण",
+    "total": "कुल क्रेडिट",
+    "form": {
+      "items": "लौटाए गए आइटम",
+      "returnAll": "सब लौटाएँ",
+      "sold": "{qty} {unit} बेचा · {left} लौटाना बाकी",
+      "qtyReturned": "{item} की लौटाई गई मात्रा",
+      "allReturned": "इस लाइन का सब कुछ लौट चुका है।",
+      "reason": "कारण",
+      "reasons": {
+        "returned": "सामान लौटाया",
+        "discount": "बिक्री के बाद छूट",
+        "correction": "बिल में सुधार"
+      },
+      "taxable": "कर योग्य मूल्य",
+      "tax": "GST",
+      "roundOff": "राउंड ऑफ़",
+      "total": "कुल क्रेडिट",
+      "balance": "बिल पर अभी बकाया: {amount}",
+      "issue": "क्रेडिट नोट जारी करें",
+      "issuing": "जारी हो रहा है…"
     }
   }
 }

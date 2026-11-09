@@ -5,6 +5,7 @@ import { type CustomerOption, type ProductOption, toCustomerOption } from "@/lib
 import { runAction } from "@/server/action";
 import { requireTenant } from "@/server/auth/session";
 import { formatRupees } from "@/server/domain/money";
+import { cancelInvoice, createCreditNote } from "@/server/services/credit-note.service";
 import { getCustomer, listCustomers } from "@/server/services/customer.service";
 import {
   createDraft,
@@ -117,5 +118,29 @@ export async function searchProductsAction(
       rateBp: product.rateBp,
       priceIncludesTax: product.priceIncludesTax,
     }));
+  });
+}
+
+export async function cancelInvoiceAction(
+  businessSlug: string,
+  invoiceId: string,
+  input: unknown,
+): Promise<ActionResult<null>> {
+  return runAction(async () => {
+    const { ctx } = await requireTenant(businessSlug);
+    await cancelInvoice(ctx, invoiceId, input);
+    return null;
+  });
+}
+
+export async function createCreditNoteAction(
+  businessSlug: string,
+  invoiceId: string,
+  input: unknown,
+): Promise<ActionResult<{ id: string; number: string }>> {
+  return runAction(async () => {
+    const { ctx } = await requireTenant(businessSlug);
+    const note = await createCreditNote(ctx, invoiceId, input);
+    return { id: note.id, number: note.number };
   });
 }

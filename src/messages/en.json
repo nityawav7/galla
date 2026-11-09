@@ -67,7 +67,14 @@
     "dueDateInvalid": "Enter a valid due date",
     "dueDateBeforeInvoiceDate": "The due date can't be before the invoice date",
     "placeOfSupplyInvalid": "Choose a valid place of supply",
-    "hsnDigitsInvalid": "Choose 4 or 6 digits"
+    "hsnDigitsInvalid": "Choose 4 or 6 digits",
+    "cancelReasonRequired": "Write why the invoice is cancelled (at least 3 characters)",
+    "creditReasonRequired": "Write the reason for the credit note (at least 3 characters)",
+    "creditLinesRequired": "Enter a quantity returned for at least one item",
+    "returnTooMany": "More than what is left to return on this item",
+    "creditExceedsBalance": "The credit note is more than what is still owed on the invoice",
+    "lineNotOnInvoice": "This item is not on the invoice",
+    "duplicateLine": "This item is listed twice"
   },
   "auth": {
     "fields": {
@@ -623,7 +630,62 @@
     "errors": {
       "invoiceAlreadyIssued": "This invoice is already issued and can't be changed",
       "draftEditedElsewhere": "This draft was changed in another tab. Reload to see the latest version",
-      "customerArchived": "This customer is archived. Restore them or choose another customer"
+      "customerArchived": "This customer is archived. Restore them or choose another customer",
+      "invoiceNotIssued": "This invoice is still a draft",
+      "invoiceCancelled": "This invoice is cancelled",
+      "invoiceHasPayments": "This invoice has payments, so it can't be cancelled. Issue a credit note instead",
+      "invoiceHasCredits": "This invoice has a credit note, so it can't be cancelled"
+    },
+    "detail": {
+      "cancelled": "Cancelled on {date}: {reason}",
+      "credited": "Credit notes",
+      "balance": "Balance due",
+      "newCreditNote": "Issue credit note",
+      "cannotCancel": "An invoice with a credit note or a payment can't be cancelled. Issue a credit note instead.",
+      "creditNotes": "Credit notes"
+    },
+    "cancel": {
+      "button": "Cancel invoice",
+      "title": "Cancel invoice {number}?",
+      "explain": "It keeps its number and stays in your records as cancelled. This can't be undone.",
+      "gstr1Warning": "If this invoice is already in a GSTR-1 you have filed, issue a credit note instead. Ask your CA if unsure.",
+      "reason": "Reason (required)",
+      "confirm": "Cancel invoice",
+      "cancelling": "Cancelling…",
+      "keep": "Keep invoice"
+    }
+  },
+  "creditNotes": {
+    "newTitle": "New credit note",
+    "detailTitle": "Credit note",
+    "backToInvoice": "Back to invoice {number}",
+    "ownerOnly": "Only the owner can issue credit notes.",
+    "notAllowed": "Credit notes can only be issued against an issued invoice that isn't cancelled.",
+    "documentTitle": "Credit Note",
+    "number": "Credit note no.",
+    "date": "Date",
+    "againstInvoice": "Against invoice",
+    "reason": "Reason",
+    "total": "Total credited",
+    "form": {
+      "items": "Items returned",
+      "returnAll": "Return everything",
+      "sold": "Sold {qty} {unit} · {left} left to return",
+      "qtyReturned": "Quantity returned of {item}",
+      "allReturned": "Everything on this line is already returned.",
+      "reason": "Reason",
+      "reasons": {
+        "returned": "Goods returned",
+        "discount": "Discount after sale",
+        "correction": "Correction in invoice"
+      },
+      "taxable": "Taxable value",
+      "tax": "GST",
+      "roundOff": "Round off",
+      "total": "Total credit",
+      "balance": "Still owed on the invoice: {amount}",
+      "issue": "Issue credit note",
+      "issuing": "Issuing…"
     }
   }
 }
