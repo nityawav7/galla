@@ -60,6 +60,8 @@ Existing apps are feature-heavy. Galla focuses on three things only:
 | Create/edit products & customers | ✅ | ❌ | ✅ |
 | Create draft & issue invoices | ✅ | ❌ | ✅ |
 | Cancel invoice / issue credit note | ✅ | ❌ | ❌ |
+| Copy an invoice's public link, share it | ✅ | ❌ | ✅ |
+| Turn a public link off, make a new one | ✅ | ❌ | ❌ |
 | Record payments | ✅ | ✅ | ✅ |
 | View all invoices, ledger, dashboard | ✅ | ✅ | ✅ (dashboard totals hidden) |
 | Download GST exports & reports | ✅ | ✅ | ❌ |
@@ -238,7 +240,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
   - The builder runs the same evaluation as the server (`src/lib/invoice-evaluation.ts`, on the domain engine) for live totals and field errors; the server recomputes on every save and issue.
   - A draft row is created on the first change, then saved 1.5 s after each change with a version check. Another tab's save is reported, never overwritten.
   - A walk-in sale needs no customer (an optional name), up to the Rule 46 amount. Product lines show their HSN, unit and rate from the product; one-off lines are typed in full. In the item search, Enter adds the best match.
-  - The confirmation sheet offers "View invoice", "New invoice", "Download PDF" and "Print" (Phase 7a). Sharing arrives with the public link and WhatsApp (Phase 7b, 7c), "Record payment" with Phase 8.
+  - The confirmation sheet offers "View invoice", "New invoice", "Download PDF", "Print" (Phase 7a) and the customer's link to copy (Phase 7b). WhatsApp sharing arrives with Phase 7c, "Record payment" with Phase 8.
 - "Issue" assigns the number and locks the invoice. A warning that is allowed but needs a second look (an unregistered business billing another state) must be ticked first. A confirmation sheet offers: Share on WhatsApp, Copy link, Download PDF, Print, Record payment.
 - **AC:** the e2e test creates and issues an invoice with 3 lines (one tax-inclusive, one with a discount, one fractional qty). The totals match the expected fixture to the paisa.
 
@@ -248,9 +250,12 @@ Each feature is done only when its acceptance criteria pass as automated tests.
   - Both layouts print the same Rule 46 fields (§4.7) from one printable model: each tax's rate and amount per line (A4) or by rate (80 mm), tax by rate, round-off, amount in words, notes, the business's terms, and "Authorised Signatory". A cancelled invoice is stamped "CANCELLED".
   - Tax content comes from the snapshots. Payment details (UPI ID and bank account) are read live from settings. The UPI QR asks for the balance due and is printed only while something is due on an invoice that isn't cancelled. Credit notes carry no payment block.
   - Labels are English in v1, until the business language setting exists; Hindi names and items print with the Devanagari font. Logos and signature images come with checked uploads (F10).
-- Public link `/i/{token}`: a 128-bit random token, `noindex`, rate-limited, with view, download and a **UPI QR / "Pay via UPI" button**.
-- UPI link format: `upi://pay?pa={vpa}&pn={name}&am={amount}&cu=INR&tn={invoiceNo}`.
-- The owner can revoke and regenerate the token.
+- Public link `/i/{token}`: a 128-bit random token, `noindex`, rate-limited, with view, download and a **UPI QR / "Pay via UPI" button** ([ADR 0009](docs/adr/0009-public-invoice-links.md)).
+  - No sign-in. The proxy limits `/i/*` to 60 requests a minute per IP and answers 404 for an unknown, malformed, turned-off or draft token before the page renders. Responses carry `noindex`, `Referrer-Policy: no-referrer` and `Cache-Control: private, no-store`.
+  - The page shows the shop, the balance due, a "Pay via UPI" button on phones and the same link as a QR code (both only while something is due and the invoice isn't cancelled), "Download PDF" (A4 and 80 mm, `/i/{token}/pdf`) and the invoice itself.
+  - Owners and staff copy the link from the issued sheet or the invoice page; accountants don't see it.
+- UPI link format: `upi://pay?pa={vpa}&pn={name}&am={amount}&cu=INR&tn={invoiceNo}`. The amount is the balance due; the payee name and note are percent-encoded and cut to 50 characters.
+- The owner can revoke ("Turn off link") and regenerate ("New link") the token. A new link ends the old one for good. Both are audited without the token.
 - **AC:** a snapshot test of the PDF text content. A revoked token returns 404.
 
 ### F6. WhatsApp share
@@ -302,7 +307,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 - Validate every input with Zod at the boundary (server actions, route handlers, CSV rows).
 - IDs are UUIDv7 (sortable, not guessable). Public tokens are separate random 128-bit values.
 - Secure, HttpOnly, SameSite=Lax cookies. Strict CSP with nonces, HSTS, X-Frame-Options DENY, Referrer-Policy, Permissions-Policy.
-- Rate limits with `@upstash/ratelimit`: auth 5/min/IP; public invoice 60/min/IP; mutations 120/min/user; demo stricter.
+- Rate limits with `@upstash/ratelimit`: auth 5/min/IP; public invoice 60/min/IP (in the proxy, page and PDF together); mutations 120/min/user; demo stricter.
 - Secrets live only in env vars, validated at boot with `@t3-oss/env-nextjs`. `.env.example` is committed; real `.env` never is.
 - Never log PII (phone, email, GSTIN, addresses). Logs use IDs only.
 - Dependabot, `pnpm audit` in CI, and GitHub CodeQL. Run `gitleaks` in CI for secret scanning.
@@ -379,7 +384,7 @@ UI (app/ routes, components)  →  Server Actions / Route Handlers (thin: auth, 
 │   ├── server/
 │   │   ├── domain/  money.ts  gst/  gstin.ts  states.ts  fy.ts  numbering.ts  amount-in-words.ts
 │   │   ├── services/  invoice.service.ts  payment.service.ts  customer.service.ts …
-│   │   ├── db/  schema/  client.ts  repos/  admin/
+│   │   ├── db/  schema/  client.ts  repos/  admin/  public/ (token lookup, ADR 0009)
 │   │   ├── authz/  permissions.ts  context.ts
 │   │   ├── pdf/  exports/  notifications/  jobs/
 │   ├── lib/  env.ts  logger.ts  ratelimit.ts  errors.ts  i18n/

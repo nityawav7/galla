@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import { CancelInvoice } from "@/components/invoice/cancel-invoice";
 import { InvoiceView } from "@/components/invoice/invoice-view";
 import { PdfActions } from "@/components/invoice/pdf-actions";
+import { PublicLinkPanel } from "@/components/invoice/public-link-panel";
 import { Button } from "@/components/ui/button";
 import { NotFoundError } from "@/lib/errors";
 import { requireTenant } from "@/server/auth/session";
@@ -16,6 +17,7 @@ import { formatIndianDate, istDateFromInstant } from "@/server/domain/fy";
 import { balancePaise, displayStatus } from "@/server/domain/invoice/status";
 import { formatINR } from "@/server/domain/money";
 import { getInvoice } from "@/server/services/invoice.service";
+import { getPublicLink } from "@/server/services/public-link.service";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("invoices");
@@ -100,6 +102,14 @@ async function InvoiceDetail({
         <p className="text-sm text-muted-foreground">{t("detail.cannotCancel")}</p>
       ) : null}
       <PdfActions href={`/b/${businessSlug}/invoices/${invoice.id}/pdf`} />
+      {can(ctx, "invoice:share") ? (
+        <PublicLinkPanel
+          businessSlug={businessSlug}
+          invoiceId={invoice.id}
+          url={(await getPublicLink(ctx, invoice.id)).url}
+          canManage={can(ctx, "invoice:manageLink")}
+        />
+      ) : null}
       <InvoiceView invoice={invoice} lines={lines} status={status} />
       {creditNotes.length > 0 ? (
         <section aria-labelledby="invoice-credit-notes" className="flex flex-col gap-2">

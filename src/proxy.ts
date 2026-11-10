@@ -2,6 +2,11 @@ import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
 
 import { getAuth } from "@/server/auth/auth";
+import {
+  defaultGateDependencies,
+  publicInvoiceGate,
+  publicInvoiceToken,
+} from "@/server/http/public-invoice-gate";
 import { resolveTenant } from "@/server/services/tenant.service";
 
 /** A path that matches no route, so rewriting to it renders the 404 page with status 404. */
@@ -14,12 +19,19 @@ function tenantSlug(pathname: string): string | undefined {
 
 /**
  * Runs before app pages render:
+ * - /i/{token}: the public invoice link, no sign-in; rate-limited and 404 for a dead link
+ *   (ADR 0009);
  * - no session cookie → /login;
  * - /b/{slug}/… for a business the user is not a member of → HTTP 404 (SPEC F1). Pages stream,
  *   so once rendering starts a notFound() can no longer change the status code.
  * Layouts and server actions check the session and membership again themselves.
  */
 export async function proxy(request: NextRequest): Promise<NextResponse> {
+  const token = publicInvoiceToken(request.nextUrl.pathname);
+  if (token !== undefined) {
+    return publicInvoiceGate(request, token, defaultGateDependencies(NOT_FOUND_PATH));
+  }
+
   const login = NextResponse.redirect(new URL("/login", request.url));
   if (!getSessionCookie(request)) return login;
 
@@ -35,5 +47,5 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
 }
 
 export const config = {
-  matcher: ["/b", "/b/:path*", "/onboarding"],
+  matcher: ["/b", "/b/:path*", "/onboarding", "/i/:path*"],
 };

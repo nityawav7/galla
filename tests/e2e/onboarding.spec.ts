@@ -203,6 +203,8 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
       /\/invoices\/[0-9a-f-]{36}\/pdf\?format=a4&download=1$/,
     );
     await expectPdf(page, (await download.getAttribute("href")) ?? "");
+    // ...and the customer's link (SPEC F5).
+    await expect(issued.getByTestId("public-link")).toHaveValue(/\/i\/[A-Za-z0-9_-]{22}$/);
     await issued.getByRole("link", { name: "View invoice" }).click();
     await expect(page.getByTestId("invoice-total")).toHaveText("₹1,274.00");
     // The 80 mm slip for a thermal printer: Print opens it in a new tab.
@@ -237,6 +239,54 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     await expect(page.getByTestId("invoice-balance")).toHaveText("₹802.00");
     await expect(page.getByRole("button", { name: "Cancel invoice" })).toHaveCount(0);
   });
+
+  // SPEC F5: the customer opens the link without an account and pays the balance by UPI; the
+  // owner can turn the link off and make a new one. Runs after the credit note: ₹802.00 is due.
+  await test.step("share the public link; pay by UPI; turn the link off and on", async () => {
+    // Next keeps pages visited earlier mounted but hidden: use the visible field.
+    const publicLink = () => page.getByTestId("public-link").filter({ visible: true });
+    const shared = new URL(await publicLink().inputValue()).pathname;
+    expect(shared).toMatch(/^\/i\/[A-Za-z0-9_-]{22}$/);
+    const visitor = await page
+      .context()
+      .browser()
+      ?.newContext({
+        viewport: { width: 360, height: 740 },
+      });
+    if (!visitor) throw new Error("no browser");
+    const customer = await visitor.newPage();
+
+    const response = await customer.goto(shared);
+    expect(response?.status()).toBe(200);
+    expect(response?.headers()["x-robots-tag"]).toBe("noindex, nofollow");
+    await expect(customer.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
+    await expect(customer.getByTestId("amount-due")).toHaveText("₹802.00");
+    await expect(customer.getByRole("link", { name: "Pay ₹802.00 via UPI" })).toHaveAttribute(
+      "href",
+      /^upi:\/\/pay\?pa=shop@oksbi&pn=E2E%20Shop%20[0-9a-f]{6}&am=802\.00&cu=INR&tn=SH%2F\d{2}-\d{2}%2F0001$/,
+    );
+    await expect(
+      customer.getByRole("img", { name: "UPI QR code to pay ₹802.00 to shop@oksbi" }),
+    ).toBeVisible();
+    await expectPdf(customer, `${shared}/pdf?download=1`);
+
+    // Turned off: the customer gets 404, for the page and the PDF.
+    await page.getByRole("button", { name: "Turn off link" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Turn off" }).click();
+    await expect(page.getByText(/The link is turned off/)).toBeVisible();
+    expect((await customer.reload())?.status()).toBe(404);
+    expect((await customer.request.get(`${shared}/pdf`)).status()).toBe(404);
+
+    // A new link works; the old one stays dead.
+    await page.getByRole("button", { name: "Turn on with a new link" }).click();
+    await page.getByRole("dialog").getByRole("button", { name: "Make new link" }).click();
+    await expect(publicLink()).toBeVisible();
+    const fresh = new URL(await publicLink().inputValue()).pathname;
+    expect(fresh).not.toBe(shared);
+    expect((await customer.goto(fresh))?.status()).toBe(200);
+    expect((await customer.goto(shared))?.status()).toBe(404);
+    await visitor.close();
+  });
 });
 
 test("a user with no membership gets 404 for another business (SPEC F1)", async ({
@@ -267,6 +317,9 @@ test("a user with no membership gets 404 for another business (SPEC F1)", async 
   // The draft's PDF route answers 404 too (SPEC F5: tenant-scoped).
   const pdfPath = draftPath.replace(/\/edit$/, "/pdf");
   expect((await stranger.request.get(pdfPath)).status(), pdfPath).toBe(404);
+  // An invoice link that was never issued is a plain 404 too, with no sign-in needed.
+  const unknownLink = await stranger.goto("/i/AAAAAAAAAAAAAAAAAAAAAA");
+  expect(unknownLink?.status()).toBe(404);
   // A slug nobody has looks exactly the same.
   const missing = await stranger.goto(`/b/no-such-shop-${randomUUID().slice(0, 6)}/dashboard`);
   expect(missing?.status()).toBe(404);
