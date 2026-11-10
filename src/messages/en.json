@@ -78,7 +78,26 @@
     "templateRequired": "Write a message, or use the default",
     "templateTooLong": "Keep the message under 1,000 characters",
     "templateUnknownPlaceholder": "Use only the placeholders listed below",
-    "templateNeedsLink": "Include the invoice link placeholder, so the customer can open the invoice"
+    "templateNeedsLink": "Include the invoice link placeholder, so the customer can open the invoice",
+    "customerRequired": "Choose a customer",
+    "paymentAmountInvalid": "Enter an amount like 500 or 499.50",
+    "paymentAmountPositive": "Enter an amount above zero",
+    "paymentAmountTooHigh": "One payment can be at most ₹10 crore",
+    "paymentDateInvalid": "Enter a valid date",
+    "paymentDateFuture": "A payment can't be dated in the future",
+    "paymentDateTooOld": "A payment can be dated at most one year back",
+    "paymentModeRequired": "Choose how the money came",
+    "allocationInvalid": "Enter an amount like 500 or 499.50",
+    "allocationTooMany": "Apply the payment to at most 100 invoices",
+    "allocationAmountPositive": "Enter an amount above zero, or leave this invoice out",
+    "allocationExceedsBalance": "More than is due on this invoice",
+    "allocationExceedsPayment": "The amounts add up to more than the payment",
+    "invoiceNotOpen": "Nothing is due on this invoice any more",
+    "duplicateInvoice": "This invoice is listed twice",
+    "walkInPaymentInvalid": "A walk-in sale is paid only on its own invoice, up to its balance",
+    "voidReasonRequired": "Say why this payment is voided",
+    "openingBalanceApplied": "Payments already settled more of the opening balance than this. Void them first.",
+    "dateInvalid": "Enter a valid date"
   },
   "auth": {
     "fields": {
@@ -840,6 +859,14 @@
       "amount": "₹1,180.00",
       "dueDate": "24-11-2026",
       "link": "https://example.com/i/abc"
+    }
+  },
+  "payments": {
+    "errors": {
+      "paymentAlreadyVoided": "This payment was already voided",
+      "invoiceNotOpen": "Nothing is due on this invoice any more",
+      "walkInPaymentInvalid": "A walk-in sale is paid only on its own invoice",
+      "nothingOnAccount": "This customer has no advance to apply"
     }
   }
 }

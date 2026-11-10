@@ -2,6 +2,7 @@ import { and, asc, desc, eq, gte, inArray, lte, ne, or, type SQL, sql } from "dr
 
 import { type InvoiceListStatus } from "@/lib/validation/invoices";
 import { type TenantContext } from "@/server/authz/context";
+import { type SettledStatus } from "@/server/domain/invoice/status";
 
 import { customers, invoiceLines, invoices } from "../schema";
 import { type Executor, type Transaction } from "../transaction";
@@ -287,17 +288,22 @@ export async function markCancelled(
   return row;
 }
 
-/** Adds a credit note's total to the invoice. Call with the invoice row locked. */
+/**
+ * Adds a credit note's total to the invoice, with the status that matches the new amounts (a
+ * credit note can finish paying a part-paid invoice). Call with the invoice row locked.
+ */
 export async function addCredited(
   tx: Transaction,
   ctx: TenantContext,
   id: string,
   amountPaise: bigint,
+  status: SettledStatus,
 ): Promise<Invoice | undefined> {
   const [row] = await tx
     .update(invoices)
     .set({
       amountCreditedPaise: sql`${invoices.amountCreditedPaise} + ${amountPaise}`,
+      status,
       version: sql`${invoices.version} + 1`,
     })
     .where(tenantScope(ctx, invoices, eq(invoices.id, id)))
@@ -318,6 +324,78 @@ export async function setPublicLink(
   const [row] = await tx
     .update(invoices)
     .set(link)
+    .where(tenantScope(ctx, invoices, eq(invoices.id, id), ne(invoices.status, "DRAFT")))
+    .returning();
+  return row;
+}
+
+/** Invoices that can still take money: issued, not cancelled, something due. */
+const openForPayment = and(
+  inArray(invoices.status, ["ISSUED", "PARTIALLY_PAID"]),
+  sql`${balance} > 0`,
+);
+
+/**
+ * Locks every open invoice of a customer, in id order so two transactions never deadlock, and
+ * returns them oldest first. Run after locking the customer (lock order: customer → payment →
+ * invoices, ADR 0010). An invoice cancelled meanwhile is re-checked by Postgres and left out.
+ */
+export async function lockOpenInvoicesForCustomer(
+  tx: Transaction,
+  ctx: TenantContext,
+  customerId: string,
+): Promise<Invoice[]> {
+  const rows = await tx
+    .select()
+    .from(invoices)
+    .where(tenantScope(ctx, invoices, eq(invoices.customerId, customerId), openForPayment))
+    .orderBy(asc(invoices.id))
+    .for("update");
+  return rows.sort(
+    (a, b) =>
+      a.invoiceDate.localeCompare(b.invoiceDate) || (a.number ?? "").localeCompare(b.number ?? ""),
+  );
+}
+
+/** The customer's open invoices, oldest first, without locking (forms and the ledger). */
+export function findOpenInvoicesForCustomer(
+  db: Executor,
+  ctx: TenantContext,
+  customerId: string,
+): Promise<Invoice[]> {
+  return db
+    .select()
+    .from(invoices)
+    .where(tenantScope(ctx, invoices, eq(invoices.customerId, customerId), openForPayment))
+    .orderBy(asc(invoices.invoiceDate), asc(invoices.number), asc(invoices.id));
+}
+
+/** Locks several invoices in id order (voiding a payment that paid them). */
+export async function lockInvoices(
+  tx: Transaction,
+  ctx: TenantContext,
+  ids: readonly string[],
+): Promise<Invoice[]> {
+  if (ids.length === 0) return [];
+  return tx
+    .select()
+    .from(invoices)
+    .where(tenantScope(ctx, invoices, inArray(invoices.id, [...ids])))
+    .orderBy(asc(invoices.id))
+    .for("update");
+}
+
+/** Sets the amount paid and the status that goes with it. Call with the invoice row locked. */
+export async function setPaid(
+  tx: Transaction,
+  ctx: TenantContext,
+  id: string,
+  amountPaidPaise: bigint,
+  status: SettledStatus,
+): Promise<Invoice | undefined> {
+  const [row] = await tx
+    .update(invoices)
+    .set({ amountPaidPaise, status, version: sql`${invoices.version} + 1` })
     .where(tenantScope(ctx, invoices, eq(invoices.id, id), ne(invoices.status, "DRAFT")))
     .returning();
   return row;

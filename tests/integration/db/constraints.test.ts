@@ -498,7 +498,14 @@ describe("number sequences, payments and reminders", () => {
         .values({ ...allocation, invoiceId: foreignInvoice }),
       "payment_allocations_invoice_fk",
     );
-    await db().insert(paymentAllocations).values(allocation);
+    // The invoice's amount paid must match its allocations at commit (migration 0009).
+    await db().transaction(async (tx) => {
+      await tx.insert(paymentAllocations).values(allocation);
+      await tx
+        .update(invoices)
+        .set({ amountPaidPaise: 11800n, status: "PAID" })
+        .where(eq(invoices.id, ownInvoice));
+    });
     await expectViolation(
       db().insert(paymentAllocations).values(allocation),
       "payment_allocations_payment_invoice_unique",
@@ -614,17 +621,36 @@ describe("immutability triggers (ADR 0006)", () => {
 
   it("allows payment, credit and link changes on an issued invoice", async () => {
     const id = await issuedWithLine();
-    await db()
-      .update(invoices)
-      .set({
-        status: "PARTIALLY_PAID",
-        amountPaidPaise: 5000n,
-        amountCreditedPaise: 1000n,
-        tokenRevokedAt: new Date(),
-        version: 3,
-        updatedAt: new Date(),
+    // The amount paid must match an allocation at commit (migration 0009), so pay it properly.
+    const [paid] = await db()
+      .insert(payments)
+      .values({
+        businessId: shop.business.id,
+        paymentDate: "2026-11-02",
+        amountPaise: 5000n,
+        mode: "CASH",
       })
-      .where(eq(invoices.id, id));
+      .returning();
+    if (!paid) throw new Error("no row");
+    await db().transaction(async (tx) => {
+      await tx.insert(paymentAllocations).values({
+        businessId: shop.business.id,
+        paymentId: paid.id,
+        invoiceId: id,
+        amountPaise: 5000n,
+      });
+      await tx
+        .update(invoices)
+        .set({
+          status: "PARTIALLY_PAID",
+          amountPaidPaise: 5000n,
+          amountCreditedPaise: 1000n,
+          tokenRevokedAt: new Date(),
+          version: 3,
+          updatedAt: new Date(),
+        })
+        .where(eq(invoices.id, id));
+    });
   });
 
   it("refuses to delete an issued invoice", async () => {

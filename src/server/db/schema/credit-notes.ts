@@ -74,7 +74,12 @@ export const creditNotes = pgTable(
     index("credit_notes_business_id_created_at_idx").on(t.businessId, t.createdAt),
     index("credit_notes_business_id_note_date_idx").on(t.businessId, t.noteDate),
     index("credit_notes_business_id_invoice_id_idx").on(t.businessId, t.invoiceId),
-    index("credit_notes_business_id_customer_id_idx").on(t.businessId, t.customerId),
+    // The customer's ledger, by date.
+    index("credit_notes_business_id_customer_id_date_idx").on(
+      t.businessId,
+      t.customerId,
+      t.noteDate,
+    ),
     index("credit_notes_place_of_supply_state_code_idx").on(t.placeOfSupplyStateCode),
   ],
 );

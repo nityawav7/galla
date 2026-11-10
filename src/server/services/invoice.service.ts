@@ -38,6 +38,7 @@ import {
   updateDraftRow,
 } from "@/server/db/repos/invoices.repo";
 import { takeNextNumber } from "@/server/db/repos/number-sequences.repo";
+import { findPaymentsForInvoice, type InvoicePaymentRow } from "@/server/db/repos/payments.repo";
 import { findProductsByIds, type Product } from "@/server/db/repos/products.repo";
 import { listStates, listTaxRates, listUnits } from "@/server/db/repos/reference.repo";
 import { type Executor, withTransaction } from "@/server/db/transaction";
@@ -91,6 +92,8 @@ export interface InvoiceDetail {
   creditNotes: CreditNote[];
   /** Quantity already returned by credit notes, per invoice line id (milli-units). */
   returnedMilli: Map<string, bigint>;
+  /** What paid it, oldest first, voided payments included (shown struck through). */
+  payments: InvoicePaymentRow[];
 }
 
 export interface InvoicePage {
@@ -247,7 +250,8 @@ export async function getInvoice(ctx: TenantContext, id: string): Promise<Invoic
     listCreditNotesForInvoice(db, ctx, invoice.id),
     returnedByInvoiceLine(db, ctx, invoice.id),
   ]);
-  return { invoice, lines, creditNotes, returnedMilli };
+  const payments = await findPaymentsForInvoice(db, ctx, invoice.id);
+  return { invoice, lines, creditNotes, returnedMilli, payments };
 }
 
 export async function listInvoices(ctx: TenantContext, query: unknown): Promise<InvoicePage> {

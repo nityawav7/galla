@@ -25,6 +25,7 @@ erDiagram
   credit_notes ||--|{ credit_note_lines : contains
   invoice_lines ||--o{ credit_note_lines : "returned by"
   customers |o--o{ payments : pays
+  customers |o--o{ payment_allocations : "opening balance"
   payments ||--o{ payment_allocations : "split into"
   invoices ||--o{ payment_allocations : "settled by"
   invoices ||--o{ reminders_sent : "reminded by"
@@ -62,6 +63,28 @@ sequenceDiagram
 ```
 
 `OVERDUE` (due date before today in IST, money still owed) and `CREDITED` are shown, never stored (`src/server/domain/invoice/status.ts`).
+
+## Recording a payment
+
+A payment is split over the customer's open items, oldest first or as chosen; the rest stays on account ([ADR 0010](adr/0010-payments-allocation-and-ledger.md)). Every money change on a customer takes the same locks in the same order, so they never deadlock.
+
+```mermaid
+sequenceDiagram
+  participant UI as Record payment (client)
+  participant S as payment.service
+  participant DB as Postgres
+  UI->>S: recordPayment(customer, amount, date, mode, allocation) (no balances)
+  S->>DB: BEGIN; SELECT customer … FOR UPDATE
+  S->>DB: SELECT open invoices … ORDER BY id FOR UPDATE
+  S->>DB: sums of allocations (opening balance, money on account)
+  S->>S: autoAllocate or checkManualAllocation (pure domain)
+  S->>DB: INSERT payments, payment_allocations
+  S->>DB: UPDATE invoices SET amount_paid, status (settledStatus)
+  S->>DB: INSERT audit_logs; COMMIT
+  Note over DB: deferred trigger at commit: allocations ≤ payment, paid = Σ allocations
+```
+
+Voiding (owner only) takes the customer, the payment, then its invoices, marks the payment voided and lowers each invoice's amount paid. The customer ledger and aging are pure functions over the live documents (`src/server/domain/ledger/`).
 
 ## The public invoice link
 

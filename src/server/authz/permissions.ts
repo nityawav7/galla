@@ -19,7 +19,10 @@ const MATRIX = {
   "invoice:share": ["OWNER", "STAFF"],
   /** Turn an invoice's public link off or replace it with a new one (SPEC F5). */
   "invoice:manageLink": ["OWNER"],
+  /** Record payments and apply money on account to invoices (SPEC F7). */
   "payment:record": ["OWNER", "ACCOUNTANT", "STAFF"],
+  /** Void a payment entered by mistake or a bounced cheque (ADR 0010). */
+  "payment:void": ["OWNER"],
   /** View invoices, the ledger and the dashboard. */
   "records:view": ["OWNER", "ACCOUNTANT", "STAFF"],
   /** Money totals on the dashboard (hidden from staff). */

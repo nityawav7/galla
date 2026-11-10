@@ -15,6 +15,7 @@ import {
   insertCreditNoteLines,
   returnedByInvoiceLine,
 } from "@/server/db/repos/credit-notes.repo";
+import { lockCustomer } from "@/server/db/repos/customers.repo";
 import {
   addCredited,
   findInvoiceById,
@@ -28,7 +29,7 @@ import { withTransaction } from "@/server/db/transaction";
 import { fyForDate, istDateFromInstant } from "@/server/domain/fy";
 import { creditForReturn, creditNoteTotals, type LineCredit } from "@/server/domain/invoice/credit";
 import { supplierSnapshot } from "@/server/domain/invoice/snapshot";
-import { balancePaise } from "@/server/domain/invoice/status";
+import { balancePaise, settledStatus } from "@/server/domain/invoice/status";
 import { formatDocumentNumber } from "@/server/domain/numbering";
 
 import { requireId } from "./ids";
@@ -107,7 +108,12 @@ export async function createCreditNote(
   const { reason, lines: returns } = parseInput(creditNoteSchema, input);
 
   return withTransaction(async (tx) => {
-    // The lock serialises credit notes on one invoice, so together they never over-credit.
+    // Lock order (ADR 0010): the customer first, so a credit note and a payment on the same
+    // customer run one after the other; then the invoice, which serialises credit notes on it so
+    // together they never over-credit.
+    const found = await findInvoiceById(tx, ctx, id);
+    if (!found) throw new NotFoundError("Invoice");
+    if (found.customerId !== null) await lockCustomer(tx, ctx, found.customerId);
     const invoice = await lockInvoice(tx, ctx, id);
     if (!invoice) throw new NotFoundError("Invoice");
     assertIssued(invoice);
@@ -212,7 +218,12 @@ export async function createCreditNote(
         };
       }),
     );
-    await addCredited(tx, ctx, invoice.id, totals.grandTotalPaise);
+    // A credit note can finish paying a part-paid invoice: the status follows the money.
+    const status = settledStatus({
+      ...invoice,
+      amountCreditedPaise: invoice.amountCreditedPaise + totals.grandTotalPaise,
+    });
+    await addCredited(tx, ctx, invoice.id, totals.grandTotalPaise, status);
     await insertAuditLog(tx, ctx, {
       entity: "creditNote",
       entityId: note.id,

@@ -119,3 +119,11 @@ What I learned and what broke while building Galla, phase by phase.
 - `String.replace` with a replacement _string_ expands `$&` and `$1`; a replacement _function_ inserts values literally. A test feeds a customer named `$&`.
 - Storing the default template as null (and turning "saved unchanged" back into null) means improving the default reaches every shop that never edited it.
 - The local dev database isn't migrated by `pnpm build`; the first e2e run after a new migration failed at "Create business" until `pnpm db:migrate` ran. Docker Desktop also doesn't start by itself after a reboot.
+
+## Phase 8a: payments
+
+- Drizzle leaves columns unqualified in a select list, so `${payments.id}` inside a correlated subquery rendered as plain `"id"` and quietly matched the subquery's own table. Printing `.toSQL()` found it; the subquery now names `"payments"."id"` explicitly. A property-style test (12 parallel payments) is what caught the wrong sum.
+- A deferred constraint trigger (`DEFERRABLE INITIALLY DEFERRED`) checks sums across rows at commit, after the service has written the payment, its allocations and the invoices in whatever order; a plain CHECK can only look at one row.
+- `UNIQUE NULLS NOT DISTINCT` (Postgres 15+) lets one unique key cover allocations whose payment or invoice end is null (the opening balance), and `ON CONFLICT` still infers it.
+- Drizzle wraps database errors as "Failed query: …" with the Postgres error as `cause`; tests that look for a trigger's message walk the `cause` chain.
+- One lock order for every money change on a customer (customer → payment → invoices by id) is simpler to reason about than per-function lock sets, and a test runs a payment, a credit note, a void and "Apply advance" at once to show it doesn't deadlock.

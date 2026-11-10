@@ -68,6 +68,18 @@ export function addDays(date: string, days: number): string {
   return new Date(time).toISOString().slice(0, 10);
 }
 
+/** Whole days from one calendar date to another (negative when `to` is earlier); used for aging. */
+export function daysBetween(from: string, to: string): number {
+  const start = parseIsoDateParts(from);
+  const end = parseIsoDateParts(to);
+  if (!start || !end) {
+    throw new ValidationError("Enter a valid date", [{ path: "date", message: "Invalid date" }]);
+  }
+  const startTime = Date.UTC(start.year, start.month - 1, start.day);
+  const endTime = Date.UTC(end.year, end.month - 1, end.day);
+  return Math.round((endTime - startTime) / MS_PER_DAY);
+}
+
 function twoDigits(year: number): string {
   return String(year % 100).padStart(2, "0");
 }

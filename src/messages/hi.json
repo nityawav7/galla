@@ -78,7 +78,26 @@
     "templateRequired": "संदेश लिखें, या डिफ़ॉल्ट संदेश लें",
     "templateTooLong": "संदेश 1,000 अक्षरों से छोटा रखें",
     "templateUnknownPlaceholder": "सिर्फ़ नीचे दिए प्लेसहोल्डर इस्तेमाल करें",
-    "templateNeedsLink": "इनवॉइस लिंक का प्लेसहोल्डर रखें, ताकि ग्राहक इनवॉइस खोल सके"
+    "templateNeedsLink": "इनवॉइस लिंक का प्लेसहोल्डर रखें, ताकि ग्राहक इनवॉइस खोल सके",
+    "customerRequired": "ग्राहक चुनें",
+    "paymentAmountInvalid": "500 या 499.50 जैसी रकम लिखें",
+    "paymentAmountPositive": "शून्य से ज़्यादा रकम लिखें",
+    "paymentAmountTooHigh": "एक भुगतान ज़्यादा से ज़्यादा ₹10 करोड़ का हो सकता है",
+    "paymentDateInvalid": "सही तारीख़ लिखें",
+    "paymentDateFuture": "भुगतान की तारीख़ आगे की नहीं हो सकती",
+    "paymentDateTooOld": "भुगतान की तारीख़ ज़्यादा से ज़्यादा एक साल पीछे की हो सकती है",
+    "paymentModeRequired": "चुनें कि पैसा कैसे मिला",
+    "allocationInvalid": "500 या 499.50 जैसी रकम लिखें",
+    "allocationTooMany": "भुगतान ज़्यादा से ज़्यादा 100 बिलों पर लगाएँ",
+    "allocationAmountPositive": "शून्य से ज़्यादा रकम लिखें, या यह बिल छोड़ दें",
+    "allocationExceedsBalance": "इस बिल पर बाकी रकम से ज़्यादा है",
+    "allocationExceedsPayment": "रकमों का जोड़ भुगतान से ज़्यादा है",
+    "invoiceNotOpen": "इस बिल पर अब कुछ बाकी नहीं है",
+    "duplicateInvoice": "यह बिल दो बार है",
+    "walkInPaymentInvalid": "बिना ग्राहक वाली बिक्री का भुगतान सिर्फ़ उसी बिल पर, बाकी रकम तक होता है",
+    "voidReasonRequired": "बताएँ कि यह भुगतान क्यों रद्द हो रहा है",
+    "openingBalanceApplied": "भुगतान इससे ज़्यादा शुरुआती बकाया चुका चुके हैं। पहले उन्हें रद्द करें।",
+    "dateInvalid": "सही तारीख़ लिखें"
   },
   "auth": {
     "fields": {
@@ -840,6 +859,14 @@
       "amount": "₹1,180.00",
       "dueDate": "24-11-2026",
       "link": "https://example.com/i/abc"
+    }
+  },
+  "payments": {
+    "errors": {
+      "paymentAlreadyVoided": "यह भुगतान पहले ही रद्द हो चुका है",
+      "invoiceNotOpen": "इस बिल पर अब कुछ बाकी नहीं है",
+      "walkInPaymentInvalid": "बिना ग्राहक वाली बिक्री का भुगतान सिर्फ़ उसी बिल पर होता है",
+      "nothingOnAccount": "इस ग्राहक का कोई अग्रिम बाकी नहीं है"
     }
   }
 }

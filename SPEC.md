@@ -63,6 +63,7 @@ Existing apps are feature-heavy. Galla focuses on three things only:
 | Copy an invoice's public link, share it | ✅ | ❌ | ✅ |
 | Turn a public link off, make a new one | ✅ | ❌ | ❌ |
 | Record payments | ✅ | ✅ | ✅ |
+| Void a payment | ✅ | ❌ | ❌ |
 | View all invoices, ledger, dashboard | ✅ | ✅ | ✅ (dashboard totals hidden) |
 | Download GST exports & reports | ✅ | ✅ | ❌ |
 | View audit log | ✅ | ✅ | ❌ |
@@ -183,13 +184,16 @@ DRAFT ──issue──▶ ISSUED ──payment──▶ PARTIALLY_PAID ──pa
 - `OVERDUE` is **derived** (due_date < today in IST, and balance > 0), not stored.
 - `balance = grand_total − Σ payments allocated − Σ credit notes`. The invoice keeps `amount_paid_paise` and `amount_credited_paise`, and a CHECK keeps their sum within the grand total.
 - `CREDITED` (balance cleared by credit notes only) is also derived for display.
+- The stored status follows the money (a CHECK enforces it): nothing paid → `ISSUED`; paid with something still due → `PARTIALLY_PAID`; paid with nothing due → `PAID`. A payment, a credit note (one that clears a part-paid invoice makes it `PAID`) and a voided payment (back to `PARTIALLY_PAID` or `ISSUED`) all move it.
 - **Cancel** (owner only): only an issued invoice with nothing paid or credited. It keeps its number and lines; the reason is required. The dialog warns to use a credit note if the invoice is already in a filed GSTR-1 (CA question 6).
 - **Credit notes** (owner only) return quantities of the invoice's lines at their own amounts ([ADR 0007](docs/adr/0007-credit-notes-by-returned-quantity.md)): never more than is left on a line or owed on the invoice. Only the note that returns the last unit carries the invoice's round-off, so a full return credits exactly the grand total. Each takes the next number of the `CN` series.
 
 ### 4.9 Udhaar / customer ledger
-- Ledger = opening balance + issued invoices − payments − credit notes, in date order with a running balance.
-- Payments can be allocated to specific invoices or left on account (auto-allocated oldest first).
-- Receivables aging buckets: 0–30, 31–60, 61–90, 90+ days past due.
+- Ledger = opening balance + issued invoices − payments − credit notes, in date order with a running balance. Cancelled invoices and voided payments are left out. With a start date, earlier rows fold into a "balance brought forward".
+- Payments are allocated to specific invoices or "oldest first": the opening balance owed, then invoices by invoice date and number. Nothing is allocated beyond an item's balance; the rest stays **on account** ([ADR 0010](docs/adr/0010-payments-allocation-and-ledger.md)).
+- The opening balance is an allocation end: payments can pay the opening balance owed, and an opening advance can pay invoices. Once used, the opening balance can't be lowered below what was applied.
+- Money on account (an opening advance or overpayments) is applied by "Apply advance" (oldest first, or chosen), never by itself.
+- Receivables aging buckets: 0–30, 31–60, 61–90, 90+ days past due, plus "not due yet". 0 days = due today; an invoice without a due date is due on its invoice date; overdue means due before today. The opening balance still owed and money on account sit beside the buckets so the total equals the ledger balance.
 
 ### 4.10 GST export for the CA (GSTR-1 helper)
 An Excel workbook (built with exceljs) for a chosen month or quarter, with sheets:
@@ -269,6 +273,10 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 
 ### F7. Payments & ledger
 - Record a payment: date, amount, mode, reference (UTR or cheque number), notes, and allocation.
+  - The date is today or up to 365 days back; the amount is at most ₹10 crore. Modes: cash, UPI, bank transfer, cheque, card, other.
+  - A walk-in invoice (no customer) is paid only on itself, up to its balance.
+  - Every role records payments. Payments are never edited or deleted: the owner **voids** one with a reason (a bounced cheque is a void), and it stays listed, struck through.
+  - Payments, voids and "Apply advance" lock the customer, then the payment, then its invoices, and a deferred database trigger checks the allocations against the invoices at commit.
 - Overpayment is not allowed against an invoice; any excess goes to "on account".
 - Customer page: ledger with running balance, aging, a "Send reminder" (WhatsApp) button, and a downloadable statement PDF.
 - **AC:** ledger balance = Σ invoices − Σ payments − Σ credit notes for randomly generated data (property test).
@@ -413,8 +421,8 @@ All tenant tables have: `id uuid pk (v7)`, `business_id uuid not null fk`, `crea
 | `invoices` | type (`TAX_INVOICE`/`BILL_OF_SUPPLY`/`INVOICE`), status, number (nullable until issued; **unique(business_id, number)**), fy, invoice_date (date), due_date, customer_id, **customer snapshot JSON** (name, GSTIN, addresses as at issue), **supplier snapshot JSON** (the business as printed, with its terms since Phase 7), draft (JSON working copy, drafts only), place_of_supply_state_code, is_inter_state, reverse_charge (false), discount, taxable, cgst, sgst, utgst, igst, round_off, grand_total, amount_paid, amount_credited (all `_paise`), notes, public_token (unique), token_revoked_at, issued_at, cancelled_at, cancel_reason, version |
 | `invoice_lines` | invoice_id, position, product_id (nullable), **snapshot**: description, hsn_sac, unit, qty_milli, unit_price_paise, price_includes_tax, discount_paise, rate_bp, taxable, cgst, sgst, utgst, igst, line_total |
 | `credit_notes` (+ lines) | same shape, linked `invoice_id`, reason, own CN number series. Issued directly (no drafts), so number, fy and snapshot are always set. Each line links the `invoice_line_id` it returns part of |
-| `payments` | customer_id, date, amount_paise, mode, reference, notes |
-| `payment_allocations` | payment_id, invoice_id, amount_paise |
+| `payments` | customer_id (null for a walk-in), payment_date, amount_paise, mode, reference, notes, voided_at, voided_by, void_reason — never updated except to void, never deleted |
+| `payment_allocations` | payment_id (null = from the opening advance), invoice_id (null = towards the opening balance), customer_id, amount_paise — **unique nulls not distinct (business_id, payment_id, invoice_id)** |
 | `reminders_sent` | invoice_id, kind (`DUE`, `D1`, `D7`, `D14`), channel, sent_at — **unique(invoice_id, kind, channel)** for idempotency |
 | `audit_logs` | actor_user_id, business_id, entity, entity_id, action, diff jsonb, ip_hash, at |
 

@@ -36,9 +36,11 @@ import {
   insertCustomer,
   insertCustomers,
   listCustomers as listCustomerRows,
+  lockCustomer,
   restoreCustomer as restoreCustomerRow,
   updateCustomer as updateCustomerRow,
 } from "@/server/db/repos/customers.repo";
+import { customerCreditSums } from "@/server/db/repos/payments.repo";
 import { type Executor, withTransaction } from "@/server/db/transaction";
 import { formatINR } from "@/server/domain/money";
 import { formatIndianPhone } from "@/server/domain/phone";
@@ -110,6 +112,26 @@ async function customerOrThrow(db: Executor, ctx: TenantContext, id: string): Pr
   const customer = await findCustomerById(db, ctx, requireId(id, "Customer"));
   if (!customer) throw new NotFoundError("Customer");
   return customer;
+}
+
+/**
+ * Payments may already have paid part of the opening balance, or an opening advance part of some
+ * invoices (ADR 0010). The new balance must still cover that; otherwise void those payments first.
+ */
+async function assertOpeningBalanceFits(
+  db: Executor,
+  ctx: TenantContext,
+  customerId: string,
+  openingBalancePaise: bigint,
+): Promise<void> {
+  const sums = await customerCreditSums(db, ctx, customerId);
+  const owed = openingBalancePaise > 0n ? openingBalancePaise : 0n;
+  const advance = openingBalancePaise < 0n ? -openingBalancePaise : 0n;
+  if (sums.appliedToOpeningPaise > owed || sums.appliedFromOpeningPaise > advance) {
+    throw new ValidationError("Some fields need attention", [
+      { path: "openingBalance", message: "openingBalanceApplied" },
+    ]);
+  }
 }
 
 /** Other active customers with this phone, unless the user already said "save anyway". */
@@ -190,7 +212,12 @@ export async function updateCustomer(
   const parsed = parseInput(customerSchema, input);
   return mapGstinClash(() =>
     withTransaction(async (tx): Promise<SaveCustomerResult> => {
-      const before = await customerOrThrow(tx, ctx, id);
+      // Locked: the opening balance can't change under a payment that is applying it.
+      const before = await lockCustomer(tx, ctx, requireId(id, "Customer"));
+      if (!before) throw new NotFoundError("Customer");
+      if (parsed.customer.openingBalancePaise !== before.openingBalancePaise) {
+        await assertOpeningBalanceFits(tx, ctx, before.id, parsed.customer.openingBalancePaise);
+      }
       // Asking again only makes sense when the phone changed.
       const phoneChanged = parsed.customer.phoneE164 !== before.phoneE164;
       const matches = phoneChanged ? await phoneMatches(tx, ctx, parsed, before.id) : [];
