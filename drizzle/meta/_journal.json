@@ -57,6 +57,13 @@
       "when": 1794212996637,
       "tag": "0007_credit_note_lines",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794291027815,
+      "tag": "0008_whatsapp_templates",
+      "breakpoints": true
     }
   ]
 }

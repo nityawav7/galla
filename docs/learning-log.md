@@ -112,3 +112,10 @@ What I learned and what broke while building Galla, phase by phase.
 - Headers set on `NextResponse.next()` in the proxy reach the final response, so one place adds `noindex`, `no-referrer` and `no-store` for every `/i/*` answer.
 - ESLint's `no-restricted-imports` can enforce an architecture rule ("only this one service may look up invoices by token") with a later config block that relaxes the rule for exactly one file.
 - A new link is a new token, not a flag: turning the old one back on would revive every copy ever forwarded.
+
+## Phase 7c: WhatsApp share
+
+- next-intl messages use ICU, where `{customer}` is an argument. Templates with our own placeholders are read straight from the JSON, never through `t()`.
+- `String.replace` with a replacement _string_ expands `$&` and `$1`; a replacement _function_ inserts values literally. A test feeds a customer named `$&`.
+- Storing the default template as null (and turning "saved unchanged" back into null) means improving the default reaches every shop that never edited it.
+- The local dev database isn't migrated by `pnpm build`; the first e2e run after a new migration failed at "Create business" until `pnpm db:migrate` ran. Docker Desktop also doesn't start by itself after a reboot.

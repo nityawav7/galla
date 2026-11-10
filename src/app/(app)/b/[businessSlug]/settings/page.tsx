@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
 import { SettingsForm } from "@/components/forms/settings-form";
+import { defaultShareTemplate } from "@/lib/share-templates";
 import { type BusinessFormValues } from "@/lib/validation/business";
 import { requireTenant } from "@/server/auth/session";
 import { can } from "@/server/authz/permissions";
@@ -32,6 +33,9 @@ function toFormValues(business: Business): BusinessFormValues {
     creditNotePrefix: business.creditNotePrefix,
     upiVpa: business.upiVpa ?? "",
     hsnDigitsRequired: business.hsnDigitsRequired === 6 ? "6" : "4",
+    // The form shows the message that will be sent, the default included.
+    whatsappTemplateEn: business.whatsappTemplateEn ?? defaultShareTemplate("en"),
+    whatsappTemplateHi: business.whatsappTemplateHi ?? defaultShareTemplate("hi"),
   };
 }
 
@@ -43,7 +47,13 @@ async function Settings({ params }: { params: Promise<{ businessSlug: string }> 
     return <p className="text-muted-foreground">{t("ownerOnly")}</p>;
   }
   const business = await getBusiness(ctx);
-  return <SettingsForm businessSlug={businessSlug} defaultValues={toFormValues(business)} />;
+  return (
+    <SettingsForm
+      businessSlug={businessSlug}
+      defaultValues={toFormValues(business)}
+      defaultTemplates={{ en: defaultShareTemplate("en"), hi: defaultShareTemplate("hi") }}
+    />
+  );
 }
 
 export default async function SettingsPage({ params }: PageProps<"/b/[businessSlug]/settings">) {

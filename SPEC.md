@@ -240,7 +240,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
   - The builder runs the same evaluation as the server (`src/lib/invoice-evaluation.ts`, on the domain engine) for live totals and field errors; the server recomputes on every save and issue.
   - A draft row is created on the first change, then saved 1.5 s after each change with a version check. Another tab's save is reported, never overwritten.
   - A walk-in sale needs no customer (an optional name), up to the Rule 46 amount. Product lines show their HSN, unit and rate from the product; one-off lines are typed in full. In the item search, Enter adds the best match.
-  - The confirmation sheet offers "View invoice", "New invoice", "Download PDF", "Print" (Phase 7a) and the customer's link to copy (Phase 7b). WhatsApp sharing arrives with Phase 7c, "Record payment" with Phase 8.
+  - The confirmation sheet offers "View invoice", "New invoice", "Download PDF", "Print" (Phase 7a), the customer's link to copy (Phase 7b) and "Share on WhatsApp" (Phase 7c). "Record payment" arrives with Phase 8.
 - "Issue" assigns the number and locks the invoice. A warning that is allowed but needs a second look (an unregistered business billing another state) must be ticked first. A confirmation sheet offers: Share on WhatsApp, Copy link, Download PDF, Print, Record payment.
 - **AC:** the e2e test creates and issues an invoice with 3 lines (one tax-inclusive, one with a discount, one fractional qty). The totals match the expected fixture to the paisa.
 
@@ -260,6 +260,11 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 
 ### F6. WhatsApp share
 - `https://wa.me/{phone}?text={encoded message}` with a template: greeting, invoice number, amount, due date, link. Templates are editable in settings, in English and Hindi.
+  - Placeholders: `{customer}`, `{shop}`, `{number}`, `{amount}`, `{dueDate}`, `{link}`. A saved template must contain `{link}`, use only these placeholders and stay under 1,000 characters. Anything else in braces is left as typed; values are inserted as plain text.
+  - Values come from the invoice's snapshots: the customer's name (or "Customer"), the shop as printed, the number, the balance due (the total once nothing is due) and the due date (or "on receipt"). The link is the invoice's current public link.
+  - The number is the customer's phone as digits with the country code (`+91 98765 43210` → `919876543210`). Without one (a walk-in), the link has no number and WhatsApp asks whom to send it to.
+  - The default messages live in `src/messages`; a business that saves the default unchanged stores null, so it keeps getting improvements to the default. Columns `businesses.whatsapp_template_en` and `_hi` (migration `0008`).
+  - "Share on WhatsApp" sits on the issued sheet and the invoice page, with an English / Hindi choice (the business language first) and a preview. Owners and staff can share; it needs the public link to be on.
 - **AC:** the link is correctly URL-encoded (unit test) and the phone is normalised to digits with the country code.
 
 ### F7. Payments & ledger
@@ -397,7 +402,7 @@ All tenant tables have: `id uuid pk (v7)`, `business_id uuid not null fk`, `crea
 
 | Table | Key columns |
 |---|---|
-| `businesses` | slug (unique), legal_name, trade_name, gstin (nullable), gst_scheme (`REGULAR`/`COMPOSITION`/`UNREGISTERED`), state_code, address fields, phone, email, logo_url, signature_url, upi_vpa, bank_* , invoice_prefix, credit_note_prefix, terms, hsn_digits_required, round_off_enabled, locale, is_demo |
+| `businesses` | slug (unique), legal_name, trade_name, gstin (nullable), gst_scheme (`REGULAR`/`COMPOSITION`/`UNREGISTERED`), state_code, address fields, phone, email, logo_url, signature_url, upi_vpa, bank_* , invoice_prefix, credit_note_prefix, terms, hsn_digits_required, round_off_enabled, locale, whatsapp_template_en/_hi (null = default), is_demo |
 | `users`, `sessions`, `accounts`, `verifications`, `members`, `invitations` | managed by Better Auth ([ADR 0004](docs/adr/0004-auth-and-tenancy.md)); its organization model is `businesses`. `members.role` is `OWNER`/`ACCOUNTANT`/`STAFF`, one membership per user per business |
 | `states` (reference) | code, name, is_ut_without_legislature |
 | `tax_rates` (reference) | rate_bp, label, active |

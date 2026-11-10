@@ -74,7 +74,11 @@
     "returnTooMany": "इस आइटम पर लौटाने के लिए बची मात्रा से ज़्यादा",
     "creditExceedsBalance": "क्रेडिट नोट बिल पर बचे बकाया से ज़्यादा है",
     "lineNotOnInvoice": "यह आइटम बिल पर नहीं है",
-    "duplicateLine": "यह आइटम दो बार है"
+    "duplicateLine": "यह आइटम दो बार है",
+    "templateRequired": "संदेश लिखें, या डिफ़ॉल्ट संदेश लें",
+    "templateTooLong": "संदेश 1,000 अक्षरों से छोटा रखें",
+    "templateUnknownPlaceholder": "सिर्फ़ नीचे दिए प्लेसहोल्डर इस्तेमाल करें",
+    "templateNeedsLink": "इनवॉइस लिंक का प्लेसहोल्डर रखें, ताकि ग्राहक इनवॉइस खोल सके"
   },
   "auth": {
     "fields": {
@@ -223,7 +227,22 @@
     "hsnDigits": "बिल पर HSN अंक",
     "hsnDigits4": "4 अंक (टर्नओवर ₹5 करोड़ तक)",
     "hsnDigits6": "6 अंक (टर्नओवर ₹5 करोड़ से ज़्यादा)",
-    "hsnDigitsHint": "4 चुनने पर GST-पंजीकृत ग्राहकों के बिल पर HSN कोड ज़रूरी है। 6 चुनने पर हर लाइन में कम से कम 6 अंक चाहिए।"
+    "hsnDigitsHint": "4 चुनने पर GST-पंजीकृत ग्राहकों के बिल पर HSN कोड ज़रूरी है। 6 चुनने पर हर लाइन में कम से कम 6 अंक चाहिए।",
+    "whatsapp": "WhatsApp संदेश",
+    "whatsappHint": "“WhatsApp पर भेजें” के साथ जाता है। प्लेसहोल्डर जोड़ने के लिए उसे टैप करें; इनवॉइस लिंक ज़रूर रहे।",
+    "templateEn": "अंग्रेज़ी में संदेश",
+    "templateHi": "हिन्दी में संदेश",
+    "resetTemplate": "डिफ़ॉल्ट संदेश लें",
+    "templatePreview": "झलक",
+    "placeholdersLabel": "{language} संदेश में प्लेसहोल्डर जोड़ें",
+    "placeholders": {
+      "customer": "ग्राहक का नाम",
+      "shop": "आपकी दुकान का नाम",
+      "number": "इनवॉइस नंबर",
+      "amount": "बकाया राशि",
+      "dueDate": "भुगतान की तारीख",
+      "link": "इनवॉइस लिंक"
+    }
   },
   "roles": {
     "OWNER": "मालिक",
@@ -673,6 +692,16 @@
       "confirmNewLink": "नया लिंक बनाएँ",
       "keep": "जैसा है वैसा रखें",
       "working": "सेव हो रहा है…"
+    },
+    "shareSheet": {
+      "title": "WhatsApp पर भेजें",
+      "language": "संदेश की भाषा",
+      "english": "English",
+      "hindi": "हिन्दी",
+      "message": "संदेश",
+      "button": "WhatsApp पर भेजें",
+      "opensWhatsApp": "(WhatsApp खुलेगा)",
+      "noPhone": "इस ग्राहक का फ़ोन नंबर नहीं है। WhatsApp पूछेगा कि किसे भेजना है।"
     }
   },
   "creditNotes": {
@@ -799,5 +828,18 @@
     "download": "PDF डाउनलोड करें",
     "downloadThermal": "80 mm पर्ची डाउनलोड करें",
     "footer": "{app} से भेजा गया। इस इनवॉइस के बारे में सवाल हो तो दुकान से संपर्क करें।"
+  },
+  "share": {
+    "defaultTemplate": "नमस्ते {customer},\n{shop} का आपका इनवॉइस {number} {amount} का है, भुगतान की तारीख {dueDate}।\nदेखें, डाउनलोड करें या UPI से भुगतान करें: {link}",
+    "customerFallback": "ग्राहक जी",
+    "onReceipt": "तुरंत",
+    "sample": {
+      "customer": "रमेश ट्रेडर्स",
+      "shop": "आपकी दुकान",
+      "number": "INV/26-27/0001",
+      "amount": "₹1,180.00",
+      "dueDate": "24-11-2026",
+      "link": "https://example.com/i/abc"
+    }
   }
 }

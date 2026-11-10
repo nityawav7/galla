@@ -18,6 +18,7 @@ import { balancePaise, displayStatus } from "@/server/domain/invoice/status";
 import { formatINR } from "@/server/domain/money";
 import { getInvoice } from "@/server/services/invoice.service";
 import { getPublicLink } from "@/server/services/public-link.service";
+import { getShareInfo } from "@/server/services/share.service";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("invoices");
@@ -108,6 +109,7 @@ async function InvoiceDetail({
           invoiceId={invoice.id}
           url={(await getPublicLink(ctx, invoice.id)).url}
           canManage={can(ctx, "invoice:manageLink")}
+          share={await getShareInfo(ctx, invoice.id)}
         />
       ) : null}
       <InvoiceView invoice={invoice} lines={lines} status={status} />

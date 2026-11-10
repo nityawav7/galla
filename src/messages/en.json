@@ -74,7 +74,11 @@
     "returnTooMany": "More than what is left to return on this item",
     "creditExceedsBalance": "The credit note is more than what is still owed on the invoice",
     "lineNotOnInvoice": "This item is not on the invoice",
-    "duplicateLine": "This item is listed twice"
+    "duplicateLine": "This item is listed twice",
+    "templateRequired": "Write a message, or use the default",
+    "templateTooLong": "Keep the message under 1,000 characters",
+    "templateUnknownPlaceholder": "Use only the placeholders listed below",
+    "templateNeedsLink": "Include the invoice link placeholder, so the customer can open the invoice"
   },
   "auth": {
     "fields": {
@@ -223,7 +227,22 @@
     "hsnDigits": "HSN digits on invoices",
     "hsnDigits4": "4 digits (turnover up to ₹5 crore)",
     "hsnDigits6": "6 digits (turnover above ₹5 crore)",
-    "hsnDigitsHint": "With 4, bills to GST-registered customers need an HSN code. With 6, every line needs at least 6 digits."
+    "hsnDigitsHint": "With 4, bills to GST-registered customers need an HSN code. With 6, every line needs at least 6 digits.",
+    "whatsapp": "WhatsApp message",
+    "whatsappHint": "Sent with “Share on WhatsApp”. Tap a placeholder to add it; the invoice link must stay in.",
+    "templateEn": "Message in English",
+    "templateHi": "Message in Hindi",
+    "resetTemplate": "Use the default",
+    "templatePreview": "Preview",
+    "placeholdersLabel": "Add a placeholder to the {language} message",
+    "placeholders": {
+      "customer": "Customer's name",
+      "shop": "Your shop's name",
+      "number": "Invoice number",
+      "amount": "Amount due",
+      "dueDate": "Due date",
+      "link": "Invoice link"
+    }
   },
   "roles": {
     "OWNER": "Owner",
@@ -673,6 +692,16 @@
       "confirmNewLink": "Make new link",
       "keep": "Keep as it is",
       "working": "Saving…"
+    },
+    "shareSheet": {
+      "title": "Share on WhatsApp",
+      "language": "Message language",
+      "english": "English",
+      "hindi": "हिन्दी",
+      "message": "Message",
+      "button": "Share on WhatsApp",
+      "opensWhatsApp": "(opens WhatsApp)",
+      "noPhone": "This customer has no phone number. WhatsApp will ask whom to send it to."
     }
   },
   "creditNotes": {
@@ -799,5 +828,18 @@
     "download": "Download PDF",
     "downloadThermal": "Download 80 mm slip",
     "footer": "Sent with {app}. Questions about this invoice? Please contact the shop."
+  },
+  "share": {
+    "defaultTemplate": "Namaste {customer},\nYour invoice {number} from {shop} is for {amount}, due {dueDate}.\nView, download or pay by UPI: {link}",
+    "customerFallback": "Customer",
+    "onReceipt": "on receipt",
+    "sample": {
+      "customer": "Ramesh Traders",
+      "shop": "Your shop",
+      "number": "INV/26-27/0001",
+      "amount": "₹1,180.00",
+      "dueDate": "24-11-2026",
+      "link": "https://example.com/i/abc"
+    }
   }
 }

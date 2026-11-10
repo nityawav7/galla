@@ -42,6 +42,9 @@ export const businesses = pgTable(
     hsnDigitsRequired: smallint().notNull().default(4),
     roundOffEnabled: boolean().notNull().default(true),
     locale: text({ enum: LOCALES }).notNull().default("en"),
+    /** WhatsApp share messages (SPEC F6). Null means the built-in default for that language. */
+    whatsappTemplateEn: text(),
+    whatsappTemplateHi: text(),
     isDemo: boolean().notNull().default(false),
     /** Better Auth organization metadata (JSON string). */
     metadata: text(),
@@ -85,6 +88,10 @@ export const businesses = pgTable(
     ),
     check("businesses_hsn_digits", sql`${t.hsnDigitsRequired} in (4, 6)`),
     check("businesses_locale", sql`${t.locale} in ('en', 'hi')`),
+    check(
+      "businesses_whatsapp_template_length",
+      sql`coalesce(length(${t.whatsappTemplateEn}), 0) <= 1000 and coalesce(length(${t.whatsappTemplateHi}), 0) <= 1000`,
+    ),
     index("businesses_state_code_idx").on(t.stateCode),
   ],
 );
