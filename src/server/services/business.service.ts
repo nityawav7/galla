@@ -1,6 +1,7 @@
 import { randomInt } from "node:crypto";
 
 import { ConflictError, NotFoundError } from "@/lib/errors";
+import { storedTemplate } from "@/lib/share-templates";
 import { type BusinessInput, businessSchema } from "@/lib/validation/business";
 import { type TenantContext } from "@/server/authz/context";
 import { assertCan } from "@/server/authz/permissions";
@@ -37,6 +38,8 @@ const EDITABLE_FIELDS = [
   "creditNotePrefix",
   "upiVpa",
   "hsnDigitsRequired",
+  "whatsappTemplateEn",
+  "whatsappTemplateHi",
 ] as const satisfies readonly (keyof Business)[];
 
 type EditableField = (typeof EDITABLE_FIELDS)[number];
@@ -45,7 +48,13 @@ const SLUG_ATTEMPTS = 5;
 const SUFFIX_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789";
 
 function toColumns({ phone, ...input }: BusinessInput): Pick<Business, EditableField> {
-  return { ...input, phoneE164: phone };
+  return {
+    ...input,
+    phoneE164: phone,
+    // The default message, saved unchanged, is stored as "use the default" (SPEC F6).
+    whatsappTemplateEn: storedTemplate(input.whatsappTemplateEn, "en"),
+    whatsappTemplateHi: storedTemplate(input.whatsappTemplateHi, "hi"),
+  };
 }
 
 function randomSuffix(): string {

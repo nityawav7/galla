@@ -20,6 +20,7 @@ import {
   regeneratePublicLink,
   revokePublicLink,
 } from "@/server/services/public-link.service";
+import { getShareInfo, type ShareInfo } from "@/server/services/share.service";
 
 // Thin: membership from the URL's slug; the services check roles, validate and recompute.
 
@@ -36,6 +37,8 @@ export type IssueActionResult =
       grandTotalPaise: string;
       /** The customer's link (SPEC F5). Issuers (owner, staff) are exactly who may share it. */
       publicUrl: string | null;
+      /** What "Share on WhatsApp" needs (SPEC F6). */
+      share: ShareInfo | null;
     }
   | { status: "needsConfirmation"; warnings: string[] };
 
@@ -88,6 +91,7 @@ export async function issueInvoiceAction(
       number: result.invoice.number ?? "",
       grandTotalPaise: result.invoice.grandTotalPaise.toString(),
       publicUrl: result.invoice.publicToken ? publicInvoiceUrl(result.invoice.publicToken) : null,
+      share: await getShareInfo(ctx, result.invoice.id),
     };
   });
 }

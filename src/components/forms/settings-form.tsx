@@ -10,6 +10,7 @@ import { updateBusinessAction } from "@/app/(app)/b/[businessSlug]/settings/acti
 import { InvoicePreview } from "@/components/invoice/invoice-preview";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { type ShareLocale } from "@/lib/share-templates";
 import {
   type BusinessFormValues,
   type BusinessInput,
@@ -20,15 +21,18 @@ import { DetailsFields, EmailField, GstFields, InvoicingFields } from "./busines
 import { SelectField } from "./select-field";
 import { applyServerErrors } from "./server-errors";
 import { useFormMessages } from "./use-form-messages";
+import { WhatsAppTemplateField } from "./whatsapp-template-field";
 
 interface SettingsFormProps {
   businessSlug: string;
   defaultValues: BusinessFormValues;
+  /** The built-in WhatsApp messages, for "Use the default". */
+  defaultTemplates: Record<ShareLocale, string>;
 }
 
 type Status = "idle" | "saved" | "error";
 
-export function SettingsForm({ businessSlug, defaultValues }: SettingsFormProps) {
+export function SettingsForm({ businessSlug, defaultValues, defaultTemplates }: SettingsFormProps) {
   const t = useTranslations("settings");
   const common = useTranslations("common");
   const errors = useTranslations("errors");
@@ -79,6 +83,20 @@ export function SettingsForm({ businessSlug, defaultValues }: SettingsFormProps)
           <section className="flex flex-col gap-4">
             <h2 className="text-lg font-semibold">{t("invoicing")}</h2>
             <InvoicingFields showCreditNotePrefix />
+          </section>
+          <section className="flex flex-col gap-4">
+            <h2 className="text-lg font-semibold">{t("whatsapp")}</h2>
+            <p className="text-sm text-muted-foreground">{t("whatsappHint")}</p>
+            <WhatsAppTemplateField
+              name="whatsappTemplateEn"
+              locale="en"
+              defaultTemplate={defaultTemplates.en}
+            />
+            <WhatsAppTemplateField
+              name="whatsappTemplateHi"
+              locale="hi"
+              defaultTemplate={defaultTemplates.hi}
+            />
           </section>
           <div className="flex flex-col gap-3" aria-live="polite">
             {status === "saved" ? <p className="text-sm">{t("saved")}</p> : null}

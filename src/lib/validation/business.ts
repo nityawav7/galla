@@ -3,6 +3,7 @@ import { z } from "zod";
 import { GST_SCHEMES } from "@/server/domain/gst/place-of-supply";
 import { normalizeGstin, validateGstin } from "@/server/domain/gstin";
 import { MAX_PREFIX_LENGTH } from "@/server/domain/numbering";
+import { templateProblems } from "@/server/domain/share/whatsapp";
 import { isActiveStateCode } from "@/server/domain/states";
 import { isValidUpiVpa, normalizeUpiVpa } from "@/server/domain/upi";
 
@@ -16,6 +17,21 @@ import { GSTIN_ERRORS, optionalEmail, optionalPhone, optionalText, requiredText 
 
 const prefixPattern = new RegExp(`^[A-Za-z0-9-]{1,${String(MAX_PREFIX_LENGTH)}}$`);
 const prefix = z.string().trim().regex(prefixPattern, { error: "prefixInvalid" });
+
+/**
+ * A WhatsApp message template (SPEC F6). Empty means "the default"; anything else must keep the
+ * invoice link and use only known placeholders. Optional, so onboarding never sends it.
+ */
+const whatsappTemplate = z
+  .string()
+  .default("")
+  .superRefine((value, ctx) => {
+    if (value.trim() === "") return;
+    for (const problem of templateProblems(value)) {
+      ctx.addIssue({ code: "custom", message: problem });
+    }
+  })
+  .transform((value) => (value.trim() === "" ? null : value.replace(/\r\n/g, "\n").trim()));
 
 export const businessFields = {
   legalName: requiredText(100, "legalNameRequired"),
@@ -44,6 +60,8 @@ export const businessFields = {
     .enum(["4", "6"], { error: "hsnDigitsInvalid" })
     .default("4")
     .transform((value) => (value === "6" ? 6 : 4)),
+  whatsappTemplateEn: whatsappTemplate,
+  whatsappTemplateHi: whatsappTemplate,
 };
 
 /** The fields each onboarding step shows (and validates before "Next"). */
@@ -109,4 +127,6 @@ export const EMPTY_BUSINESS_FORM: BusinessFormValues = {
   creditNotePrefix: "CN",
   upiVpa: "",
   hsnDigitsRequired: "4",
+  whatsappTemplateEn: "",
+  whatsappTemplateHi: "",
 };

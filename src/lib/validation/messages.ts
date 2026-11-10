@@ -73,6 +73,10 @@ export const VALIDATION_KEYS = [
   "creditExceedsBalance",
   "lineNotOnInvoice",
   "duplicateLine",
+  "templateRequired",
+  "templateTooLong",
+  "templateUnknownPlaceholder",
+  "templateNeedsLink",
 ] as const;
 
 export type ValidationKey = (typeof VALIDATION_KEYS)[number];

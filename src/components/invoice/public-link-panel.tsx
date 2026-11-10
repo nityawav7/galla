@@ -9,6 +9,9 @@ import {
 } from "@/app/(app)/b/[businessSlug]/invoices/actions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
+import { type ShareInfo } from "@/server/services/share.service";
+
+import { WhatsAppShare } from "./whatsapp-share";
 
 /*
  * The customer's link to an issued invoice (SPEC F5, ADR 0009). Owners and staff see and copy
@@ -64,11 +67,14 @@ export function PublicLinkPanel({
   invoiceId,
   url: initialUrl,
   canManage,
+  share,
 }: {
   businessSlug: string;
   invoiceId: string;
   url: string | null;
   canManage: boolean;
+  /** WhatsApp sharing (SPEC F6), offered while the link is on. */
+  share: ShareInfo | null;
 }) {
   const t = useTranslations("invoices.link");
   const errors = useTranslations("errors");
@@ -105,6 +111,7 @@ export function PublicLinkPanel({
       {url ? (
         <>
           <p className="text-sm text-muted-foreground">{t("hint")}</p>
+          {share ? <WhatsAppShare share={share} url={url} /> : null}
           <CopyLink url={url} />
         </>
       ) : (

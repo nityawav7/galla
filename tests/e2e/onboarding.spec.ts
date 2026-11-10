@@ -287,6 +287,36 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     expect((await customer.goto(shared))?.status()).toBe(404);
     await visitor.close();
   });
+
+  // SPEC F6: the owner edits the English message in settings; the invoice's "Share on WhatsApp"
+  // opens wa.me with the customer's number and that message, correctly encoded.
+  await test.step("edit the WhatsApp message and share the invoice on WhatsApp", async () => {
+    const invoicePath = new URL(page.url()).pathname;
+    const link = await page.getByTestId("public-link").filter({ visible: true }).inputValue();
+    await page.getByRole("link", { name: "Settings" }).click();
+    const english = page
+      .getByRole("textbox", { name: "Message in English" })
+      .filter({ visible: true });
+    await english.fill(`${await english.inputValue()}\nSee you again soon!`);
+    await page.getByRole("button", { name: "Save changes" }).click();
+    await expect(page.getByText("Changes saved")).toBeVisible();
+
+    await page.goto(invoicePath);
+    const share = page.getByRole("link", { name: /^Share on WhatsApp/ }).filter({ visible: true });
+    await expect(share).toHaveAttribute("href", /^https:\/\/wa\.me\/919876543210\?text=/);
+    const englishText = new URL((await share.getAttribute("href")) ?? "").searchParams.get("text");
+    expect(englishText).toMatch(
+      /^Namaste Ramesh Traders,\nYour invoice SH\/\d{2}-\d{2}\/0001 from E2E Shop [0-9a-f]{6} is for ₹802\.00, due /,
+    );
+    expect(englishText).toContain(`View, download or pay by UPI: ${link}`);
+    expect(englishText).toMatch(/See you again soon!$/);
+
+    await page.getByRole("radio", { name: "हिन्दी" }).filter({ visible: true }).check();
+    await expect(share).toHaveAttribute("href", /text=%E0%A4%A8%E0%A4%AE/);
+    const hindi = new URL((await share.getAttribute("href")) ?? "").searchParams.get("text");
+    expect(hindi).toMatch(/^नमस्ते Ramesh Traders,/);
+    expect(hindi).toContain(link);
+  });
 });
 
 test("a user with no membership gets 404 for another business (SPEC F1)", async ({
