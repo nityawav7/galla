@@ -11,6 +11,7 @@ import { listQuerySchema } from "@/lib/validation/list-query";
 import { requireTenant } from "@/server/auth/session";
 import { can } from "@/server/authz/permissions";
 import { listCustomers } from "@/server/services/customer.service";
+import { getCustomerBalances } from "@/server/services/ledger.service";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("customers");
@@ -73,7 +74,14 @@ async function Customers({ params, searchParams }: Pick<Params, "params" | "sear
       </form>
 
       {page.items.length > 0 ? (
-        <CustomerList businessSlug={businessSlug} customers={page.items} />
+        <CustomerList
+          businessSlug={businessSlug}
+          customers={page.items}
+          balances={await getCustomerBalances(
+            ctx,
+            page.items.map((customer) => customer.id),
+          )}
+        />
       ) : (
         <p className="text-muted-foreground">
           {query.q

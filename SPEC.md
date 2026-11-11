@@ -244,7 +244,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
   - The builder runs the same evaluation as the server (`src/lib/invoice-evaluation.ts`, on the domain engine) for live totals and field errors; the server recomputes on every save and issue.
   - A draft row is created on the first change, then saved 1.5 s after each change with a version check. Another tab's save is reported, never overwritten.
   - A walk-in sale needs no customer (an optional name), up to the Rule 46 amount. Product lines show their HSN, unit and rate from the product; one-off lines are typed in full. In the item search, Enter adds the best match.
-  - The confirmation sheet offers "View invoice", "New invoice", "Download PDF", "Print" (Phase 7a), the customer's link to copy (Phase 7b) and "Share on WhatsApp" (Phase 7c). "Record payment" arrives with Phase 8.
+  - The confirmation sheet offers "View invoice", "New invoice", "Download PDF", "Print" (Phase 7a), the customer's link to copy (Phase 7b) and "Share on WhatsApp" (Phase 7c) and "Record payment" (Phase 8b).
 - "Issue" assigns the number and locks the invoice. A warning that is allowed but needs a second look (an unregistered business billing another state) must be ticked first. A confirmation sheet offers: Share on WhatsApp, Copy link, Download PDF, Print, Record payment.
 - **AC:** the e2e test creates and issues an invoice with 3 lines (one tax-inclusive, one with a discount, one fractional qty). The totals match the expected fixture to the paisa.
 
@@ -278,6 +278,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
   - Every role records payments. Payments are never edited or deleted: the owner **voids** one with a reason (a bounced cheque is a void), and it stays listed, struck through.
   - Payments, voids and "Apply advance" lock the customer, then the payment, then its invoices, and a deferred database trigger checks the allocations against the invoices at commit.
 - Overpayment is not allowed against an invoice; any excess goes to "on account".
+- Screens (Phase 8b): "Record payment" on the issued sheet and the invoice page opens `payments/new?invoice=…` with that invoice's balance, Cash and today filled in, so a counter sale is paid in two taps. From an invoice, the payment goes to that invoice first and the rest on account; otherwise "Oldest dues first" or "Choose invoices". A live summary shows where the money goes, using the same allocation functions as the server. The Payments page lists payments newest first (customer and date filters), what each paid, and an owner-only "Void" with quick reasons. The invoice page lists its payments, voided ones struck through, and the customer list shows each customer's current balance.
 - Customer page: ledger with running balance, aging, a "Send reminder" (WhatsApp) button, and a downloadable statement PDF.
 - **AC:** ledger balance = Σ invoices − Σ payments − Σ credit notes for randomly generated data (property test).
 

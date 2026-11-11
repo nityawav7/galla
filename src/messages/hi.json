@@ -228,7 +228,8 @@
     "members": "सदस्य",
     "products": "प्रोडक्ट",
     "customers": "ग्राहक",
-    "invoices": "बिल"
+    "invoices": "बिल",
+    "payments": "भुगतान"
   },
   "dashboard": {
     "title": "डैशबोर्ड",
@@ -663,7 +664,8 @@
       "issuedTitle": "बिल {number} जारी हुआ",
       "issuedTotal": "कुल {amount}। अब इसे बदला नहीं जा सकता।",
       "viewInvoice": "बिल देखें",
-      "newInvoice": "नया बिल"
+      "newInvoice": "नया बिल",
+      "recordPayment": "भुगतान दर्ज करें"
     },
     "errors": {
       "invoiceAlreadyIssued": "यह बिल जारी हो चुका है और बदला नहीं जा सकता",
@@ -680,7 +682,12 @@
       "balance": "बकाया राशि",
       "newCreditNote": "क्रेडिट नोट जारी करें",
       "cannotCancel": "जिस बिल पर क्रेडिट नोट या भुगतान हो, वह रद्द नहीं हो सकता। क्रेडिट नोट जारी करें।",
-      "creditNotes": "क्रेडिट नोट"
+      "creditNotes": "क्रेडिट नोट",
+      "paid": "भुगतान मिला",
+      "recordPayment": "भुगतान दर्ज करें",
+      "payments": "भुगतान",
+      "fromAdvance": "अग्रिम से",
+      "voided": "रद्द"
     },
     "cancel": {
       "button": "बिल रद्द करें",
@@ -862,6 +869,80 @@
     }
   },
   "payments": {
+    "title": "भुगतान",
+    "newTitle": "भुगतान दर्ज करें",
+    "record": "भुगतान दर्ज करें",
+    "from": "से",
+    "to": "तक",
+    "apply": "लागू करें",
+    "clearFilters": "सारे भुगतान दिखाएँ",
+    "empty": "अभी कोई भुगतान नहीं",
+    "walkIn": "बिना ग्राहक की बिक्री",
+    "voided": "रद्द: {reason}",
+    "appliedSummary": "लगाया {applied} · अग्रिम {onAccount}",
+    "openingBalance": "शुरुआती बकाया",
+    "pages": "पेज",
+    "firstPage": "पहला पेज",
+    "nextPage": "अगला पेज",
+    "modes": {
+      "CASH": "नकद",
+      "UPI": "UPI",
+      "BANK_TRANSFER": "बैंक ट्रांसफ़र",
+      "CHEQUE": "चेक",
+      "CARD": "कार्ड",
+      "OTHER": "अन्य"
+    },
+    "form": {
+      "saved": "भुगतान दर्ज हो गया",
+      "balanceLeft": "{amount} बाकी",
+      "keptOnAccount": "{amount} ग्राहक के अग्रिम के रूप में रखा गया।",
+      "done": "हो गया",
+      "another": "एक और दर्ज करें",
+      "forWalkIn": "बिना ग्राहक की बिक्री {number}",
+      "forCustomer": "{name} से",
+      "amount": "मिली रकम (₹)",
+      "date": "मिलने की तारीख़",
+      "mode": "भुगतान कैसे हुआ?",
+      "referenceUtr": "UTR या रेफ़रेंस (वैकल्पिक)",
+      "referenceCheque": "चेक नंबर (वैकल्पिक)",
+      "referenceCard": "कार्ड रेफ़रेंस (वैकल्पिक)",
+      "referenceOther": "रेफ़रेंस (वैकल्पिक)",
+      "notes": "नोट (वैकल्पिक)",
+      "applyTo": "इसे लगाएँ",
+      "choiceInvoice": "पहले {number}, बाकी अग्रिम में",
+      "choiceAuto": "सबसे पुराना बकाया पहले (अपने आप)",
+      "choiceManual": "बिल चुनें",
+      "nothingDue": "कुछ बाकी नहीं है; पूरी रकम अग्रिम में रहेगी।",
+      "openingBalance": "शुरुआती बकाया",
+      "dueOn": "{date} तक",
+      "due": "{amount} बाकी",
+      "full": "पूरा",
+      "onAccount": "अग्रिम में",
+      "previewEmpty": "रकम लिखें, फिर दिखेगा कि कहाँ लगेगी।",
+      "saving": "सेव हो रहा है…",
+      "save": "भुगतान सेव करें",
+      "chooseCustomer": "किसने भुगतान किया?",
+      "customerSearchPlaceholder": "नाम, फ़ोन या GSTIN",
+      "search": "खोजें",
+      "noCustomers": "कोई ग्राहक नहीं मिला",
+      "nothingDueWalkIn": "इस बिल पर कुछ बाकी नहीं है।",
+      "back": "वापस",
+      "hasAdvance": "इस ग्राहक के {amount} पहले से अग्रिम में हैं।"
+    },
+    "void": {
+      "button": "रद्द करें",
+      "title": "{amount} का भुगतान रद्द करें?",
+      "explain": "यह सूची में कटा हुआ दिखेगा, और जिन बिलों पर लगा था वे फिर बाकी हो जाएँगे। ग़लत दर्ज हुआ हो तो दोबारा दर्ज करें।",
+      "reason": "कारण",
+      "voiding": "रद्द हो रहा है…",
+      "confirm": "भुगतान रद्द करें",
+      "keep": "रहने दें",
+      "reasons": {
+        "enteredByMistake": "ग़लती से दर्ज हुआ",
+        "chequeBounced": "चेक बाउंस हुआ",
+        "wrongCustomer": "ग़लत ग्राहक"
+      }
+    },
     "errors": {
       "paymentAlreadyVoided": "यह भुगतान पहले ही रद्द हो चुका है",
       "invoiceNotOpen": "इस बिल पर अब कुछ बाकी नहीं है",

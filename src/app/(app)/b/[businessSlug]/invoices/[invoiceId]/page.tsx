@@ -33,7 +33,8 @@ async function InvoiceDetail({
   const { businessSlug, invoiceId } = await params;
   const { ctx } = await requireTenant(businessSlug);
   const t = await getTranslations("invoices");
-  const { invoice, lines, creditNotes } = await getInvoice(ctx, invoiceId).catch(
+  const tModes = await getTranslations("payments.modes");
+  const { invoice, lines, creditNotes, payments } = await getInvoice(ctx, invoiceId).catch(
     (error: unknown) => {
       if (error instanceof NotFoundError) notFound();
       throw error;
@@ -69,6 +70,12 @@ async function InvoiceDetail({
       ) : null}
       {live ? (
         <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:max-w-sm">
+          {invoice.amountPaidPaise > 0n ? (
+            <>
+              <dt>{t("detail.paid")}</dt>
+              <dd className="text-right">{formatINR(invoice.amountPaidPaise)}</dd>
+            </>
+          ) : null}
           {invoice.amountCreditedPaise > 0n ? (
             <>
               <dt>{t("detail.credited")}</dt>
@@ -80,6 +87,15 @@ async function InvoiceDetail({
             {formatINR(balance)}
           </dd>
         </dl>
+      ) : null}
+      {live && balance > 0n && can(ctx, "payment:record") ? (
+        <div>
+          <Button asChild size="lg">
+            <Link href={`/b/${businessSlug}/payments/new?invoice=${invoice.id}`}>
+              {t("detail.recordPayment")}
+            </Link>
+          </Button>
+        </div>
       ) : null}
       {owner && live ? (
         <div className="flex flex-wrap gap-2">
@@ -113,6 +129,42 @@ async function InvoiceDetail({
         />
       ) : null}
       <InvoiceView invoice={invoice} lines={lines} status={status} />
+      {payments.length > 0 ? (
+        <section aria-labelledby="invoice-payments" className="flex flex-col gap-2">
+          <h2 id="invoice-payments" className="text-lg font-semibold">
+            {t("detail.payments")}
+          </h2>
+          <ul className="flex flex-col divide-y rounded-lg border" data-testid="invoice-payments">
+            {payments.map((payment) => {
+              const voided = payment.voidedAt !== null;
+              return (
+                <li
+                  key={payment.paymentId ?? "advance"}
+                  className="flex items-center justify-between gap-3 px-3 py-3"
+                >
+                  <span className={voided ? "flex flex-col line-through" : "flex flex-col"}>
+                    <span className="font-medium">
+                      {payment.mode ? tModes(payment.mode) : t("detail.fromAdvance")}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {[
+                        payment.paymentDate ? formatIndianDate(payment.paymentDate) : null,
+                        payment.reference,
+                        voided ? t("detail.voided") : null,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                  </span>
+                  <span className={voided ? "font-medium line-through" : "font-medium"}>
+                    {formatINR(payment.amountPaise)}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ) : null}
       {creditNotes.length > 0 ? (
         <section aria-labelledby="invoice-credit-notes" className="flex flex-col gap-2">
           <h2 id="invoice-credit-notes" className="text-lg font-semibold">

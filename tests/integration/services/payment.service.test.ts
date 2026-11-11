@@ -719,6 +719,10 @@ describe("listPayments and getPayment", () => {
       to: "2026-10-31",
     });
     expect(filtered.items.map((row) => row.payment.id)).toEqual([elsewhere.payment.id]);
+    expect(filtered.items[0]?.allocations).toEqual([]);
+    expect(first.items[0]?.allocations).toEqual([
+      expect.objectContaining({ invoiceId: invoice.id, amountPaise: 100n }),
+    ]);
 
     const detail = await getPayment(tenant.ctx, first.items[0]?.payment.id ?? "");
     expect(detail).toMatchObject({

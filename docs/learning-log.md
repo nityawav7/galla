@@ -127,3 +127,11 @@ What I learned and what broke while building Galla, phase by phase.
 - `UNIQUE NULLS NOT DISTINCT` (Postgres 15+) lets one unique key cover allocations whose payment or invoice end is null (the opening balance), and `ON CONFLICT` still infers it.
 - Drizzle wraps database errors as "Failed query: …" with the Postgres error as `cause`; tests that look for a trigger's message walk the `cause` chain.
 - One lock order for every money change on a customer (customer → payment → invoices by id) is simpler to reason about than per-function lock sets, and a test runs a payment, a credit note, a void and "Apply advance" at once to show it doesn't deadlock.
+
+## Phase 8b: payment screens
+
+- `role="status"` on an `<h2>` replaces its heading role, so `getByRole("heading")` can't find it; the live region now wraps the heading instead.
+- Playwright won't `check()` a visually hidden (`sr-only`) radio inside a chip label; the test taps the label, as a person does, and then asserts the radio is checked.
+- The first e2e run of the step expected "oldest first" to pay the invoice, but the customer had a ₹1,500 opening balance from an earlier step, and the app (rightly) paid that first. Tests that assert money flows have to start from the whole customer, not the one invoice in view.
+- Docker Desktop stopping mid-session shows up as e2e failures everywhere (health check 503, sign-ups failing); check `docker ps` before reading anything into them.
+- The preview tool reads `.claude/launch.json` from the main checkout, so previewing a worktree needs an entry that runs `pnpm --dir <worktree> start`.
