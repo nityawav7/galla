@@ -17,7 +17,8 @@ permissions:
 jobs:
   e2e:
     name: E2E (${{ github.event.client_payload.environment || 'manual' }})
-    runs-on: ubuntu-latest
+    # Pinned like ci.yml's e2e job: `playwright install --with-deps` failed on the newer image.
+    runs-on: ubuntu-24.04
     env:
       CI: "true"
       PLAYWRIGHT_BASE_URL: ${{ github.event.client_payload.url || inputs.url }}

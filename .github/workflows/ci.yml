@@ -78,7 +78,9 @@ jobs:
 
   build-e2e:
     name: Build and e2e (local server)
-    runs-on: ubuntu-latest
+    # Pinned: `playwright install --with-deps` installs Ubuntu packages by release, and failed
+    # on the image ubuntu-latest moved to in late 2026. Move up once Playwright supports it.
+    runs-on: ubuntu-24.04
     services:
       postgres:
         image: postgres:16-alpine
