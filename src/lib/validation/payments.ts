@@ -52,15 +52,17 @@ export const allocationSchema = z.discriminatedUnion("kind", [
   }),
 ]);
 
+const amountSchema = z
+  .string()
+  .trim()
+  .transform(rupees("paymentAmountInvalid"))
+  .refine((paise) => paise > 0n, { error: "paymentAmountPositive" })
+  .refine((paise) => paise <= PAYMENT_MAX_PAISE, { error: "paymentAmountTooHigh" });
+
 export const recordPaymentSchema = z.object({
   /** Null only to pay a walk-in invoice, with one MANUAL item for the whole amount. */
   customerId: z.uuid({ error: "customerRequired" }).nullable(),
-  amount: z
-    .string()
-    .trim()
-    .transform(rupees("paymentAmountInvalid"))
-    .refine((paise) => paise > 0n, { error: "paymentAmountPositive" })
-    .refine((paise) => paise <= PAYMENT_MAX_PAISE, { error: "paymentAmountTooHigh" }),
+  amount: amountSchema,
   /** Checked against today with `paymentDateProblem` (it depends on the clock). */
   paymentDate: z.string().refine(isValidIsoDate, { error: "paymentDateInvalid" }),
   mode: z.enum(PAYMENT_MODES, { error: "paymentModeRequired" }),
@@ -123,9 +125,32 @@ export const PAYMENT_ERROR_KEYS = [
   "invoiceNotOpen",
   "walkInPaymentInvalid",
   "nothingOnAccount",
+  "refundFirst",
+  "refundAlreadyVoided",
+  "walkInRefundFinal",
 ] as const;
 export type PaymentErrorKey = (typeof PAYMENT_ERROR_KEYS)[number];
 
 export function isPaymentErrorKey(value: unknown): value is PaymentErrorKey {
   return (PAYMENT_ERROR_KEYS as readonly unknown[]).includes(value);
 }
+
+/**
+ * A refund of money on account (ADR 0011, owner only). The amount is checked against what is on
+ * account under the customer's row lock; the date like a payment's (`paymentDateProblem`).
+ */
+export const refundSchema = z.object({
+  amount: amountSchema,
+  refundDate: z.string().refine(isValidIsoDate, { error: "paymentDateInvalid" }),
+  mode: z.enum(PAYMENT_MODES, { error: "paymentModeRequired" }),
+  reference: optionalText(50),
+  notes: optionalText(200),
+});
+
+export type RefundValues = z.input<typeof refundSchema>;
+
+/** How a walk-in's money was given back at the counter when a credit note releases it. */
+export const counterRefundSchema = z.object({
+  mode: z.enum(PAYMENT_MODES, { error: "refundModeRequired" }),
+  reference: optionalText(50),
+});

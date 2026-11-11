@@ -116,7 +116,8 @@ async function customerOrThrow(db: Executor, ctx: TenantContext, id: string): Pr
 
 /**
  * Payments may already have paid part of the opening balance, or an opening advance part of some
- * invoices (ADR 0010). The new balance must still cover that; otherwise void those payments first.
+ * invoices or a refund (ADR 0010, 0011). The new balance must still cover that; otherwise void
+ * those first.
  */
 async function assertOpeningBalanceFits(
   db: Executor,
@@ -127,7 +128,12 @@ async function assertOpeningBalanceFits(
   const sums = await customerCreditSums(db, ctx, customerId);
   const owed = openingBalancePaise > 0n ? openingBalancePaise : 0n;
   const advance = openingBalancePaise < 0n ? -openingBalancePaise : 0n;
-  if (sums.appliedToOpeningPaise > owed || sums.appliedFromOpeningPaise > advance) {
+  if (
+    sums.appliedToOpeningPaise > owed ||
+    sums.appliedFromOpeningPaise > advance ||
+    // Refunds (ADR 0011) paid back money that must still be there.
+    advance - sums.appliedFromOpeningPaise + sums.unallocatedPaise < sums.refundedPaise
+  ) {
     throw new ValidationError("Some fields need attention", [
       { path: "openingBalance", message: "openingBalanceApplied" },
     ]);

@@ -10,6 +10,7 @@ import { createDraft, type Invoice, issueInvoice } from "@/server/services/invoi
 import { getCustomerLedger } from "@/server/services/ledger.service";
 import { recordPayment } from "@/server/services/payment.service";
 import { type RenderedPdf, renderStatementPdf } from "@/server/services/pdf.service";
+import { refundCredit } from "@/server/services/refund.service";
 
 import { isolationCase, itIsolatesTenants } from "../support/tenant-isolation";
 import { createTenant, type Tenant } from "../support/tenants";
@@ -148,11 +149,18 @@ describe("renderStatementPdf", () => {
 
   it("an advance prints as Cr with no payment QR; Hindi names print", async () => {
     const tenant = await shop();
-    const customer = await addCustomer(tenant, "रमेश ट्रेडर्स", -9_800n);
+    const customer = await addCustomer(tenant, "रमेश ट्रेडर्स", -19_800n);
+    onDay("2026-11-11");
+    await refundCredit(tenant.ctx, customer.id, {
+      amount: "100",
+      refundDate: "2026-11-11",
+      mode: "CASH",
+    });
     const content = await text(
       await renderStatementPdf(tenant.ctx, customer.id, { period: "all" }),
     );
     expect(content).toContain("₹98.00 Cr");
+    expect(content).toContain("Refund paid · Cash");
     expect(content).toContain("रमेश");
     expect(content).not.toContain("UPI ID:");
     // Nothing before this FY: no "brought forward ₹0.00" row.

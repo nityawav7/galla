@@ -24,5 +24,5 @@ Phase 8 (SPEC F7, §4.9) records money received. A payment can pay several invoi
 - The ledger, aging and invoice statuses can't disagree: a fast-check property test runs random invoices, payments, credit notes, voids and "Apply advance" through the real services and checks ledger = opening + invoices − payments − credit notes, aging total = ledger, and every status = `settledStatus`.
 - A payment entered wrongly is voided and recorded again; there is no edit screen.
 - Voided payments and cancelled invoices are left out of the ledger (decisions 6 and 7); they stay visible in their own lists.
-- A credit note is still capped at the invoice's balance, so a fully paid invoice can't get one until PR 8d (credit notes on paid invoices, refunds).
+- A credit note was capped at the invoice's balance here; [ADR 0011](0011-credit-notes-on-paid-invoices-and-refunds.md) lifts that and adds refunds.
 - Galla records money only: no receipt vouchers, and no GST on advances (CA question 8).

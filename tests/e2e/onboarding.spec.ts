@@ -459,6 +459,49 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     await expect(page).toHaveURL(new RegExp(`${customerPath}/edit$`));
     await expect(field(page, "Customer name")).toHaveValue("Ramesh Traders");
   });
+
+  // ADR 0011: a credit note on the paid invoice moves what was overpaid to the customer's
+  // advance; the owner then refunds it in cash, and the balance is back where it was.
+  await test.step("credit a paid invoice: the money goes to the advance, then is refunded", async () => {
+    await page.getByRole("link", { name: "Back to customer" }).filter({ visible: true }).click();
+    await expect(page).toHaveURL(/\/customers\/[0-9a-f-]{36}$/);
+    const customerPath = new URL(page.url()).pathname;
+    const balance = page.getByTestId("customer-balance").filter({ visible: true });
+    await expect(balance).toHaveText("Owes you ₹1,402.00");
+    await page
+      .getByTestId("ledger")
+      .filter({ visible: true })
+      .getByRole("link", { name: /^Invoice SH\// })
+      .click();
+    await expect(page).toHaveURL(/\/invoices\/[0-9a-f-]{36}$/);
+    await page.getByRole("link", { name: "Issue credit note" }).filter({ visible: true }).click();
+    await field(page, "Quantity returned of Nails").fill("1");
+    const total = page.getByTestId("credit-total").filter({ visible: true });
+    await expect(total).not.toHaveText("₹0.00");
+    const credited = (await total.textContent()) ?? "";
+    await expect(page.getByTestId("credit-released").filter({ visible: true })).toHaveText(
+      `${credited} of what was paid goes to the customer's advance.`,
+    );
+    await page.getByRole("button", { name: "Goods returned" }).filter({ visible: true }).click();
+    await page.getByRole("button", { name: "Issue credit note" }).filter({ visible: true }).click();
+    await expect(page.getByText(/^CN\/\d{2}-\d{2}\/0002$/)).toBeVisible();
+
+    await page.goto(customerPath);
+    await expect(balance).not.toHaveText("Owes you ₹1,402.00");
+    await expect(page.getByTestId("ledger").filter({ visible: true })).toContainText(
+      /Credit note CN\/\d{2}-\d{2}\/0002/,
+    );
+    await page.getByText("Refund advance", { exact: true }).filter({ visible: true }).click();
+    await expect(field(page, "Amount to give back (₹)")).toHaveValue(
+      credited.replace(/[₹,]/g, "").replace(/\.00$/, ""),
+    );
+    await page.getByRole("button", { name: "Record refund" }).click();
+    await expect(page.getByTestId("refund-list").filter({ visible: true })).toContainText(credited);
+    await expect(balance).toHaveText("Owes you ₹1,402.00");
+    await expect(page.getByTestId("ledger").filter({ visible: true })).toContainText(
+      "Refund · Cash",
+    );
+  });
 });
 
 test("a user with no membership gets 404 for another business (SPEC F1)", async ({

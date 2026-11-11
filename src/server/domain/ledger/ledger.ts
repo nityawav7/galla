@@ -7,7 +7,7 @@
  * never happened (decisions 6 and 7 of the Phase 8 plan).
  */
 
-export type LedgerEntryKind = "OPENING" | "INVOICE" | "CREDIT_NOTE" | "PAYMENT";
+export type LedgerEntryKind = "OPENING" | "INVOICE" | "CREDIT_NOTE" | "PAYMENT" | "REFUND";
 
 export interface LedgerDocument {
   id: string;
@@ -30,6 +30,8 @@ export interface LedgerInput {
   invoices: readonly LedgerDocument[];
   creditNotes: readonly LedgerDocument[];
   payments: readonly LedgerPayment[];
+  /** Money on account paid back to the customer (ADR 0011): it adds to the balance. */
+  refunds?: readonly LedgerPayment[];
 }
 
 export interface LedgerRow {
@@ -62,6 +64,7 @@ const RANK: Record<LedgerEntryKind, number> = {
   INVOICE: 1,
   CREDIT_NOTE: 2,
   PAYMENT: 3,
+  REFUND: 4,
 };
 
 type Entry = Omit<LedgerRow, "balancePaise">;
@@ -91,6 +94,14 @@ function entries(input: LedgerInput): Entry[] {
       number: null,
       debitPaise: 0n,
       creditPaise: payment.amountPaise,
+    })),
+    ...(input.refunds ?? []).map((refund): DatedEntry => ({
+      kind: "REFUND",
+      id: refund.id,
+      date: refund.date,
+      number: null,
+      debitPaise: refund.amountPaise,
+      creditPaise: 0n,
     })),
   ].sort(
     (a, b) =>

@@ -14,6 +14,7 @@ import {
 import { businesses } from "./businesses";
 import { customers } from "./catalog";
 import { audited, id, paise } from "./common";
+import { creditNotes } from "./credit-notes";
 import { invoices } from "./invoices";
 
 export const PAYMENT_MODES = ["CASH", "UPI", "BANK_TRANSFER", "CHEQUE", "CARD", "OTHER"] as const;
@@ -123,5 +124,67 @@ export const paymentAllocations = pgTable(
     ),
     index("payment_allocations_business_id_invoice_id_idx").on(t.businessId, t.invoiceId),
     index("payment_allocations_business_id_customer_id_idx").on(t.businessId, t.customerId),
+  ],
+);
+
+/**
+ * Money paid back (ADR 0011): money on account returned to a customer, or, for a walk-in sale, what
+ * a credit note released from its payment, given back at the counter. Never edited or deleted;
+ * the owner voids one, like a payment.
+ */
+export const refunds = pgTable(
+  "refunds",
+  {
+    id: id(),
+    businessId: uuid()
+      .notNull()
+      .references(() => businesses.id, { onDelete: "restrict" }),
+    /** Null only for a walk-in refund, which then has its credit note. */
+    customerId: uuid(),
+    /** The credit note whose released money this pays back (walk-in sales). */
+    creditNoteId: uuid(),
+    refundDate: date({ mode: "string" }).notNull(),
+    amountPaise: paise().notNull(),
+    mode: text({ enum: PAYMENT_MODES }).notNull(),
+    reference: text(),
+    notes: text(),
+    voidedAt: timestamp({ withTimezone: true }),
+    voidedBy: uuid(),
+    voidReason: text(),
+    ...audited(),
+  },
+  (t) => [
+    unique("refunds_business_id_id_unique").on(t.businessId, t.id),
+    foreignKey({
+      name: "refunds_customer_fk",
+      columns: [t.businessId, t.customerId],
+      foreignColumns: [customers.businessId, customers.id],
+    }).onDelete("restrict"),
+    foreignKey({
+      name: "refunds_credit_note_fk",
+      columns: [t.businessId, t.creditNoteId],
+      foreignColumns: [creditNotes.businessId, creditNotes.id],
+    }).onDelete("restrict"),
+    check("refunds_amount_positive", sql`${t.amountPaise} > 0`),
+    check("refunds_amount_max", sql`${t.amountPaise} <= 10000000000`),
+    check(
+      "refunds_has_an_owner",
+      sql`${t.customerId} is not null or ${t.creditNoteId} is not null`,
+    ),
+    check(
+      "refunds_voided_fields",
+      sql`(${t.voidedAt} is null) = (${t.voidedBy} is null) and (${t.voidedAt} is null) = (${t.voidReason} is null) and (${t.voidReason} is null or length(trim(${t.voidReason})) > 0)`,
+    ),
+    check(
+      "refunds_mode",
+      sql`${t.mode} in ('CASH', 'UPI', 'BANK_TRANSFER', 'CHEQUE', 'CARD', 'OTHER')`,
+    ),
+    index("refunds_business_id_customer_id_date_idx").on(
+      t.businessId,
+      t.customerId,
+      t.refundDate,
+      t.id,
+    ),
+    index("refunds_business_id_credit_note_id_idx").on(t.businessId, t.creditNoteId),
   ],
 );

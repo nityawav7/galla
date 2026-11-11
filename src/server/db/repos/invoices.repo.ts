@@ -423,3 +423,21 @@ export function findInvoiceLinks(
     .from(invoices)
     .where(tenantScope(ctx, invoices, inArray(invoices.id, [...ids])));
 }
+
+/**
+ * A credit note's effect on its invoice in one statement (ADR 0011): more credited, and on a paid
+ * invoice less paid, with the status the money now gives, so every CHECK holds at once.
+ */
+export async function settleCredit(
+  tx: Transaction,
+  ctx: TenantContext,
+  id: string,
+  values: { amountPaidPaise: bigint; amountCreditedPaise: bigint; status: SettledStatus },
+): Promise<Invoice | undefined> {
+  const [row] = await tx
+    .update(invoices)
+    .set({ ...values, version: sql`${invoices.version} + 1` })
+    .where(tenantScope(ctx, invoices, eq(invoices.id, id), ne(invoices.status, "DRAFT")))
+    .returning();
+  return row;
+}

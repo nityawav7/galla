@@ -82,6 +82,27 @@ describe("statementRows", () => {
     ]);
   });
 
+  it("prints a refund as a debit with its mode", () => {
+    const withRefund = buildLedger({
+      openingBalancePaise: -5_000n,
+      openingDate: "2026-11-01",
+      invoices: [],
+      creditNotes: [],
+      payments: [],
+      refunds: [{ id: "r1", date: "2026-11-02", amountPaise: 5_000n }],
+    });
+    expect(statementRows(withRefund, { r1: { mode: "CASH", reference: null } })[1]).toEqual({
+      date: "02-11-2026",
+      kind: "REFUND",
+      number: null,
+      mode: "CASH",
+      reference: null,
+      debit: "₹50.00",
+      credit: "",
+      balance: { amount: "₹0.00", side: null },
+    });
+  });
+
   it("a payment without details (never expected) still prints", () => {
     const rows = statementRows(ledger, {});
     expect(rows[2]).toMatchObject({ kind: "PAYMENT", mode: null, reference: null });

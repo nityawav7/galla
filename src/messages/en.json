@@ -97,7 +97,9 @@
     "walkInPaymentInvalid": "A walk-in sale is paid only on its own invoice, up to its balance",
     "voidReasonRequired": "Say why this payment is voided",
     "openingBalanceApplied": "Payments already settled more of the opening balance than this. Void them first.",
-    "dateInvalid": "Enter a valid date"
+    "dateInvalid": "Enter a valid date",
+    "refundExceedsOnAccount": "That's more than the customer has on account.",
+    "refundModeRequired": "Choose how the money was given back."
   },
   "auth": {
     "fields": {
@@ -542,7 +544,8 @@
         "INVOICE": "Invoice {number}",
         "CREDIT_NOTE": "Credit note {number}",
         "PAYMENT": "Payment · {mode}",
-        "BROUGHT_FORWARD": "Balance brought forward"
+        "BROUGHT_FORWARD": "Balance brought forward",
+        "REFUND": "Refund · {mode}"
       },
       "advanceBalance": "{amount} adv.",
       "empty": "No entries in this period.",
@@ -550,6 +553,18 @@
       "reminder": {
         "button": "Send reminder",
         "title": "Payment reminder on WhatsApp"
+      },
+      "refund": {
+        "title": "Refund advance",
+        "hint": "{amount} is on account. Pay some or all of it back.",
+        "amount": "Amount to give back (₹)",
+        "date": "Date",
+        "mode": "Given back by",
+        "reference": "UTR or reference (optional)",
+        "save": "Record refund",
+        "saving": "Saving…",
+        "list": "Refunds",
+        "voided": "Voided: {reason}"
       }
     }
   },
@@ -815,8 +830,12 @@
       "total": "Total credit",
       "balance": "Still owed on the invoice: {amount}",
       "issue": "Issue credit note",
-      "issuing": "Issuing…"
-    }
+      "issuing": "Issuing…",
+      "toAdvance": "{amount} of what was paid goes to the customer's advance.",
+      "refundTitle": "{amount} was already paid. How was it given back?",
+      "refundReference": "UTR or reference (optional)"
+    },
+    "refunded": "{amount} given back by {mode} {reference}"
   },
   "pdf": {
     "title": {
@@ -916,7 +935,8 @@
         "OPENING": "Opening balance",
         "INVOICE": "Invoice {number}",
         "CREDIT_NOTE": "Credit note {number}",
-        "PAYMENT": "Payment received · {mode}"
+        "PAYMENT": "Payment received · {mode}",
+        "REFUND": "Refund paid · {mode}"
       },
       "modes": {
         "CASH": "Cash",
@@ -1048,13 +1068,19 @@
         "enteredByMistake": "Entered by mistake",
         "chequeBounced": "Cheque bounced",
         "wrongCustomer": "Wrong customer"
-      }
+      },
+      "refundTitle": "Void the refund of {amount}?",
+      "refundExplain": "It stays in the list, struck through, and the money counts as the customer's advance again.",
+      "refundConfirm": "Void refund"
     },
     "errors": {
       "paymentAlreadyVoided": "This payment was already voided",
       "invoiceNotOpen": "Nothing is due on this invoice any more",
       "walkInPaymentInvalid": "A walk-in sale is paid only on its own invoice",
-      "nothingOnAccount": "This customer has no advance to apply"
+      "nothingOnAccount": "This customer has no advance to apply",
+      "refundFirst": "Some of this payment's money has been refunded. Void that refund first.",
+      "refundAlreadyVoided": "This refund was already voided",
+      "walkInRefundFinal": "Money given back at the counter stays with its credit note"
     }
   }
 }

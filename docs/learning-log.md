@@ -144,3 +144,10 @@ What I learned and what broke while building Galla, phase by phase.
 - The reminder's text is built on the server from the ledger, so it always matches the books; the browser only picks the language and opens `wa.me`. Opening it calls a server action that writes the audit row; the link opens whether or not that call finishes.
 - One list that is cards on a phone and a five-column grid from `md` up (`md:contents` on the amounts wrapper) avoids rendering the ledger twice, which would also have doubled every e2e locator.
 - CI's `playwright install --with-deps chromium` stalled for 10–20 minutes and failed three runs in a row on PR #24, before any test ran; the browser CDN answered fine from a laptop, so the apt half was the likely culprit. GitHub's Ubuntu image already ships Google Chrome, so CI now sets `PLAYWRIGHT_CHANNEL=chrome` and skips the install. The job API (`/repos/{owner}/{repo}/actions/jobs/{id}`) shows each step's result without signing in, even when the logs need it.
+
+## Phase 8d: credit notes on paid invoices, refunds
+
+- Releasing money from an invoice is a small pure function (newest payment first, exact excess), and the service only writes what it returns; the property test checks the sum and that no row gives more than it holds.
+- The invoice's paid and credited amounts change in one UPDATE: two UPDATEs would each have to pass the status CHECK on their own, with a made-up status in between.
+- One deferred trigger function serves four tables (refunds, payments, allocations, customers) by looking at `TG_TABLE_NAME`; it finds the customer of an allocation through its payment when the row has none.
+- A refund form's amount comes from on-account paise turned into rupees with the same integer helper as the payment form; `Number(paise) / 100` would have been the first float in a money path.

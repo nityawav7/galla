@@ -37,6 +37,21 @@ describe("buildLedger", () => {
     });
   });
 
+  it("adds a refund as a debit after the same day's payments", () => {
+    const ledger = buildLedger({
+      ...input,
+      refunds: [{ id: "r1", date: "2026-05-01", amountPaise: 1_000n }],
+    });
+    expect(ledger.rows.at(-1)).toMatchObject({
+      kind: "REFUND",
+      id: "r1",
+      number: null,
+      debitPaise: 1_000n,
+      creditPaise: 0n,
+      balancePaise: 36_000n,
+    });
+  });
+
   it("shows an opening advance as a credit and leaves out a zero opening balance", () => {
     expect(buildLedger({ ...input, openingBalancePaise: -5_000n }).rows[0]).toMatchObject({
       kind: "OPENING",
@@ -93,11 +108,15 @@ describe("buildLedger", () => {
       fc.record({ id: fc.uuid(), date: day, amountPaise: fc.bigInt({ min: 1n, max: 1_000_000n }) }),
       { maxLength: 10 },
     ),
+    refunds: fc.array(
+      fc.record({ id: fc.uuid(), date: day, amountPaise: fc.bigInt({ min: 1n, max: 100_000n }) }),
+      { maxLength: 3 },
+    ),
   });
   const sum = (values: readonly { grandTotalPaise?: bigint; amountPaise?: bigint }[]) =>
     values.reduce((total, value) => total + (value.grandTotalPaise ?? value.amountPaise ?? 0n), 0n);
 
-  it("SPEC F7: balance = opening + invoices − payments − credit notes (property)", () => {
+  it("SPEC F7: balance = opening + invoices − payments − credit notes + refunds (property)", () => {
     fc.assert(
       fc.property(randomInput, day, (data, from) => {
         const ledger = buildLedger(data);
@@ -105,7 +124,8 @@ describe("buildLedger", () => {
           data.openingBalancePaise +
             sum(data.invoices) -
             sum(data.payments) -
-            sum(data.creditNotes),
+            sum(data.creditNotes) +
+            sum(data.refunds),
         );
         // Every row is the one before plus its debit, less its credit, in date order.
         let previous = 0n;
@@ -120,6 +140,7 @@ describe("buildLedger", () => {
           invoices: [...data.invoices].reverse(),
           payments: [...data.payments].reverse(),
           creditNotes: [...data.creditNotes].reverse(),
+          refunds: [...data.refunds].reverse(),
         };
         expect(buildLedger(shuffled).closingPaise).toBe(ledger.closingPaise);
         // A period starts from what was brought forward and ends at the same closing balance.

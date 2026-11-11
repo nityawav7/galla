@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { isInvoiceErrorKey } from "@/lib/validation/invoices";
 import { isValidationKey } from "@/lib/validation/messages";
+import { PAYMENT_MODES, type PaymentMode } from "@/lib/validation/payments";
 import { parseScaled } from "@/server/domain/decimal";
 import {
   type CreditableLine,
@@ -53,7 +54,8 @@ function toCreditable(line: ReturnableLine): CreditableLine {
 
 /**
  * A credit note by returned quantity (ADR 0007). Live totals use the same domain functions the
- * server runs; the server checks quantities and the balance again when issuing.
+ * server runs; the server checks quantities again when issuing. On a paid invoice, what the note
+ * releases goes to the customer's advance, or for a walk-in is given back now (ADR 0011).
  */
 export function CreditNoteForm({
   businessSlug,
@@ -61,14 +63,18 @@ export function CreditNoteForm({
   lines,
   roundOffPaise,
   balancePaise,
+  walkIn,
 }: {
   businessSlug: string;
   invoiceId: string;
   lines: ReturnableLine[];
   roundOffPaise: string;
   balancePaise: string;
+  /** No customer: released money is given back at the counter, not kept on account. */
+  walkIn: boolean;
 }) {
   const t = useTranslations("creditNotes.form");
+  const tModes = useTranslations("payments.modes");
   const validation = useTranslations("validation");
   const invoiceErrors = useTranslations("invoices.errors");
   const errors = useTranslations("errors");
@@ -78,6 +84,8 @@ export function CreditNoteForm({
   const [reason, setReason] = useState("");
   const [problem, setProblem] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [refundMode, setRefundMode] = useState<PaymentMode | null>(null);
+  const [refundReference, setRefundReference] = useState("");
 
   const remaining = (line: ReturnableLine) => BigInt(line.qtyMilli) - BigInt(line.returnedMilli);
   interface Typed {
@@ -107,7 +115,10 @@ export function CreditNoteForm({
     return (item?.credit ? item.qtyMilli : 0n) === remaining(line);
   });
   const totals = creditNoteTotals(valid, completes ? BigInt(roundOffPaise) : null);
-  const tooMuch = totals.grandTotalPaise > BigInt(balancePaise);
+  // Already paid beyond what the invoice will now cost: released (ADR 0011).
+  const releasedPaise = totals.grandTotalPaise - BigInt(balancePaise);
+  const releases = releasedPaise > 0n;
+  const needsRefundMode = releases && walkIn && refundMode === null;
   const hasBadLine = credits.some((item) => item.credit === null);
 
   const returnAll = () => {
@@ -129,6 +140,9 @@ export function CreditNoteForm({
         invoiceLineId: item.line.id,
         qty: quantities[item.line.id] ?? "",
       })),
+      ...(releases && walkIn && refundMode
+        ? { refund: { mode: refundMode, reference: refundReference } }
+        : {}),
     });
     setBusy(false);
     if (result.ok) {
@@ -263,8 +277,55 @@ export function CreditNoteForm({
         <p className="text-muted-foreground">
           {t("balance", { amount: formatINR(BigInt(balancePaise)) })}
         </p>
-        {tooMuch ? <p className="text-destructive">{validation("creditExceedsBalance")}</p> : null}
+        {releases && !walkIn ? (
+          <p className="font-medium" data-testid="credit-released">
+            {t("toAdvance", { amount: formatINR(releasedPaise) })}
+          </p>
+        ) : null}
       </section>
+
+      {releases && walkIn ? (
+        <fieldset className="flex flex-col gap-2 rounded-lg border p-3">
+          <legend className="px-1 text-sm font-medium">
+            {t("refundTitle", { amount: formatINR(releasedPaise) })}
+          </legend>
+          <div className="flex flex-wrap gap-2">
+            {PAYMENT_MODES.map((mode) => (
+              <label
+                key={mode}
+                className="cursor-pointer rounded-full border px-3 py-1.5 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary has-[:checked]:text-primary-foreground has-[:focus-visible]:ring-3 has-[:focus-visible]:ring-ring/50"
+              >
+                <input
+                  type="radio"
+                  name={`${id}-refund-mode`}
+                  value={mode}
+                  checked={refundMode === mode}
+                  onChange={() => {
+                    setRefundMode(mode);
+                  }}
+                  className="sr-only"
+                />
+                {tModes(mode)}
+              </label>
+            ))}
+          </div>
+          {refundMode !== null && refundMode !== "CASH" ? (
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor={`${id}-refund-reference`}>{t("refundReference")}</Label>
+              <Input
+                id={`${id}-refund-reference`}
+                autoComplete="off"
+                maxLength={50}
+                className="h-9"
+                value={refundReference}
+                onChange={(event) => {
+                  setRefundReference(event.target.value);
+                }}
+              />
+            </div>
+          ) : null}
+        </fieldset>
+      ) : null}
 
       {problem ? (
         <p role="alert" className="text-sm text-destructive">
@@ -275,7 +336,7 @@ export function CreditNoteForm({
         <Button
           type="button"
           size="lg"
-          disabled={busy || valid.length === 0 || hasBadLine || tooMuch}
+          disabled={busy || valid.length === 0 || hasBadLine || needsRefundMode}
           onClick={() => void submit()}
         >
           {busy ? t("issuing") : t("issue")}
