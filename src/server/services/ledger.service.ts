@@ -21,6 +21,7 @@ import { balancePaise } from "@/server/domain/invoice/status";
 import { type Aging, ageReceivables } from "@/server/domain/ledger/aging";
 import { type CustomerCredit, customerCredit } from "@/server/domain/ledger/customer-credit";
 import { buildLedger, type Ledger } from "@/server/domain/ledger/ledger";
+import { LEDGER_PERIODS, type LedgerPeriod, periodStart } from "@/server/domain/ledger/period";
 
 import { requireId } from "./ids";
 import { parseInput } from "./validate";
@@ -50,12 +51,18 @@ export interface CustomerLedger {
   payments: Record<string, Pick<LedgerPaymentRow, "mode" | "reference">>;
   /** Today in Asia/Kolkata (the aging date). */
   today: string;
+  /** The first day shown (earlier rows are brought forward), or null for all time. */
+  from: string | null;
 }
 
 const ledgerQuerySchema = z.object({
   /** Show rows from this date; earlier ones fold into the balance brought forward. */
   from: z.iso.date({ error: "dateInvalid" }).nullable().default(null),
+  /** Or a named period up to today (decision 10); wins over `from`. */
+  period: z.enum(LEDGER_PERIODS).optional(),
 });
+
+export type { LedgerPeriod };
 
 function openInvoices(rows: readonly LedgerInvoiceRow[]): OpenInvoiceView[] {
   return rows
@@ -75,7 +82,7 @@ export async function getCustomerLedger(
   query: unknown = {},
 ): Promise<CustomerLedger> {
   assertCan(ctx, "records:view");
-  const { from } = parseInput(ledgerQuerySchema, query);
+  const parsed = parseInput(ledgerQuerySchema, query);
   const db = getDb();
   const customer = await findCustomerById(db, ctx, requireId(customerId, "Customer"));
   if (!customer) throw new NotFoundError("Customer");
@@ -87,6 +94,7 @@ export async function getCustomerLedger(
     customerCreditSums(db, ctx, customer.id),
   ]);
   const today = istDateFromInstant(now());
+  const from = parsed.period ? periodStart(parsed.period, today) : parsed.from;
   const credit = customerCredit({ openingBalancePaise: customer.openingBalancePaise, ...sums });
   const ledger = buildLedger(
     {
@@ -132,6 +140,7 @@ export async function getCustomerLedger(
       payments.map((row) => [row.id, { mode: row.mode, reference: row.reference }]),
     ),
     today,
+    from,
   };
 }
 

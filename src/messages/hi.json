@@ -496,7 +496,62 @@
     "restore": "वापस लाएं",
     "archiveHint": "संग्रहित ग्राहक सूची और नए इनवॉइस में नहीं दिखते। उनके पुराने इनवॉइस नहीं बदलते।",
     "archivedNotice": "यह ग्राहक संग्रहित है।",
-    "restoreConflict": "अब किसी दूसरे चालू ग्राहक का यही GSTIN है। पहले किसी एक को बदलें।"
+    "restoreConflict": "अब किसी दूसरे चालू ग्राहक का यही GSTIN है। पहले किसी एक को बदलें।",
+    "ledger": {
+      "backToCustomer": "ग्राहक पर वापस",
+      "owesYou": "आपका बकाया {amount}",
+      "hasAdvance": "अग्रिम {amount}",
+      "settled": "कुछ बाकी नहीं",
+      "overdue": "{amount} की तारीख निकल चुकी",
+      "creditDays": "{days, plural, =0 {तुरंत भुगतान} other {# दिन उधार}}",
+      "recordPayment": "भुगतान दर्ज करें",
+      "statement": "खाता विवरण PDF",
+      "statementOpensInNewTab": "(नए टैब में खुलेगा)",
+      "edit": "बदलें",
+      "aging": {
+        "title": "क्या बाकी है",
+        "notDue": "अभी देय नहीं",
+        "bucket": "{from}–{to} दिन देर",
+        "over": "{days} दिन से ज़्यादा देर",
+        "opening": "शुरुआती बकाया",
+        "onAccount": "अग्रिम (खाते में)",
+        "total": "शेष"
+      },
+      "apply": {
+        "hint": "{amount} खाते में है। इसे सबसे पुराने बकाये में लगाएँ?",
+        "button": "अग्रिम लगाएँ",
+        "applying": "लगा रहे हैं…",
+        "applied": "{amount} सबसे पुराने बकाये में लगाया गया।"
+      },
+      "period": {
+        "label": "अवधि",
+        "fy": "इस वित्त वर्ष",
+        "lastFy": "पिछले वित्त वर्ष से",
+        "all": "शुरू से"
+      },
+      "history": "खाते का हिसाब",
+      "columns": {
+        "date": "तारीख",
+        "particulars": "विवरण",
+        "debit": "नाम",
+        "credit": "जमा",
+        "balance": "शेष"
+      },
+      "kinds": {
+        "OPENING": "शुरुआती बकाया",
+        "INVOICE": "इनवॉइस {number}",
+        "CREDIT_NOTE": "क्रेडिट नोट {number}",
+        "PAYMENT": "भुगतान · {mode}",
+        "BROUGHT_FORWARD": "पिछला शेष"
+      },
+      "advanceBalance": "{amount} अग्रिम",
+      "empty": "इस अवधि में कोई प्रविष्टि नहीं।",
+      "earlierRows": "{count, plural, other {# पुरानी प्रविष्टियाँ दिखाएँ}}",
+      "reminder": {
+        "button": "याद दिलाएँ",
+        "title": "WhatsApp पर भुगतान की याद"
+      }
+    }
   },
   "invoices": {
     "title": "बिल",
@@ -838,6 +893,49 @@
       "a4": "A4",
       "thermal": "80 mm (थर्मल)",
       "opensInNewTab": "(नए टैब में खुलेगा)"
+    },
+    "statement": {
+      "title": "खाता विवरण",
+      "customer": "ग्राहक",
+      "period": "अवधि",
+      "periodValue": "{from} से {to}",
+      "periodAll": "{to} तक",
+      "closing": "अंतिम शेष",
+      "broughtForward": "पिछला शेष",
+      "noRows": "इस अवधि में कोई प्रविष्टि नहीं।",
+      "dr": "{amount} नाम",
+      "cr": "{amount} जमा",
+      "columns": {
+        "date": "तारीख",
+        "particulars": "विवरण",
+        "debit": "नाम",
+        "credit": "जमा",
+        "balance": "शेष"
+      },
+      "kinds": {
+        "OPENING": "शुरुआती बकाया",
+        "INVOICE": "इनवॉइस {number}",
+        "CREDIT_NOTE": "क्रेडिट नोट {number}",
+        "PAYMENT": "भुगतान मिला · {mode}"
+      },
+      "modes": {
+        "CASH": "नकद",
+        "UPI": "UPI",
+        "BANK_TRANSFER": "बैंक ट्रांसफ़र",
+        "CHEQUE": "चेक",
+        "CARD": "कार्ड",
+        "OTHER": "अन्य"
+      },
+      "aging": {
+        "title": "बकाया की उम्र",
+        "notDue": "अभी देय नहीं",
+        "bucket": "{from}–{to} दिन",
+        "over": "{days} दिन से ज़्यादा",
+        "opening": "शुरुआती बकाया",
+        "onAccount": "अग्रिम",
+        "total": "शेष"
+      },
+      "upiNote": "बकाया राशि"
     }
   },
   "publicInvoice": {
@@ -866,6 +964,15 @@
       "amount": "₹1,180.00",
       "dueDate": "24-11-2026",
       "link": "https://example.com/i/abc"
+    },
+    "reminder": {
+      "greeting": "नमस्ते {customer},",
+      "due": "{shop} की ओर से याद दिलाना: {amount} बाकी है।",
+      "dueOverdue": "{shop} की ओर से याद दिलाना: {amount} बाकी है, जिसमें से {overdue} की तारीख निकल चुकी है।",
+      "opening": "पिछला बकाया · {amount}",
+      "line": "{number} · {amount} · भुगतान की तारीख {dueDate}",
+      "more": "…और {count} बिल।",
+      "thanks": "धन्यवाद!"
     }
   },
   "payments": {

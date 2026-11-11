@@ -165,7 +165,7 @@ function taxes(kinds: readonly TaxKind[], line: TaxedLine): PrintableTax[] {
   }));
 }
 
-function supplierParty(supplier: SupplierSnapshot): PrintableParty {
+export function supplierParty(supplier: SupplierSnapshot): PrintableParty {
   return {
     name: supplier.tradeName ?? supplier.legalName,
     legalName: supplier.tradeName ? supplier.legalName : null,
@@ -175,7 +175,7 @@ function supplierParty(supplier: SupplierSnapshot): PrintableParty {
   };
 }
 
-function recipientParty(recipient: CustomerSnapshot | null): PrintableParty {
+export function recipientParty(recipient: CustomerSnapshot | null): PrintableParty {
   return {
     name: recipient && recipient.name.length > 0 ? recipient.name : null,
     legalName: null,

@@ -11,3 +11,9 @@ export const PAYMENT_BACKDATE_DAYS = 365;
 
 /** The last day of each aging bucket: 0–30, 31–60, 61–90 and 90+ days past due (SPEC §4.9). */
 export const AGING_LIMITS = [30, 60, 90] as const;
+
+/** How many open invoices a WhatsApp payment reminder lists by name (decision 11). */
+export const REMINDER_MAX_INVOICES = 5;
+
+/** Ledger rows shown on the customer page before "Show earlier rows" (the statement has all). */
+export const LEDGER_PAGE_ROWS = 100;

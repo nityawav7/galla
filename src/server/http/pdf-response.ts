@@ -1,8 +1,9 @@
 import { type NextRequest } from "next/server";
+import { type z } from "zod";
 
 import { NotFoundError, toHttpStatus, ValidationError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
-import { type PdfQuery, pdfQuerySchema } from "@/lib/validation/pdf";
+import { pdfQuerySchema } from "@/lib/validation/pdf";
 import { getSessionUser } from "@/server/auth/session";
 import { type TenantContext } from "@/server/authz/context";
 import { type PdfFormat } from "@/server/pdf/formats";
@@ -17,8 +18,8 @@ function plain(status: number): Response {
   });
 }
 
-function parseQuery(request: NextRequest): PdfQuery | null {
-  const query = pdfQuerySchema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
+function parseQuery<Q>(request: NextRequest, schema: z.ZodType<Q>): Q | null {
+  const query = schema.safeParse(Object.fromEntries(request.nextUrl.searchParams));
   return query.success ? query.data : null;
 }
 
@@ -27,13 +28,13 @@ function parseQuery(request: NextRequest): PdfQuery | null {
  * browser shows it, to print. NotFound, bad input and Forbidden all look like 404.
  */
 async function pdfResponse(
-  query: PdfQuery,
-  render: (format: PdfFormat) => Promise<RenderedPdf>,
+  download: boolean,
+  render: () => Promise<RenderedPdf>,
   logIds: Record<string, string>,
 ): Promise<Response> {
   try {
-    const pdf = await render(query.format);
-    const disposition = query.download ? "attachment" : "inline";
+    const pdf = await render();
+    const disposition = download ? "attachment" : "inline";
     return new Response(pdf.bytes, {
       headers: {
         "Content-Type": "application/pdf",
@@ -61,13 +62,25 @@ export async function tenantPdfResponse(
   slug: string,
   render: (ctx: TenantContext, format: PdfFormat) => Promise<RenderedPdf>,
 ): Promise<Response> {
+  return tenantQueryPdfResponse(request, slug, pdfQuerySchema, (ctx, query) =>
+    render(ctx, query.format),
+  );
+}
+
+/** The same, for a PDF route with its own query (the customer statement's `?period=`). */
+export async function tenantQueryPdfResponse<Q extends { download?: "1" | undefined }>(
+  request: NextRequest,
+  slug: string,
+  schema: z.ZodType<Q>,
+  render: (ctx: TenantContext, query: Q) => Promise<RenderedPdf>,
+): Promise<Response> {
   const user = await getSessionUser();
   if (!user) return Response.redirect(new URL("/login", request.url), 303);
   const tenant = /^[a-z0-9-]{1,50}$/.test(slug) ? await resolveTenant(user.id, slug) : null;
   if (!tenant) return plain(404);
-  const query = parseQuery(request);
+  const query = parseQuery(request, schema);
   if (!query) return plain(404);
-  return pdfResponse(query, (format) => render(tenant.ctx, format), {
+  return pdfResponse(query.download === "1", () => render(tenant.ctx, query), {
     businessId: tenant.ctx.businessId,
   });
 }
@@ -80,7 +93,7 @@ export async function publicPdfResponse(
   request: NextRequest,
   render: (format: PdfFormat) => Promise<RenderedPdf>,
 ): Promise<Response> {
-  const query = parseQuery(request);
+  const query = parseQuery(request, pdfQuerySchema);
   if (!query) return plain(404);
-  return pdfResponse(query, render, {});
+  return pdfResponse(query.download === "1", () => render(query.format), {});
 }

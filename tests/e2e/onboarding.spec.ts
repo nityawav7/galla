@@ -397,6 +397,68 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
       page.getByRole("link", { name: /^Ramesh Traders/ }).filter({ visible: true }),
     ).toContainText("Owes ₹2,002.00");
   });
+
+  // SPEC F7: the customer page is the ledger: rows with a running balance, aging, the statement
+  // PDF, a WhatsApp reminder, and an advance applied to the oldest dues.
+  await test.step("the customer page shows the ledger, statement and reminder", async () => {
+    await page
+      .getByRole("link", { name: /^Ramesh Traders/ })
+      .filter({ visible: true })
+      .click();
+    await expect(page).toHaveURL(/\/customers\/[0-9a-f-]{36}$/);
+    const balance = page.getByTestId("customer-balance").filter({ visible: true });
+    await expect(balance).toHaveText("Owes you ₹2,002.00");
+
+    // Opening ₹1,500 + invoice ₹1,274 − credit note ₹472 − ₹300 UPI; the voided ₹2,100 is left out.
+    const ledger = page.getByTestId("ledger").filter({ visible: true });
+    await expect(ledger).toContainText("Opening balance");
+    await expect(ledger).toContainText(/Invoice SH\/\d{2}-\d{2}\/0001/);
+    await expect(ledger).toContainText("Credit note");
+    await expect(ledger).toContainText("Payment · UPI · UTR123456");
+    await expect(ledger).not.toContainText("₹2,100.00");
+    await expect(ledger.getByRole("listitem").last()).toContainText("₹2,002.00");
+    const aging = page.getByTestId("aging").filter({ visible: true });
+    await expect(aging).toContainText("0–30 days late₹502.00");
+    await expect(aging).toContainText("Opening balance₹1,500.00");
+
+    const statement = page.getByRole("link", { name: /^Statement PDF/ }).filter({ visible: true });
+    const statementResponse = await page.request.get((await statement.getAttribute("href")) ?? "");
+    expect(statementResponse.status()).toBe(200);
+    expect(statementResponse.headers()["content-type"]).toBe("application/pdf");
+
+    await page.getByText("Send reminder", { exact: true }).filter({ visible: true }).click();
+    const whatsapp = page
+      .getByRole("link", { name: /^Share on WhatsApp/ })
+      .filter({ visible: true });
+    await expect(whatsapp).toHaveAttribute("href", /^https:\/\/wa\.me\/919876543210\?text=/);
+    const reminder = new URL((await whatsapp.getAttribute("href")) ?? "").searchParams.get("text");
+    expect(reminder).toMatch(
+      /^Namaste Ramesh Traders,\nThis is a reminder from E2E Shop [0-9a-f]{6}: ₹2,002\.00 is due\./,
+    );
+    expect(reminder).toContain("Earlier balance · ₹1,500.00");
+
+    // ₹600 to the invoice only: ₹502 pays it, ₹98 stays on account, then goes to the opening
+    // balance with "Apply advance".
+    const customerPath = new URL(page.url()).pathname;
+    await page.getByRole("link", { name: "Record payment" }).filter({ visible: true }).click();
+    await expect(page).toHaveURL(/\/payments\/new\?customer=[0-9a-f-]{36}&back=customer$/);
+    await field(page, "Amount received (₹)").fill("600");
+    await page.getByRole("radio", { name: "Choose invoices" }).check();
+    await page.getByRole("button", { name: "Full" }).nth(1).click();
+    await expect(page.getByTestId("payment-preview").filter({ visible: true })).toContainText(
+      "On account₹98.00",
+    );
+    await page.getByRole("button", { name: "Save payment" }).filter({ visible: true }).click();
+    await page.getByRole("link", { name: "Done" }).filter({ visible: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${customerPath}$`));
+    await page.getByRole("button", { name: "Apply advance" }).click();
+    await expect(page.getByText("₹98.00 applied to the oldest dues.")).toBeVisible();
+    await expect(balance).toHaveText("Owes you ₹1,402.00");
+
+    await page.getByRole("link", { name: "Edit", exact: true }).filter({ visible: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${customerPath}/edit$`));
+    await expect(field(page, "Customer name")).toHaveValue("Ramesh Traders");
+  });
 });
 
 test("a user with no membership gets 404 for another business (SPEC F1)", async ({
@@ -413,6 +475,13 @@ test("a user with no membership gets 404 for another business (SPEC F1)", async 
   await field(owner, "Walk-in customer name (optional)").fill("Counter sale");
   await expect(owner).toHaveURL(/\/invoices\/[0-9a-f-]{36}\/edit$/, { timeout: 15_000 });
   const draftPath = new URL(owner.url()).pathname;
+  // A customer, so their page and statement can be tried too.
+  await owner.goto(`/b/${slug}/customers/new`);
+  await field(owner, "Customer name").fill("Private Customer");
+  await owner.getByRole("button", { name: "Add customer" }).click();
+  await expect(owner).toHaveURL(/\/customers$/);
+  const customerPath =
+    (await owner.getByRole("link", { name: /^Private Customer/ }).getAttribute("href")) ?? "";
   await ownerContext.close();
 
   const strangerContext = await browser.newContext();
@@ -426,6 +495,8 @@ test("a user with no membership gets 404 for another business (SPEC F1)", async 
     draftPath,
     `/b/${slug}/payments`,
     `/b/${slug}/payments/new`,
+    customerPath,
+    `${customerPath}/edit`,
   ]) {
     const response = await stranger.goto(path);
     expect(response?.status(), path).toBe(404);
@@ -434,6 +505,8 @@ test("a user with no membership gets 404 for another business (SPEC F1)", async 
   // The draft's PDF route answers 404 too (SPEC F5: tenant-scoped).
   const pdfPath = draftPath.replace(/\/edit$/, "/pdf");
   expect((await stranger.request.get(pdfPath)).status(), pdfPath).toBe(404);
+  const statementPath = `${customerPath}/statement`;
+  expect((await stranger.request.get(statementPath)).status(), statementPath).toBe(404);
   // An invoice link that was never issued is a plain 404 too, with no sign-in needed.
   const unknownLink = await stranger.goto("/i/AAAAAAAAAAAAAAAAAAAAAA");
   expect(unknownLink?.status()).toBe(404);

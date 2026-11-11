@@ -13,6 +13,8 @@ import {
   restoreCustomer,
   updateCustomer,
 } from "@/server/services/customer.service";
+import { applyCredit } from "@/server/services/payment.service";
+import { recordReminderShared } from "@/server/services/reminder.service";
 
 // Thin: membership from the URL's slug; customer.service checks the role and validates.
 
@@ -83,5 +85,29 @@ export async function importCustomersAction(
   return runAction(async () => {
     const { ctx } = await requireTenant(businessSlug);
     return importCustomers(ctx, csvText);
+  });
+}
+
+/** "Apply advance": money on account to the oldest dues (SPEC F7). The paise applied, as a string. */
+export async function applyAdvanceAction(
+  businessSlug: string,
+  customerId: string,
+): Promise<ActionResult<string>> {
+  return runAction(async () => {
+    const { ctx } = await requireTenant(businessSlug);
+    const result = await applyCredit(ctx, customerId, { allocation: { kind: "AUTO" } });
+    const applied = result.allocations.reduce((sum, pair) => sum + pair.amountPaise, 0n);
+    return applied.toString();
+  });
+}
+
+/** Audits that "Send reminder" opened WhatsApp (decision 11); the browser opens the link itself. */
+export async function reminderSharedAction(
+  businessSlug: string,
+  customerId: string,
+): Promise<ActionResult<boolean>> {
+  return runAction(async () => {
+    const { ctx } = await requireTenant(businessSlug);
+    return recordReminderShared(ctx, customerId);
   });
 }

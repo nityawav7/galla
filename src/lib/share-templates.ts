@@ -1,5 +1,6 @@
 import en from "@/messages/en.json";
 import hi from "@/messages/hi.json";
+import { type ReminderTemplates } from "@/server/domain/share/reminder";
 
 /*
  * The built-in WhatsApp messages (SPEC F6), kept with the other strings in src/messages. They are
@@ -29,4 +30,9 @@ export function storedTemplate(value: string | null, locale: ShareLocale): strin
   if (value === null) return null;
   const normalized = value.replace(/\r\n/g, "\n").trim();
   return normalized === "" || normalized === defaultShareTemplate(locale) ? null : normalized;
+}
+
+/** The fixed payment reminder wording (decision 11 of the Phase 8 plan), not editable yet. */
+export function reminderTemplates(locale: ShareLocale): ReminderTemplates {
+  return MESSAGES[locale].share.reminder;
 }
