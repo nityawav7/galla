@@ -400,3 +400,26 @@ export async function setPaid(
     .returning();
   return row;
 }
+
+export interface InvoiceLinkState {
+  id: string;
+  publicToken: string | null;
+  tokenRevokedAt: Date | null;
+}
+
+/** The public link state of some invoices (for a payment reminder's links). */
+export function findInvoiceLinks(
+  db: Executor,
+  ctx: TenantContext,
+  ids: readonly string[],
+): Promise<InvoiceLinkState[]> {
+  if (ids.length === 0) return Promise.resolve([]);
+  return db
+    .select({
+      id: invoices.id,
+      publicToken: invoices.publicToken,
+      tokenRevokedAt: invoices.tokenRevokedAt,
+    })
+    .from(invoices)
+    .where(tenantScope(ctx, invoices, inArray(invoices.id, [...ids])));
+}

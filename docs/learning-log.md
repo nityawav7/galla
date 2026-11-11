@@ -135,3 +135,12 @@ What I learned and what broke while building Galla, phase by phase.
 - The first e2e run of the step expected "oldest first" to pay the invoice, but the customer had a ₹1,500 opening balance from an earlier step, and the app (rightly) paid that first. Tests that assert money flows have to start from the whole customer, not the one invoice in view.
 - Docker Desktop stopping mid-session shows up as e2e failures everywhere (health check 503, sign-ups failing); check `docker ps` before reading anything into them.
 - The preview tool reads `.claude/launch.json` from the main checkout, so previewing a worktree needs an entry that runs `pnpm --dir <worktree> start`.
+- On CI, a click right after a menu tap latched onto the old page's link of the same name a moment before Next hid that page, then waited for it to be visible again until the test timed out. Next keeps earlier pages mounted (hidden), so Playwright never re-resolved the locator. Waiting for the new URL before tapping fixed it; locally the race never showed.
+
+## Phase 8c: customer ledger, statement and reminder
+
+- The statement and the customer page read the same `getCustomerLedger`, so the PDF's closing balance can't drift from the screen; the period ("This FY", "Since last FY", "All time") is a pure function of today's IST date.
+- Balances print as Dr/Cr on the statement, the way a shop's books (and its CA) read them, but as "Owes you" / "Advance" on screen, where most owners aren't accountants.
+- The reminder's text is built on the server from the ledger, so it always matches the books; the browser only picks the language and opens `wa.me`. Opening it calls a server action that writes the audit row; the link opens whether or not that call finishes.
+- One list that is cards on a phone and a five-column grid from `md` up (`md:contents` on the amounts wrapper) avoids rendering the ledger twice, which would also have doubled every e2e locator.
+- CI's `playwright install --with-deps chromium` stalled for 10–20 minutes and failed three runs in a row on PR #24, before any test ran; the browser CDN answered fine from a laptop, so the apt half was the likely culprit. GitHub's Ubuntu image already ships Google Chrome, so CI now sets `PLAYWRIGHT_CHANNEL=chrome` and skips the install. The job API (`/repos/{owner}/{repo}/actions/jobs/{id}`) shows each step's result without signing in, even when the logs need it.

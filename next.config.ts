@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
   // The PDF fonts are read from disk, so Vercel must copy them into the routes that render PDFs.
   outputFileTracingIncludes: {
     "/**/pdf": ["./src/server/pdf/fonts/*.ttf"],
+    "/**/statement": ["./src/server/pdf/fonts/*.ttf"],
     "/i/**": ["./src/server/pdf/fonts/*.ttf"],
   },
   turbopack: {

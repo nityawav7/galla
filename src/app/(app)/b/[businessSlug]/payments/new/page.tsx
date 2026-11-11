@@ -29,6 +29,8 @@ const querySchema = z.object({
   customer: z.uuid().optional().catch(undefined),
   invoice: z.uuid().optional().catch(undefined),
   q: z.string().trim().max(100).optional().catch(undefined),
+  /** Opened from the customer page: "Done" goes back there. */
+  back: z.literal("customer").optional().catch(undefined),
 });
 
 function toFormOptions(options: PaymentOptions): PaymentFormOptions {
@@ -122,9 +124,12 @@ async function NewPayment({ params, searchParams }: Pick<Params, "params" | "sea
     return <ChooseCustomer ctx={ctx} businessSlug={businessSlug} q={query.q} />;
   }
   const options = await optionsOr404(ctx, query);
+  const customerId = options.customer?.id ?? "";
   const returnHref = query.invoice
     ? `/b/${businessSlug}/invoices/${query.invoice}`
-    : `/b/${businessSlug}/payments?customer=${options.customer?.id ?? ""}`;
+    : query.back === "customer"
+      ? `/b/${businessSlug}/customers/${customerId}`
+      : `/b/${businessSlug}/payments?customer=${customerId}`;
   if (options.customer === null && options.openItems.length === 0) {
     return (
       <>

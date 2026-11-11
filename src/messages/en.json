@@ -496,7 +496,62 @@
     "restore": "Restore",
     "archiveHint": "Archived customers are hidden from lists and new invoices. Their past invoices are not changed.",
     "archivedNotice": "This customer is archived.",
-    "restoreConflict": "Another active customer now has this GSTIN. Change one of them first."
+    "restoreConflict": "Another active customer now has this GSTIN. Change one of them first.",
+    "ledger": {
+      "backToCustomer": "Back to customer",
+      "owesYou": "Owes you {amount}",
+      "hasAdvance": "Advance {amount}",
+      "settled": "Nothing due",
+      "overdue": "{amount} overdue",
+      "creditDays": "{days, plural, =0 {Pays on the spot} one {# credit day} other {# credit days}}",
+      "recordPayment": "Record payment",
+      "statement": "Statement PDF",
+      "statementOpensInNewTab": "(opens in a new tab)",
+      "edit": "Edit",
+      "aging": {
+        "title": "What is due",
+        "notDue": "Not yet due",
+        "bucket": "{from}–{to} days late",
+        "over": "Over {days} days late",
+        "opening": "Opening balance",
+        "onAccount": "Advance (on account)",
+        "total": "Balance"
+      },
+      "apply": {
+        "hint": "{amount} is on account. Apply it to the oldest dues first?",
+        "button": "Apply advance",
+        "applying": "Applying…",
+        "applied": "{amount} applied to the oldest dues."
+      },
+      "period": {
+        "label": "Period",
+        "fy": "This FY",
+        "lastFy": "Since last FY",
+        "all": "All time"
+      },
+      "history": "Account history",
+      "columns": {
+        "date": "Date",
+        "particulars": "Particulars",
+        "debit": "Debit",
+        "credit": "Credit",
+        "balance": "Balance"
+      },
+      "kinds": {
+        "OPENING": "Opening balance",
+        "INVOICE": "Invoice {number}",
+        "CREDIT_NOTE": "Credit note {number}",
+        "PAYMENT": "Payment · {mode}",
+        "BROUGHT_FORWARD": "Balance brought forward"
+      },
+      "advanceBalance": "{amount} adv.",
+      "empty": "No entries in this period.",
+      "earlierRows": "Show {count, plural, one {# earlier row} other {# earlier rows}}",
+      "reminder": {
+        "button": "Send reminder",
+        "title": "Payment reminder on WhatsApp"
+      }
+    }
   },
   "invoices": {
     "title": "Invoices",
@@ -838,6 +893,49 @@
       "a4": "A4",
       "thermal": "80 mm (thermal)",
       "opensInNewTab": "(opens in a new tab)"
+    },
+    "statement": {
+      "title": "Statement of Account",
+      "customer": "Customer",
+      "period": "Period",
+      "periodValue": "{from} to {to}",
+      "periodAll": "Up to {to}",
+      "closing": "Closing balance",
+      "broughtForward": "Balance brought forward",
+      "noRows": "No entries in this period.",
+      "dr": "{amount} Dr",
+      "cr": "{amount} Cr",
+      "columns": {
+        "date": "Date",
+        "particulars": "Particulars",
+        "debit": "Debit",
+        "credit": "Credit",
+        "balance": "Balance"
+      },
+      "kinds": {
+        "OPENING": "Opening balance",
+        "INVOICE": "Invoice {number}",
+        "CREDIT_NOTE": "Credit note {number}",
+        "PAYMENT": "Payment received · {mode}"
+      },
+      "modes": {
+        "CASH": "Cash",
+        "UPI": "UPI",
+        "BANK_TRANSFER": "Bank transfer",
+        "CHEQUE": "Cheque",
+        "CARD": "Card",
+        "OTHER": "Other"
+      },
+      "aging": {
+        "title": "Ageing of the balance",
+        "notDue": "Not yet due",
+        "bucket": "{from}–{to} days",
+        "over": "Over {days} days",
+        "opening": "Opening balance",
+        "onAccount": "Advance",
+        "total": "Balance"
+      },
+      "upiNote": "Balance due"
     }
   },
   "publicInvoice": {
@@ -866,6 +964,15 @@
       "amount": "₹1,180.00",
       "dueDate": "24-11-2026",
       "link": "https://example.com/i/abc"
+    },
+    "reminder": {
+      "greeting": "Namaste {customer},",
+      "due": "This is a reminder from {shop}: {amount} is due.",
+      "dueOverdue": "This is a reminder from {shop}: {amount} is due, of which {overdue} is overdue.",
+      "opening": "Earlier balance · {amount}",
+      "line": "{number} · {amount} · due {dueDate}",
+      "more": "…and {count} more.",
+      "thanks": "Thank you!"
     }
   },
   "payments": {
