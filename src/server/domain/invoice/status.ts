@@ -19,6 +19,20 @@ export function balancePaise(invoice: InvoiceMoney): bigint {
   return invoice.grandTotalPaise - invoice.amountPaidPaise - invoice.amountCreditedPaise;
 }
 
+/** The stored status of an issued, live invoice; drafts and cancelled invoices keep theirs. */
+export type SettledStatus = Extract<StoredStatus, "ISSUED" | "PARTIALLY_PAID" | "PAID">;
+
+/**
+ * What an issued invoice's stored status must be for its money (SPEC §4.8), the same rule as the
+ * database CHECK `invoices_status_matches_money`: nothing paid → ISSUED (a full credit is shown as
+ * CREDITED, never stored); something paid and something still due → PARTIALLY_PAID; paid with
+ * nothing due → PAID.
+ */
+export function settledStatus(invoice: InvoiceMoney): SettledStatus {
+  if (invoice.amountPaidPaise <= 0n) return "ISSUED";
+  return balancePaise(invoice) > 0n ? "PARTIALLY_PAID" : "PAID";
+}
+
 export interface DisplayStatusInput extends InvoiceMoney {
   status: StoredStatus;
   /** ISO date, or null when there is no due date (a walk-in cash sale). */

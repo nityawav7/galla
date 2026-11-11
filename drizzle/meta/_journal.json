@@ -64,6 +64,13 @@
       "when": 1794291027815,
       "tag": "0008_whatsapp_templates",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1794334882932,
+      "tag": "0009_payments",
+      "breakpoints": true
     }
   ]
 }

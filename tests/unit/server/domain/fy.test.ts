@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import { ValidationError } from "@/lib/errors";
 import {
   addDays,
+  daysBetween,
   formatIndianDate,
   fyForDate,
   fyForInstant,
@@ -122,6 +123,34 @@ describe("addDays", () => {
     ["2026-06-15", 1.5],
   ])("rejects %s + %s", (date, days) => {
     expect(() => addDays(date, days)).toThrow(ValidationError);
+  });
+});
+
+describe("daysBetween", () => {
+  it.each([
+    ["2026-11-10", "2026-11-10", 0],
+    ["2026-11-10", "2026-11-11", 1],
+    ["2026-11-11", "2026-11-10", -1],
+    ["2028-02-28", "2028-03-01", 2],
+    ["2026-03-31", "2026-04-01", 1],
+    ["2026-01-01", "2027-01-01", 365],
+  ])("from %s to %s is %i days", (from, to, expected) => {
+    expect(daysBetween(from, to)).toBe(expected);
+  });
+
+  it("is the inverse of addDays", () => {
+    fc.assert(
+      fc.property(fc.integer({ min: -2000, max: 2000 }), (days) => {
+        expect(daysBetween("2026-06-15", addDays("2026-06-15", days))).toBe(days);
+      }),
+    );
+  });
+
+  it.each([
+    ["2026-02-30", "2026-03-01"],
+    ["2026-03-01", "nope"],
+  ])("rejects %s to %s", (from, to) => {
+    expect(() => daysBetween(from, to)).toThrow(ValidationError);
   });
 });
 

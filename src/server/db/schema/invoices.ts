@@ -123,6 +123,19 @@ export const invoices = pgTable(
       "invoices_settled_range",
       sql`${t.amountPaidPaise} >= 0 and ${t.amountCreditedPaise} >= 0 and ${t.amountPaidPaise} + ${t.amountCreditedPaise} <= ${t.grandTotalPaise}`,
     ),
+    // The stored status always matches the money (settledStatus in domain/invoice/status.ts):
+    // drafts and cancelled invoices have nothing paid; nothing paid → ISSUED; paid with something
+    // still due → PARTIALLY_PAID; paid with nothing due → PAID. Fully credited stays ISSUED.
+    check(
+      "invoices_status_matches_money",
+      sql`case ${t.status}
+        when 'DRAFT' then ${t.amountPaidPaise} = 0 and ${t.amountCreditedPaise} = 0
+        when 'CANCELLED' then ${t.amountPaidPaise} = 0
+        when 'ISSUED' then ${t.amountPaidPaise} = 0
+        when 'PARTIALLY_PAID' then ${t.amountPaidPaise} > 0 and ${t.amountPaidPaise} + ${t.amountCreditedPaise} < ${t.grandTotalPaise}
+        when 'PAID' then ${t.amountPaidPaise} > 0 and ${t.amountPaidPaise} + ${t.amountCreditedPaise} = ${t.grandTotalPaise}
+        else false end`,
+    ),
     // Drafts have no number; everything issued has a number, FY and issue time.
     check("invoices_number_iff_issued", sql`(${t.status} = 'DRAFT') = (${t.number} is null)`),
     check("invoices_fy_with_number", sql`(${t.number} is null) = (${t.fy} is null)`),
@@ -159,6 +172,10 @@ export const invoices = pgTable(
       .on(t.businessId, t.dueDate)
       .where(sql`${t.status} in ('ISSUED', 'PARTIALLY_PAID')`),
     index("invoices_business_id_customer_id_idx").on(t.businessId, t.customerId),
+    // A customer's open invoices, oldest first (payment allocation, aging).
+    index("invoices_business_id_customer_id_open_idx")
+      .on(t.businessId, t.customerId, t.invoiceDate, t.id)
+      .where(sql`${t.status} in ('ISSUED', 'PARTIALLY_PAID')`),
     index("invoices_place_of_supply_state_code_idx").on(t.placeOfSupplyStateCode),
   ],
 );

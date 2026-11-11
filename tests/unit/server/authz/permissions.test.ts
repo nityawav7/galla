@@ -16,6 +16,7 @@ const SPEC_MATRIX: Record<Action, Record<Role, boolean>> = {
   "invoice:share": { OWNER: true, ACCOUNTANT: false, STAFF: true },
   "invoice:manageLink": { OWNER: true, ACCOUNTANT: false, STAFF: false },
   "payment:record": { OWNER: true, ACCOUNTANT: true, STAFF: true },
+  "payment:void": { OWNER: true, ACCOUNTANT: false, STAFF: false },
   "records:view": { OWNER: true, ACCOUNTANT: true, STAFF: true },
   "dashboard:viewTotals": { OWNER: true, ACCOUNTANT: true, STAFF: false },
   "reports:export": { OWNER: true, ACCOUNTANT: true, STAFF: false },

@@ -161,3 +161,5 @@ Sub-total 472.00 + 212.40 + 590.00 = **1,274.40**, so round off **−0.40**, giv
 5. **HSN digits:** with turnover up to ₹5 cr, a 4-digit HSN is required on B2B invoices only; above it, 6 digits on every invoice. Does this also apply to a Bill of Supply, and never to a plain Invoice from an unregistered business? (Assumed yes to both.)
 6. **Cancelling** an invoice whose month may already be in a filed GSTR-1: is a warning enough, or should it be blocked? (Phase 6c plans a warning.)
 7. **Credit-note time limit** (CGST Act s.34(2), 30 November after the FY ends): should the app warn after it? (No check in Phase 6c.)
+8. **Advances:** a customer paying before the sale (an opening advance, or money on account). For goods no GST is due on an advance (Notification 66/2017-CT); for services a receipt voucher and GST on the advance may be needed. Galla records the money only and issues no receipt voucher. (Assumed fine for goods shops; verify for service businesses.)
+9. **Credit note after payment** (Phase 8d): the credit note is the same; only the money moves on account or back to the customer. (Not expected to be a problem; listed for the CA check.)

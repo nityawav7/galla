@@ -3,7 +3,7 @@ import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, or, sql } from "dri
 import { type TenantContext } from "@/server/authz/context";
 
 import { customers } from "../schema";
-import { type Executor } from "../transaction";
+import { type Executor, type Transaction } from "../transaction";
 import { type NameCursor } from "./cursor";
 import { escapeLike, FUZZY_MATCH_THRESHOLD, type TenantOwned, tenantScope } from "./tenant";
 
@@ -64,6 +64,24 @@ export async function findCustomerById(
     .select()
     .from(customers)
     .where(tenantScope(ctx, customers, eq(customers.id, id)));
+  return row;
+}
+
+/**
+ * Reads the customer and locks the row until the transaction ends. Every change to a customer's
+ * money (payments, voids, credit notes, "Apply advance", the opening balance) takes this lock
+ * first, so they run one after the other (ADR 0010).
+ */
+export async function lockCustomer(
+  tx: Transaction,
+  ctx: TenantContext,
+  id: string,
+): Promise<Customer | undefined> {
+  const [row] = await tx
+    .select()
+    .from(customers)
+    .where(tenantScope(ctx, customers, eq(customers.id, id)))
+    .for("update");
   return row;
 }
 
