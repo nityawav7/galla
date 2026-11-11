@@ -13,6 +13,9 @@ const externalBaseURL = rawExternalURL
 const baseURL = externalBaseURL ?? "http://localhost:3000";
 // Lets CI reach Vercel previews that have Deployment Protection enabled.
 const bypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
+// CI sets PLAYWRIGHT_CHANNEL=chrome to use the Google Chrome already on GitHub's Ubuntu image,
+// so no browser download or apt install can stall the run. Locally: Playwright's Chromium.
+const browser = process.env.PLAYWRIGHT_CHANNEL === "chrome" ? { channel: "chrome" } : {};
 
 export default defineConfig({
   testDir: "tests/e2e",
@@ -28,9 +31,12 @@ export default defineConfig({
     extraHTTPHeaders: bypassSecret ? { "x-vercel-protection-bypass": bypassSecret } : undefined,
   },
   projects: [
-    { name: "desktop", use: { ...devices["Desktop Chrome"] } },
+    { name: "desktop", use: { ...devices["Desktop Chrome"], ...browser } },
     // SPEC §6.1: usable at 360 px wide.
-    { name: "mobile", use: { ...devices["Pixel 7"], viewport: { width: 360, height: 780 } } },
+    {
+      name: "mobile",
+      use: { ...devices["Pixel 7"], ...browser, viewport: { width: 360, height: 780 } },
+    },
   ],
   webServer: externalBaseURL
     ? undefined

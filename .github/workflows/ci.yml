@@ -64,6 +64,7 @@ jobs:
       # Test-only values, not secrets.
       BETTER_AUTH_SECRET: test-secret-test-secret-test-secret-test
       BETTER_AUTH_URL: http://localhost:3000
+      PLAYWRIGHT_CHANNEL: chrome
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -78,9 +79,10 @@ jobs:
 
   build-e2e:
     name: Build and e2e (local server)
-    # Pinned: `playwright install --with-deps` installs Ubuntu packages by release, and failed
-    # on the image ubuntu-latest moved to in late 2026. Move up once Playwright supports it.
+    # Uses the Google Chrome that comes with this image (PLAYWRIGHT_CHANNEL below) instead of
+    # `playwright install --with-deps`, which stalled for 10+ minutes and failed on PR #24.
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     services:
       postgres:
         image: postgres:16-alpine
@@ -110,7 +112,7 @@ jobs:
       - run: pnpm db:migrate
       # States, tax rates and units: onboarding cannot save a business without them.
       - run: pnpm db:seed:reference
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: google-chrome --version
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v7
         if: failure()

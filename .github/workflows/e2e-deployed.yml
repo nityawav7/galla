@@ -17,14 +17,16 @@ permissions:
 jobs:
   e2e:
     name: E2E (${{ github.event.client_payload.environment || 'manual' }})
-    # Pinned like ci.yml's e2e job: `playwright install --with-deps` failed on the newer image.
+    # Like ci.yml's e2e job: the image's own Google Chrome, no browser install.
     runs-on: ubuntu-24.04
+    timeout-minutes: 20
     env:
       CI: "true"
       PLAYWRIGHT_BASE_URL: ${{ github.event.client_payload.url || inputs.url }}
       # "production", "preview" or "manual". Tests that create accounts skip production.
       E2E_ENVIRONMENT: ${{ github.event.client_payload.environment || 'manual' }}
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      PLAYWRIGHT_CHANNEL: chrome
     steps:
       # Vercel sends the deployment's own URL, which Vercel Authentication protects even in
       # production. Without the bypass secret the tests would only see the login page.
@@ -42,7 +44,7 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: google-chrome --version
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v7
         if: failure()
