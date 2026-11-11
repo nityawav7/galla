@@ -228,7 +228,8 @@
     "members": "Members",
     "products": "Products",
     "customers": "Customers",
-    "invoices": "Invoices"
+    "invoices": "Invoices",
+    "payments": "Payments"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -663,7 +664,8 @@
       "issuedTitle": "Invoice {number} issued",
       "issuedTotal": "Total {amount}. It can no longer be changed.",
       "viewInvoice": "View invoice",
-      "newInvoice": "New invoice"
+      "newInvoice": "New invoice",
+      "recordPayment": "Record payment"
     },
     "errors": {
       "invoiceAlreadyIssued": "This invoice is already issued and can't be changed",
@@ -680,7 +682,12 @@
       "balance": "Balance due",
       "newCreditNote": "Issue credit note",
       "cannotCancel": "An invoice with a credit note or a payment can't be cancelled. Issue a credit note instead.",
-      "creditNotes": "Credit notes"
+      "creditNotes": "Credit notes",
+      "paid": "Paid",
+      "recordPayment": "Record payment",
+      "payments": "Payments",
+      "fromAdvance": "From advance",
+      "voided": "voided"
     },
     "cancel": {
       "button": "Cancel invoice",
@@ -862,6 +869,80 @@
     }
   },
   "payments": {
+    "title": "Payments",
+    "newTitle": "Record payment",
+    "record": "Record payment",
+    "from": "From",
+    "to": "To",
+    "apply": "Apply",
+    "clearFilters": "Show all payments",
+    "empty": "No payments yet",
+    "walkIn": "Walk-in sale",
+    "voided": "Voided: {reason}",
+    "appliedSummary": "Applied {applied} · on account {onAccount}",
+    "openingBalance": "Opening balance",
+    "pages": "Pages",
+    "firstPage": "First page",
+    "nextPage": "Next page",
+    "modes": {
+      "CASH": "Cash",
+      "UPI": "UPI",
+      "BANK_TRANSFER": "Bank transfer",
+      "CHEQUE": "Cheque",
+      "CARD": "Card",
+      "OTHER": "Other"
+    },
+    "form": {
+      "saved": "Payment recorded",
+      "balanceLeft": "{amount} due",
+      "keptOnAccount": "{amount} is kept on account as the customer's advance.",
+      "done": "Done",
+      "another": "Record another",
+      "forWalkIn": "Walk-in sale {number}",
+      "forCustomer": "From {name}",
+      "amount": "Amount received (₹)",
+      "date": "Date received",
+      "mode": "How was it paid?",
+      "referenceUtr": "UTR or reference (optional)",
+      "referenceCheque": "Cheque number (optional)",
+      "referenceCard": "Card reference (optional)",
+      "referenceOther": "Reference (optional)",
+      "notes": "Notes (optional)",
+      "applyTo": "Apply it to",
+      "choiceInvoice": "{number} first, the rest on account",
+      "choiceAuto": "Oldest dues first (automatic)",
+      "choiceManual": "Choose invoices",
+      "nothingDue": "Nothing is due; the whole amount stays on account.",
+      "openingBalance": "Opening balance",
+      "dueOn": "due {date}",
+      "due": "{amount} due",
+      "full": "Full",
+      "onAccount": "On account",
+      "previewEmpty": "Enter the amount to see where it goes.",
+      "saving": "Saving…",
+      "save": "Save payment",
+      "chooseCustomer": "Who paid?",
+      "customerSearchPlaceholder": "Name, phone or GSTIN",
+      "search": "Search",
+      "noCustomers": "No customers found",
+      "nothingDueWalkIn": "Nothing is due on this invoice.",
+      "back": "Back",
+      "hasAdvance": "This customer already has {amount} on account."
+    },
+    "void": {
+      "button": "Void",
+      "title": "Void the payment of {amount}?",
+      "explain": "It stays in the list, struck through, and the invoices it paid are due again. Record it again if it was entered wrongly.",
+      "reason": "Reason",
+      "voiding": "Voiding…",
+      "confirm": "Void payment",
+      "keep": "Keep it",
+      "reasons": {
+        "enteredByMistake": "Entered by mistake",
+        "chequeBounced": "Cheque bounced",
+        "wrongCustomer": "Wrong customer"
+      }
+    },
     "errors": {
       "paymentAlreadyVoided": "This payment was already voided",
       "invoiceNotOpen": "Nothing is due on this invoice any more",

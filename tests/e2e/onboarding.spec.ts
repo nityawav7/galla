@@ -317,6 +317,86 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     expect(hindi).toMatch(/^नमस्ते Ramesh Traders,/);
     expect(hindi).toContain(link);
   });
+
+  // SPEC F7: a part payment from the invoice, the rest oldest first from the payments page (the
+  // excess stays on account), then the owner voids the second payment. ₹802.00 is due.
+  await test.step("record payments; the invoice is part paid, paid, then part paid again", async () => {
+    const invoicePath = new URL(page.url()).pathname;
+    await page.getByRole("link", { name: "Record payment" }).filter({ visible: true }).click();
+    const amount = field(page, "Amount received (₹)");
+    await expect(amount).toHaveValue("802");
+    await amount.fill("300");
+    // The mode chips are labels around visually hidden radios: tap the chip.
+    await page.locator("label").filter({ hasText: /^UPI$/, visible: true }).click();
+    await expect(page.getByRole("radio", { name: "UPI" }).filter({ visible: true })).toBeChecked();
+    await field(page, "UTR or reference (optional)").fill("UTR123456");
+    const preview = page.getByTestId("payment-preview").filter({ visible: true });
+    await expect(preview).toContainText(/SH\/\d{2}-\d{2}\/0001₹300\.00/);
+    await expect(preview).toContainText("On account₹0.00");
+    await page.getByRole("button", { name: "Save payment" }).filter({ visible: true }).click();
+    await expect(
+      page.getByRole("heading", { name: "Payment recorded" }).filter({ visible: true }),
+    ).toBeVisible();
+    await expect(page.getByTestId("payment-result").filter({ visible: true })).toContainText(
+      "Part paid · ₹502.00 due",
+    );
+    await page.getByRole("link", { name: "Done" }).filter({ visible: true }).click();
+    await expect(page).toHaveURL(new RegExp(`${invoicePath}$`));
+    await expect(page.getByTestId("invoice-balance").filter({ visible: true })).toHaveText(
+      "₹502.00",
+    );
+    await expect(page.getByTestId("invoice-payments").filter({ visible: true })).toContainText(
+      "UPI",
+    );
+
+    // From the payments page: pick the customer and pay ₹2,100 oldest first: the ₹1,500 opening
+    // balance, then the invoice's ₹502; ₹98 stays on account.
+    // The invoice page has a "Record payment" link too: wait until it has been swapped out, or
+    // the click can latch onto it just before Next hides it.
+    await page.getByRole("link", { name: "Payments", exact: true }).click();
+    await expect(page).toHaveURL(/\/payments$/);
+    await page.getByRole("link", { name: "Record payment" }).filter({ visible: true }).click();
+    await field(page, "Who paid?").fill("Ramesh Traders");
+    await page.getByRole("button", { name: "Search" }).filter({ visible: true }).click();
+    await page.getByRole("link", { name: "Ramesh Traders", exact: true }).click();
+    await expect(page).toHaveURL(/\/payments\/new\?customer=/);
+    await field(page, "Amount received (₹)").fill("2100");
+    await page.getByRole("radio", { name: "Oldest dues first (automatic)" }).check();
+    const oldestFirst = page.getByTestId("payment-preview").filter({ visible: true });
+    await expect(oldestFirst).toContainText("Opening balance₹1,500.00");
+    await expect(oldestFirst).toContainText(/SH\/\d{2}-\d{2}\/0001₹502\.00/);
+    await expect(oldestFirst).toContainText("On account₹98.00");
+    await page.getByRole("button", { name: "Save payment" }).filter({ visible: true }).click();
+    await expect(page.getByTestId("payment-result").filter({ visible: true })).toContainText(
+      "Paid · ₹0.00 due",
+    );
+    await expect(
+      page.getByText("₹98.00 is kept on account").filter({ visible: true }),
+    ).toBeVisible();
+    await page.getByRole("link", { name: "Done" }).filter({ visible: true }).click();
+    await expect(page).toHaveURL(/\/payments\?customer=/);
+
+    // The owner voids the ₹2,100: the invoice is due again, the payment stays listed.
+    const list = page.getByTestId("payment-list").filter({ visible: true });
+    await expect(list.getByRole("listitem").filter({ hasText: "₹2,100.00" })).toHaveCount(1);
+    await list
+      .getByRole("listitem")
+      .filter({ hasText: "₹2,100.00" })
+      .getByRole("button", { name: "Void" })
+      .click();
+    await page.getByRole("button", { name: "Cheque bounced" }).click();
+    await page.getByRole("button", { name: "Void payment" }).click();
+    await expect(list).toContainText("Voided: Cheque bounced");
+    await page.goto(invoicePath);
+    await expect(page.getByTestId("invoice-balance").filter({ visible: true })).toHaveText(
+      "₹502.00",
+    );
+    // The customer list shows what they owe now: ₹1,500 + ₹1,274 − ₹472 − ₹300.
+    await page.getByRole("link", { name: "Customers", exact: true }).click();
+    await expect(
+      page.getByRole("link", { name: /^Ramesh Traders/ }).filter({ visible: true }),
+    ).toContainText("Owes ₹2,002.00");
+  });
 });
 
 test("a user with no membership gets 404 for another business (SPEC F1)", async ({
@@ -339,7 +419,14 @@ test("a user with no membership gets 404 for another business (SPEC F1)", async 
   const stranger = await strangerContext.newPage();
   await signUp(stranger, "E2E Stranger");
 
-  for (const path of [dashboard, `/b/${slug}/settings`, `/b/${slug}`, draftPath]) {
+  for (const path of [
+    dashboard,
+    `/b/${slug}/settings`,
+    `/b/${slug}`,
+    draftPath,
+    `/b/${slug}/payments`,
+    `/b/${slug}/payments/new`,
+  ]) {
     const response = await stranger.goto(path);
     expect(response?.status(), path).toBe(404);
     await expect(stranger.getByRole("heading", { name: "Page not found" })).toBeVisible();

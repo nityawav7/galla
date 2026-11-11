@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Phase 8b:** payment screens. "Record payment" on the issued sheet and the invoice page (the balance, Cash and today are filled in), and from the new Payments page for any customer: amount, date, mode chips, UTR or cheque number, and "that invoice first", "oldest dues first" or chosen invoices, with a live summary of where the money goes and what stays on account. The Payments list shows what each payment paid, with an owner-only "Void" and quick reasons; the invoice page lists its payments and shows Part paid / Paid; the customer list shows each customer's current balance.
+
 - **Phase 8a:** payments, no screens yet. Record a payment (date, amount, mode, UTR or cheque number) split over a customer's opening balance and invoices oldest first, or as chosen; nothing is paid beyond an invoice's balance and the rest stays on account. Invoices move to Partly paid and Paid, a credit note can finish paying one, and "Apply advance" uses an opening advance or earlier overpayment. The owner voids a payment instead of editing it. The customer ledger (running balance, balance brought forward) and aging (not due, 0–30, 31–60, 61–90, 90+ days) are pure functions with property tests; a database trigger checks every allocation at commit. Migration `0009_payments`, ADR 0010.
 
 - **Phase 7c:** "Share on WhatsApp" on the issued sheet and the invoice page: a `wa.me` link to the customer's number with the invoice number, balance, due date and link, in English or Hindi. Both messages are editable in settings with tap-to-insert placeholders, a preview and "Use the default". Migration `0008_whatsapp_templates`.

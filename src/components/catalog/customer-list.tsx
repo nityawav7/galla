@@ -9,10 +9,12 @@ import { findState } from "@/server/domain/states";
 interface CustomerListProps {
   businessSlug: string;
   customers: Customer[];
+  /** Each customer's ledger balance (owes or advance); without it, the opening balance. */
+  balances?: Map<string, bigint>;
 }
 
-/** One list for every width: name, then phone, GSTIN, place and opening balance. */
-export async function CustomerList({ businessSlug, customers }: CustomerListProps) {
+/** One list for every width: name, then phone, GSTIN, place and what they owe. */
+export async function CustomerList({ businessSlug, customers, balances }: CustomerListProps) {
   const t = await getTranslations("customers");
   const balance = (paise: bigint) => {
     if (paise === 0n) return null;
@@ -36,7 +38,7 @@ export async function CustomerList({ businessSlug, customers }: CustomerListProp
           place || null,
           customer.archivedAt ? t("archived") : null,
         ].filter(Boolean);
-        const owed = balance(customer.openingBalancePaise);
+        const owed = balance(balances?.get(customer.id) ?? customer.openingBalancePaise);
         return (
           <li key={customer.id}>
             <Link

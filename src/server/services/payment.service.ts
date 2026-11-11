@@ -117,7 +117,7 @@ export interface PaymentDetail {
 }
 
 export interface PaymentPage {
-  items: PaymentListRow[];
+  items: (PaymentListRow & { allocations: AllocationRow[] })[];
   nextCursor: string | null;
 }
 
@@ -317,7 +317,16 @@ export async function listPayments(ctx: TenantContext, query: unknown): Promise<
     limit: PAYMENTS_PAGE_SIZE + 1,
     after: decodeDateCursor(cursor),
   });
-  const items = rows.slice(0, PAYMENTS_PAGE_SIZE);
+  const page = rows.slice(0, PAYMENTS_PAGE_SIZE);
+  const allocations = await findAllocationsForPayments(
+    getDb(),
+    ctx,
+    page.map((row) => row.payment.id),
+  );
+  const items = page.map((row) => ({
+    ...row,
+    allocations: allocations.filter((allocation) => allocation.paymentId === row.payment.id),
+  }));
   const last = items.at(-1)?.payment;
   const hasMore = rows.length > PAYMENTS_PAGE_SIZE && last !== undefined;
   return {

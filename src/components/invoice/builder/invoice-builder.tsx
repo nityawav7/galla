@@ -551,6 +551,13 @@ export function InvoiceBuilder({ businessSlug, options, today, initial }: Invoic
               <a href={`/b/${businessSlug}/invoices/new`}>{t("newInvoice")}</a>
             </Button>
           </div>
+          {issued ? (
+            <Button asChild size="lg" variant="outline">
+              <Link href={`/b/${businessSlug}/payments/new?invoice=${issued.id}`}>
+                {t("recordPayment")}
+              </Link>
+            </Button>
+          ) : null}
           {issued ? <PdfActions href={`/b/${businessSlug}/invoices/${issued.id}/pdf`} /> : null}
           {issued?.publicUrl && issued.share ? (
             <WhatsAppShare share={issued.share} url={issued.publicUrl} />
