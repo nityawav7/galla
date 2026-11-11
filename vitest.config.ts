@@ -30,6 +30,21 @@ export default defineConfig({
           hookTimeout: 60_000,
         },
       },
+      {
+        extends: true,
+        test: {
+          // Timing tests (SPEC F8: dashboard p95 < 300 ms): run on their own, without coverage
+          // instrumentation or other test files competing for the database.
+          name: "perf",
+          include: ["tests/perf/**/*.test.ts"],
+          environment: "node",
+          globalSetup: ["tests/integration/global-setup.ts"],
+          setupFiles: ["tests/integration/load-env.ts"],
+          fileParallelism: false,
+          testTimeout: 120_000,
+          hookTimeout: 60_000,
+        },
+      },
     ],
     coverage: {
       provider: "v8",

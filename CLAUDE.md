@@ -9,12 +9,13 @@ pnpm dev                 # local dev (needs: docker compose up -d)
 pnpm lint && pnpm format:check && pnpm typecheck
 pnpm test:unit           # Vitest (domain + services)
 pnpm test:integration    # Vitest against real Postgres
+pnpm test:perf           # timing tests alone (dashboard p95 with 10k invoices)
 pnpm test:e2e            # Playwright
 pnpm db:generate         # drizzle-kit generate (after schema change)
 pnpm db:migrate          # apply migrations
 pnpm db:seed             # reference data + dev business
 pnpm db:seed:demo        # deterministic demo business
-pnpm check               # runs lint, format, typecheck, unit, integration — must pass before you say "done"
+pnpm check               # runs lint, format, typecheck, unit, integration, perf — must pass before you say "done"
 ```
 
 ## Non-negotiable rules
