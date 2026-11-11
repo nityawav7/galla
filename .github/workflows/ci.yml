@@ -64,7 +64,6 @@ jobs:
       # Test-only values, not secrets.
       BETTER_AUTH_SECRET: test-secret-test-secret-test-secret-test
       BETTER_AUTH_URL: http://localhost:3000
-      PLAYWRIGHT_CHANNEL: chrome
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -100,6 +99,7 @@ jobs:
       # Test-only values, not secrets.
       BETTER_AUTH_SECRET: test-secret-test-secret-test-secret-test
       BETTER_AUTH_URL: http://localhost:3000
+      PLAYWRIGHT_CHANNEL: chrome
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
