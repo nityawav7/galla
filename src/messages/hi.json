@@ -99,7 +99,9 @@
     "openingBalanceApplied": "भुगतान इससे ज़्यादा शुरुआती बकाया चुका चुके हैं। पहले उन्हें रद्द करें।",
     "dateInvalid": "सही तारीख़ लिखें",
     "refundExceedsOnAccount": "यह ग्राहक के खाते में जमा राशि से ज़्यादा है।",
-    "refundModeRequired": "चुनें कि पैसा कैसे लौटाया गया।"
+    "refundModeRequired": "चुनें कि पैसा कैसे लौटाया गया।",
+    "rangeReversed": "शुरू की तारीख आखिरी तारीख के बाद है।",
+    "rangeTooLong": "ज़्यादा से ज़्यादा 366 दिन की अवधि चुनें।"
   },
   "auth": {
     "fields": {
@@ -231,7 +233,8 @@
     "products": "प्रोडक्ट",
     "customers": "ग्राहक",
     "invoices": "बिल",
-    "payments": "भुगतान"
+    "payments": "भुगतान",
+    "reports": "रिपोर्ट"
   },
   "dashboard": {
     "title": "डैशबोर्ड",
@@ -1105,6 +1108,90 @@
       "refundFirst": "इस भुगतान का कुछ पैसा लौटाया जा चुका है। पहले वह रिफ़ंड रद्द करें।",
       "refundAlreadyVoided": "यह रिफ़ंड पहले ही रद्द हो चुका है",
       "walkInRefundFinal": "काउंटर पर लौटाया गया पैसा अपने क्रेडिट नोट के साथ रहता है"
+    }
+  },
+  "reports": {
+    "title": "रिपोर्ट",
+    "notAllowed": "रिपोर्ट सिर्फ़ मालिक और अकाउंटेंट देख सकते हैं।",
+    "period": {
+      "label": "अवधि",
+      "thisMonth": "इस महीने",
+      "lastMonth": "पिछले महीने",
+      "thisQuarter": "इस तिमाही",
+      "lastQuarter": "पिछली तिमाही",
+      "thisFy": "इस वित्त वर्ष",
+      "custom": "अपनी तारीखें",
+      "from": "से",
+      "to": "तक",
+      "apply": "दिखाएँ",
+      "showing": "{from} से {to}"
+    },
+    "register": {
+      "title": "बिक्री रजिस्टर",
+      "hint": "अवधि का हर इनवॉइस और क्रेडिट नोट। रद्द इनवॉइस शून्य पर दिखते हैं।",
+      "invoices": "इनवॉइस",
+      "cancelled": "रद्द",
+      "creditNotes": "क्रेडिट नोट",
+      "taxable": "कर योग्य मूल्य",
+      "gst": "GST",
+      "total": "शुद्ध कुल",
+      "csv": "CSV डाउनलोड करें",
+      "xlsx": "Excel डाउनलोड करें"
+    },
+    "hsn": {
+      "title": "HSN सारांश",
+      "hsn": "HSN/SAC",
+      "uqc": "इकाई",
+      "rate": "दर",
+      "quantity": "मात्रा",
+      "taxable": "कर योग्य मूल्य",
+      "tax": "GST",
+      "total": "कुल मूल्य",
+      "totals": "कुल",
+      "noHsn": "HSN नहीं",
+      "noHsnHint": "कुछ लाइनों में HSN कोड नहीं है। उन सामानों में जोड़ें ताकि आपका CA HSN सारांश भर सके।",
+      "empty": "इस अवधि में कुछ नहीं बिका।",
+      "csv": "CSV डाउनलोड करें"
+    },
+    "export": {
+      "date": "तारीख",
+      "type": "प्रकार",
+      "number": "नंबर",
+      "against": "इनवॉइस के बदले",
+      "customer": "ग्राहक",
+      "gstin": "GSTIN",
+      "placeOfSupply": "आपूर्ति का स्थान",
+      "status": "स्थिति",
+      "taxable": "कर योग्य मूल्य",
+      "cgst": "CGST",
+      "sgst": "SGST",
+      "utgst": "UTGST",
+      "igst": "IGST",
+      "roundOff": "राउंड ऑफ़",
+      "total": "कुल",
+      "paid": "मिला",
+      "credited": "क्रेडिट",
+      "balance": "बाकी",
+      "totals": "कुल",
+      "invoice": "इनवॉइस",
+      "creditNote": "क्रेडिट नोट",
+      "walkIn": "वॉक-इन ग्राहक",
+      "invoicesSheet": "इनवॉइस",
+      "creditNotesSheet": "क्रेडिट नोट",
+      "statuses": {
+        "ISSUED": "बाकी",
+        "PARTIALLY_PAID": "आंशिक भुगतान",
+        "PAID": "भुगतान हुआ",
+        "CANCELLED": "रद्द",
+        "CREDIT_NOTE": "क्रेडिट नोट"
+      },
+      "hsn": "HSN/SAC",
+      "uqc": "UQC",
+      "rate": "दर",
+      "quantity": "कुल मात्रा",
+      "sgstUtgst": "SGST/UTGST",
+      "totalValue": "कुल मूल्य",
+      "noHsn": "HSN नहीं"
     }
   }
 }

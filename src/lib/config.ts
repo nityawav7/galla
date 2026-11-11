@@ -17,3 +17,6 @@ export const REMINDER_MAX_INVOICES = 5;
 
 /** Ledger rows shown on the customer page before "Show earlier rows" (the statement has all). */
 export const LEDGER_PAGE_ROWS = 100;
+
+/** The longest custom report period, both ends counted (decision 10 of the Phase 9 plan). */
+export const MAX_REPORT_DAYS = 366;

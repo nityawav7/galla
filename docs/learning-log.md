@@ -158,3 +158,9 @@ What I learned and what broke while building Galla, phase by phase.
 - `date ${value}` doesn't work as a bound parameter in Postgres (`date $3` is a syntax error); `${value}::date` does.
 - The dashboard queries all used existing indexes (EXPLAIN ANALYZE: bitmap index scans, under 10 ms each), so no migration was needed; p95 was 133 ms against the 300 ms limit.
 - Bars drawn as SVG on the server cost no JavaScript at all; a screen-reader table carries the same numbers, so the picture can stay `aria-hidden`.
+
+## Phase 9b: reports
+
+- `TextDecoder` drops a UTF-8 byte-order mark by default, so a test "the CSV starts with a BOM" failed on a correct file; `new TextDecoder("utf-8", { ignoreBOM: true })` keeps it.
+- A formula-injection guard must not touch negative numbers: `-118.00` starts with `-` but is data, so only cells that aren't plain numbers get the leading apostrophe.
+- `exceljs` looked like the default choice but hadn't been released since 2023 and carried nine old dependencies; a write-only library with one dependency did everything the reports need. Checking `npm view <pkg> time.modified dependencies` before adding anything took a minute.

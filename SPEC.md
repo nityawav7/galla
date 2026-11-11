@@ -197,7 +197,7 @@ DRAFT ──issue──▶ ISSUED ──payment──▶ PARTIALLY_PAID ──pa
 - Receivables aging buckets: 0–30, 31–60, 61–90, 90+ days past due, plus "not due yet". 0 days = due today; an invoice without a due date is due on its invoice date; overdue means due before today. The opening balance still owed and money on account sit beside the buckets so the total equals the ledger balance.
 
 ### 4.10 GST export for the CA (GSTR-1 helper)
-An Excel workbook (built with exceljs) for a chosen month or quarter, with sheets:
+An Excel workbook (built with `write-excel-file`, [ADR 0012](docs/adr/0012-reports-files-and-charts.md)) for a chosen month or quarter, with sheets:
 - **B2B:** invoices to registered customers, grouped by GSTIN
 - **B2CL:** inter-state invoices to unregistered buyers above the threshold (currently **₹1 lakh** since Aug 2024, verify; keep this in config)
 - **B2CS:** everything else to unregistered buyers, summarised by place of supply and rate
@@ -297,6 +297,9 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 - Charts: daily sales over 30 days, top 5 products, top 5 debtors, aging buckets. Drawn on the server as SVG and CSS bars (no chart library), each with its numbers as text or a table for screen readers. Top products are by net taxable value over the last 30 days; top debtors by current balance.
 - Staff (no `dashboard:viewTotals`) see counts only: invoices today and this month, invoices overdue, and top products by quantity. The service leaves the money out, so it never reaches their browser.
 - Reports: sales register (CSV/Excel), GSTR-1 helper (§4.10), HSN summary. All use a date range picker in IST.
+  - **Reports page** (owner and accountant, `reports:export`; a "Reports" menu item only for them): presets This month (default), Last month, This quarter, Last quarter (financial quarters) and This FY, or custom dates up to 366 days.
+  - **Sales register:** every invoice and credit note in the period by date, with customer, GSTIN, place of supply, taxable value, each tax, round-off, total, paid, credited, balance and status. Cancelled invoices are listed at zero so the number series has no holes; credit notes are negative rows against their invoice. CSV (UTF-8 with BOM, formula-safe) and Excel (sheets "Invoices" and "Credit notes").
+  - **HSN summary:** by HSN/SAC, unit and rate: quantity, taxable value, IGST, CGST, SGST/UTGST and total; credit notes subtract; lines without an HSN are grouped and flagged. On screen and as CSV.
 - **AC:** dashboard queries return in < 300 ms p95 with 10k invoices seeded.
 
 ### F9. Notifications & jobs
@@ -370,7 +373,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 | Cache / rate limit / scheduling | Upstash Redis + `@upstash/ratelimit`; Upstash QStash if we ever need more than daily jobs | Serverless, free tier |
 | Jobs | Vercel Cron (daily on Hobby) → route handlers | No worker server |
 | PDF | `@react-pdf/renderer` | No Chromium needed |
-| Excel | `exceljs` | GSTR-1 helper |
+| Excel | `write-excel-file` (write-only, [ADR 0012](docs/adr/0012-reports-files-and-charts.md)) | sales register, GSTR-1 helper |
 | Email | Resend + React Email | Needs a verified domain to email real customers |
 | Files | Vercel Blob | Logos and signatures |
 | Observability | Sentry, PostHog, pino | Free tiers |
