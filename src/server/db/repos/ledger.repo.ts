@@ -2,7 +2,7 @@ import { and, asc, eq, inArray, isNotNull, isNull, sql } from "drizzle-orm";
 
 import { type TenantContext } from "@/server/authz/context";
 
-import { creditNotes, customers, invoices, payments } from "../schema";
+import { creditNotes, customers, invoices, payments, refunds } from "../schema";
 import { type Executor } from "../transaction";
 import { tenantScope } from "./tenant";
 
@@ -102,7 +102,8 @@ export function ledgerPayments(
 }
 
 /**
- * Each customer's ledger balance (opening + invoices − credit notes − payments) in one query, for
+ * Each customer's ledger balance (opening + invoices − credit notes − payments + refunds) in one
+ * query, for
  * a page of the customer list. Customers of another business are simply not found.
  */
 export async function customerBalances(
@@ -145,15 +146,59 @@ export async function customerBalances(
     )
     .groupBy(payments.customerId)
     .as("paid");
+  const refunded = db
+    .select({
+      customerId: refunds.customerId,
+      total: sql<string>`sum(${refunds.amountPaise})`.as("refunded_total"),
+    })
+    .from(refunds)
+    .where(
+      tenantScope(
+        ctx,
+        refunds,
+        inArray(refunds.customerId, [...customerIds]),
+        isNull(refunds.voidedAt),
+      ),
+    )
+    .groupBy(refunds.customerId)
+    .as("refunded");
   const rows = await db
     .select({
       id: customers.id,
-      balance: sql<string>`${customers.openingBalancePaise} + coalesce(${invoiced.total}, 0) - coalesce(${credited.total}, 0) - coalesce(${paid.total}, 0)`,
+      balance: sql<string>`${customers.openingBalancePaise} + coalesce(${invoiced.total}, 0) - coalesce(${credited.total}, 0) - coalesce(${paid.total}, 0) + coalesce(${refunded.total}, 0)`,
     })
     .from(customers)
     .leftJoin(invoiced, eq(invoiced.customerId, customers.id))
     .leftJoin(credited, eq(credited.customerId, customers.id))
     .leftJoin(paid, eq(paid.customerId, customers.id))
+    .leftJoin(refunded, eq(refunded.customerId, customers.id))
     .where(tenantScope(ctx, customers, inArray(customers.id, [...customerIds])));
   return new Map(rows.map((row) => [row.id, BigInt(row.balance)]));
+}
+
+export interface LedgerRefundRow {
+  id: string;
+  refundDate: string;
+  amountPaise: bigint;
+  mode: (typeof refunds.$inferSelect)["mode"];
+  reference: string | null;
+}
+
+/** The customer's live refunds, oldest first (ADR 0011). */
+export function ledgerRefunds(
+  db: Executor,
+  ctx: TenantContext,
+  customerId: string,
+): Promise<LedgerRefundRow[]> {
+  return db
+    .select({
+      id: refunds.id,
+      refundDate: refunds.refundDate,
+      amountPaise: refunds.amountPaise,
+      mode: refunds.mode,
+      reference: refunds.reference,
+    })
+    .from(refunds)
+    .where(tenantScope(ctx, refunds, eq(refunds.customerId, customerId), isNull(refunds.voidedAt)))
+    .orderBy(asc(refunds.refundDate), asc(refunds.id));
 }

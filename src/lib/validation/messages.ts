@@ -93,6 +93,8 @@ export const VALIDATION_KEYS = [
   "invoiceNotOpen",
   "duplicateInvoice",
   "walkInPaymentInvalid",
+  "refundExceedsOnAccount",
+  "refundModeRequired",
   "voidReasonRequired",
   "openingBalanceApplied",
   "dateInvalid",

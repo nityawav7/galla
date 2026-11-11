@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Phase 8d:** credit notes on paid invoices and refunds. A credit note can now go up to what is not yet credited: on a paid invoice, what was paid beyond its new total moves to the customer's advance (newest payment first), and for a walk-in sale the owner records how it was given back. "Refund advance" on the customer page pays back money on account (owner only, voidable); the ledger, statement and balances show refunds. A database trigger checks refunds never exceed what is on account. Migration `0010_refunds`, ADR 0011.
+
 - **Phase 8c:** the customer page is now their account. Balance and overdue amount, an aging bar (not yet due, 0–30, 31–60, 61–90, 90+ days late), the account history with a running balance for this FY, since last FY or all time, "Record payment", "Apply advance" and "Edit" (the form moved to `/edit`). A statement PDF (A4, balance brought forward, Dr/Cr balances, aging, UPI QR for the balance) and "Send reminder": a WhatsApp message in English or Hindi with what is due, what is overdue and the oldest invoices with their links; each opening is audited for the recovery metric.
 
 - **Phase 8b:** payment screens. "Record payment" on the issued sheet and the invoice page (the balance, Cash and today are filled in), and from the new Payments page for any customer: amount, date, mode chips, UTR or cheque number, and "that invoice first", "oldest dues first" or chosen invoices, with a live summary of where the money goes and what stays on account. The Payments list shows what each payment paid, with an owner-only "Void" and quick reasons; the invoice page lists its payments and shows Part paid / Paid; the customer list shows each customer's current balance.

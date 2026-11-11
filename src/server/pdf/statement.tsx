@@ -56,7 +56,9 @@ function particulars(t: PdfTranslator, row: StatementRow): string {
     return t("statement.kinds.CREDIT_NOTE", { number: row.number ?? "" });
   }
   const mode = row.mode ? t(`statement.modes.${row.mode as "CASH"}`) : "";
-  const text = t("statement.kinds.PAYMENT", { mode });
+  const text = t(row.kind === "REFUND" ? "statement.kinds.REFUND" : "statement.kinds.PAYMENT", {
+    mode,
+  });
   return row.reference ? `${text} · ${row.reference}` : text;
 }
 

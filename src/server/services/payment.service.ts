@@ -519,7 +519,8 @@ export async function applyCredit(
 
 /**
  * Voids a payment (owner only, decision 6): it stays in the list struck through, its allocations
- * stop counting, and each invoice it paid goes back to the status its money now gives.
+ * stop counting, and each invoice it paid goes back to the status its money now gives. Refused
+ * while its money on account has been refunded: void the refund first (ADR 0011).
  */
 export async function voidPayment(
   ctx: TenantContext,
@@ -540,6 +541,16 @@ export async function voidPayment(
     if (payment.voidedAt !== null) throw new ConflictError("paymentAlreadyVoided");
 
     const allocations = await findAllocationsForPayments(tx, ctx, [payment.id]);
+    // Its unallocated part is on account; once refunded, that money is gone (ADR 0011).
+    if (found.customerId !== null) {
+      const customer = await findCustomerById(tx, ctx, found.customerId);
+      if (!customer) throw new NotFoundError("Customer");
+      const credit = await creditOf(tx, ctx, customer);
+      const allocated = allocations.reduce((sum, row) => sum + row.amountPaise, 0n);
+      if (payment.amountPaise - allocated > credit.onAccountPaise) {
+        throw new ConflictError("refundFirst");
+      }
+    }
     const toInvoices = allocations.filter(
       (row): row is AllocationRow & { invoiceId: string } => row.invoiceId !== null,
     );

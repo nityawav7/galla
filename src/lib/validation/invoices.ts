@@ -5,6 +5,7 @@ import { isValidIsoDate } from "@/server/domain/fy";
 import { ISSUE_WARNINGS } from "@/server/domain/invoice/issue-rules";
 
 import { requiredText } from "./fields";
+import { counterRefundSchema } from "./payments";
 import { hsnSac, price } from "./products";
 
 /**
@@ -159,6 +160,11 @@ export const creditNoteSchema = z.object({
     )
     .min(1, { error: "creditLinesRequired" })
     .max(MAX_CREDIT_NOTE_LINES, { error: "invoiceTooManyLines" }),
+  /**
+   * A paid walk-in invoice has no account to keep what the note releases: how it was given back
+   * (ADR 0011). Ignored for a customer, whose money goes on account.
+   */
+  refund: counterRefundSchema.optional(),
 });
 
 export type CreditNoteValues = z.input<typeof creditNoteSchema>;

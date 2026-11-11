@@ -78,6 +78,7 @@ async function NewCreditNote({
         lines={returnable}
         roundOffPaise={invoice.roundOffPaise.toString()}
         balancePaise={balancePaise(invoice).toString()}
+        walkIn={invoice.customerId === null}
       />
     </>
   );

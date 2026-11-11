@@ -99,7 +99,8 @@ async function InvoiceDetail({
       ) : null}
       {owner && live ? (
         <div className="flex flex-wrap gap-2">
-          {balance > 0n ? (
+          {/* Paid invoices too (ADR 0011): until everything is credited. */}
+          {invoice.amountCreditedPaise < invoice.grandTotalPaise ? (
             <Button asChild size="lg" variant="outline">
               <Link href={`/b/${businessSlug}/invoices/${invoice.id}/credit-notes/new`}>
                 {t("detail.newCreditNote")}

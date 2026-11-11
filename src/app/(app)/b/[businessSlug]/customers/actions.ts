@@ -14,6 +14,7 @@ import {
   updateCustomer,
 } from "@/server/services/customer.service";
 import { applyCredit } from "@/server/services/payment.service";
+import { refundCredit, voidRefund } from "@/server/services/refund.service";
 import { recordReminderShared } from "@/server/services/reminder.service";
 
 // Thin: membership from the URL's slug; customer.service checks the role and validates.
@@ -109,5 +110,30 @@ export async function reminderSharedAction(
   return runAction(async () => {
     const { ctx } = await requireTenant(businessSlug);
     return recordReminderShared(ctx, customerId);
+  });
+}
+
+/** "Refund advance" (owner): pays back money on account (ADR 0011). */
+export async function refundAdvanceAction(
+  businessSlug: string,
+  customerId: string,
+  values: unknown,
+): Promise<ActionResult<null>> {
+  return runAction(async () => {
+    const { ctx } = await requireTenant(businessSlug);
+    await refundCredit(ctx, customerId, values);
+    return null;
+  });
+}
+
+export async function voidRefundAction(
+  businessSlug: string,
+  refundId: string,
+  values: unknown,
+): Promise<ActionResult<null>> {
+  return runAction(async () => {
+    const { ctx } = await requireTenant(businessSlug);
+    await voidRefund(ctx, refundId, values);
+    return null;
   });
 }

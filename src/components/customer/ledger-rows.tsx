@@ -43,9 +43,9 @@ export async function LedgerRows({
     return null;
   };
   const particulars = (row: LedgerRow): string => {
-    if (row.kind === "PAYMENT") {
+    if (row.kind === "PAYMENT" || row.kind === "REFUND") {
       const payment = payments[String(row.id)];
-      const text = t("kinds.PAYMENT", { mode: payment ? tModes(payment.mode) : "" });
+      const text = t(`kinds.${row.kind}`, { mode: payment ? tModes(payment.mode) : "" });
       return payment?.reference ? `${text} · ${payment.reference}` : text;
     }
     if (row.kind === "OPENING") return t("kinds.OPENING");

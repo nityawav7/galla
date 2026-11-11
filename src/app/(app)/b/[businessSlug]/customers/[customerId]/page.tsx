@@ -8,7 +8,9 @@ import { z } from "zod";
 import { AgingBar } from "@/components/customer/aging-bar";
 import { ApplyAdvance } from "@/components/customer/apply-advance";
 import { LedgerRows } from "@/components/customer/ledger-rows";
+import { RefundAdvance } from "@/components/customer/refund-advance";
 import { ReminderShare } from "@/components/customer/reminder-share";
+import { VoidPayment } from "@/components/payment/void-payment";
 import { Button } from "@/components/ui/button";
 import { LEDGER_PAGE_ROWS } from "@/lib/config";
 import { NotFoundError } from "@/lib/errors";
@@ -16,10 +18,12 @@ import { cn } from "@/lib/utils";
 import { requireTenant } from "@/server/auth/session";
 import { type TenantContext } from "@/server/authz/context";
 import { can } from "@/server/authz/permissions";
+import { formatIndianDate } from "@/server/domain/fy";
 import { LEDGER_PERIODS, type LedgerPeriod } from "@/server/domain/ledger/period";
 import { formatINR } from "@/server/domain/money";
 import { formatIndianPhone } from "@/server/domain/phone";
 import { type CustomerLedger, getCustomerLedger } from "@/server/services/ledger.service";
+import { listRefunds } from "@/server/services/refund.service";
 import { getReminderInfo } from "@/server/services/reminder.service";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -59,6 +63,9 @@ async function CustomerAccount({ params, searchParams }: Pick<Params, "params" |
   const { customer, ledger, aging, credit } = view;
   const base = `/b/${businessSlug}/customers/${customer.id}`;
   const reminder = can(ctx, "invoice:share") ? await getReminderInfo(ctx, customer.id) : null;
+  const refunds = await listRefunds(ctx, customer.id);
+  const tModes = await getTranslations("payments.modes");
+  const owner = can(ctx, "payment:void");
   const balance = ledger.closingPaise;
   const canApply =
     can(ctx, "payment:record") &&
@@ -145,6 +152,60 @@ async function CustomerAccount({ params, searchParams }: Pick<Params, "params" |
           customerId={customer.id}
           onAccountPaise={credit.onAccountPaise.toString()}
         />
+      ) : null}
+      {owner && credit.onAccountPaise > 0n ? (
+        <RefundAdvance
+          businessSlug={businessSlug}
+          customerId={customer.id}
+          onAccountPaise={credit.onAccountPaise.toString()}
+          today={view.today}
+        />
+      ) : null}
+      {refunds.length > 0 ? (
+        <section aria-labelledby="refunds" className="flex flex-col gap-2">
+          <h2 id="refunds" className="text-lg font-semibold">
+            {t("refund.list")}
+          </h2>
+          <ul className="flex flex-col divide-y rounded-lg border" data-testid="refund-list">
+            {refunds.map((refund) => {
+              const voided = refund.voidedAt !== null;
+              return (
+                <li key={refund.id} className="flex flex-col gap-1 p-3">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className={voided ? "text-sm line-through" : "text-sm"}>
+                      {[formatIndianDate(refund.refundDate), tModes(refund.mode), refund.reference]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </span>
+                    <span
+                      className={
+                        voided
+                          ? "font-medium tabular-nums line-through"
+                          : "font-medium tabular-nums"
+                      }
+                    >
+                      {formatINR(refund.amountPaise)}
+                    </span>
+                  </div>
+                  {voided ? (
+                    <p className="text-sm text-destructive">
+                      {t("refund.voided", { reason: refund.voidReason ?? "" })}
+                    </p>
+                  ) : owner ? (
+                    <div>
+                      <VoidPayment
+                        businessSlug={businessSlug}
+                        paymentId={refund.id}
+                        amount={formatINR(refund.amountPaise)}
+                        kind="refund"
+                      />
+                    </div>
+                  ) : null}
+                </li>
+              );
+            })}
+          </ul>
+        </section>
       ) : null}
 
       <section className="flex flex-col gap-3" aria-labelledby="history">

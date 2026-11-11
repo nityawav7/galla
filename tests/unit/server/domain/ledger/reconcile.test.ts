@@ -71,6 +71,7 @@ function run(opening: bigint, ops: readonly Op[]) {
       appliedToOpeningPaise: appliedTo,
       appliedFromOpeningPaise: appliedFrom,
       unallocatedPaise: payments.reduce((sum, p) => sum + p.unallocated, 0n),
+      refundedPaise: 0n,
     });
   const openItems = (): OpenItem[] => [
     { invoiceId: null, invoiceDate: null, number: null, balancePaise: credit().openingOwedPaise },

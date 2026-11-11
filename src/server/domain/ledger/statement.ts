@@ -21,6 +21,8 @@ export function balanceAmount(paise: bigint): StatementAmount {
     : { amount: formatINR(-paise), side: "CR" };
 }
 
+/** Mode and reference of a payment or a refund, by its id. */
+/** Mode and reference of a payment or a refund, by its id. */
 export interface PaymentDetails {
   mode: string;
   reference: string | null;
@@ -46,7 +48,8 @@ export function statementRows(
 ): StatementRow[] {
   const details = new Map(Object.entries(payments));
   return ledger.rows.map((row) => {
-    const payment = row.kind === "PAYMENT" ? details.get(String(row.id)) : undefined;
+    const payment =
+      row.kind === "PAYMENT" || row.kind === "REFUND" ? details.get(String(row.id)) : undefined;
     return {
       date: formatIndianDate(row.date),
       kind: row.kind,

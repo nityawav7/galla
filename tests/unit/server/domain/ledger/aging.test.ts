@@ -80,6 +80,7 @@ describe("customerCredit", () => {
         appliedToOpeningPaise: 2_000n,
         appliedFromOpeningPaise: 0n,
         unallocatedPaise: 700n,
+        refundedPaise: 0n,
       }),
     ).toEqual({ openingOwedPaise: 3_000n, advanceLeftPaise: 0n, onAccountPaise: 700n });
   });
@@ -91,21 +92,36 @@ describe("customerCredit", () => {
         appliedToOpeningPaise: 0n,
         appliedFromOpeningPaise: 1_000n,
         unallocatedPaise: 700n,
+        refundedPaise: 0n,
       }),
     ).toEqual({ openingOwedPaise: 0n, advanceLeftPaise: 4_000n, onAccountPaise: 4_700n });
   });
 
+  it("takes refunds off the money on account", () => {
+    expect(
+      customerCredit({
+        openingBalancePaise: -5_000n,
+        appliedToOpeningPaise: 0n,
+        appliedFromOpeningPaise: 1_000n,
+        unallocatedPaise: 700n,
+        refundedPaise: 4_700n,
+      }),
+    ).toEqual({ openingOwedPaise: 0n, advanceLeftPaise: 4_000n, onAccountPaise: 0n });
+  });
+
   it.each([
-    [5_000n, 5_001n, 0n, 0n],
-    [-5_000n, 0n, 5_001n, 0n],
-    [0n, 0n, 0n, -1n],
-  ])("refuses impossible sums (opening %s)", (opening, to, from, unallocated) => {
+    [5_000n, 5_001n, 0n, 0n, 0n],
+    [-5_000n, 0n, 5_001n, 0n, 0n],
+    [0n, 0n, 0n, -1n, 0n],
+    [0n, 0n, 0n, 700n, 701n],
+  ])("refuses impossible sums (opening %s)", (opening, to, from, unallocated, refunded) => {
     expect(() =>
       customerCredit({
         openingBalancePaise: opening,
         appliedToOpeningPaise: to,
         appliedFromOpeningPaise: from,
         unallocatedPaise: unallocated,
+        refundedPaise: refunded,
       }),
     ).toThrow(RangeError);
   });

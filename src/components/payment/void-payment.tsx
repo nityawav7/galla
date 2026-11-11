@@ -4,22 +4,29 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useId, useState } from "react";
 
+import { voidRefundAction } from "@/app/(app)/b/[businessSlug]/customers/actions";
 import { voidPaymentAction } from "@/app/(app)/b/[businessSlug]/payments/actions";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { isValidationKey } from "@/lib/validation/messages";
 import { isPaymentErrorKey, VOID_REASONS } from "@/lib/validation/payments";
 
-/** Owner-only "Void payment" with a reason (ADR 0010); the payment stays listed, struck through. */
+/**
+ * Owner-only "Void" with a reason (ADR 0010, 0011) for a payment or a refund; it stays listed,
+ * struck through.
+ */
 export function VoidPayment({
   businessSlug,
   paymentId,
   amount,
+  kind = "payment",
 }: {
   businessSlug: string;
+  /** The payment's id, or the refund's when `kind` is "refund". */
   paymentId: string;
   /** Already formatted. */
   amount: string;
+  kind?: "payment" | "refund";
 }) {
   const t = useTranslations("payments.void");
   const validation = useTranslations("validation");
@@ -35,7 +42,10 @@ export function VoidPayment({
   const confirm = async () => {
     setBusy(true);
     setError(null);
-    const result = await voidPaymentAction(businessSlug, paymentId, { reason });
+    const result =
+      kind === "refund"
+        ? await voidRefundAction(businessSlug, paymentId, { reason })
+        : await voidPaymentAction(businessSlug, paymentId, { reason });
     setBusy(false);
     if (result.ok) {
       setOpen(false);
@@ -62,8 +72,10 @@ export function VoidPayment({
       </Button>
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
-          <DialogTitle>{t("title", { amount })}</DialogTitle>
-          <DialogDescription>{t("explain")}</DialogDescription>
+          <DialogTitle>{t(kind === "refund" ? "refundTitle" : "title", { amount })}</DialogTitle>
+          <DialogDescription>
+            {t(kind === "refund" ? "refundExplain" : "explain")}
+          </DialogDescription>
           <div className="flex flex-wrap gap-2">
             {VOID_REASONS.map((key) => (
               <Button
@@ -109,7 +121,7 @@ export function VoidPayment({
               disabled={busy}
               onClick={() => void confirm()}
             >
-              {busy ? t("voiding") : t("confirm")}
+              {busy ? t("voiding") : t(kind === "refund" ? "refundConfirm" : "confirm")}
             </Button>
             <Button
               type="button"

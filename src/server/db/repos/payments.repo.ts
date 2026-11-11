@@ -5,6 +5,7 @@ import { type TenantContext } from "@/server/authz/context";
 import { customers, invoices, paymentAllocations, payments } from "../schema";
 import { type Executor, type Transaction } from "../transaction";
 import { type DateCursor } from "./cursor";
+import { refundedTotal } from "./refunds.repo";
 import { type TenantOwned, tenantScope } from "./tenant";
 
 export type Payment = typeof payments.$inferSelect;
@@ -181,9 +182,10 @@ export interface CreditSums {
   appliedToOpeningPaise: bigint;
   appliedFromOpeningPaise: bigint;
   unallocatedPaise: bigint;
+  refundedPaise: bigint;
 }
 
-/** The sums `customerCredit` needs, for live payments only. */
+/** The sums `customerCredit` needs, for live payments and refunds only. */
 export async function customerCreditSums(
   db: Executor,
   ctx: TenantContext,
@@ -210,11 +212,15 @@ export async function customerCreditSums(
         or(isNull(paymentAllocations.paymentId), isNull(payments.voidedAt)),
       ),
     );
-  const unallocated = await unallocatedPayments(db, ctx, customerId);
+  const [unallocated, refunded] = await Promise.all([
+    unallocatedPayments(db, ctx, customerId),
+    refundedTotal(db, ctx, customerId),
+  ]);
   return {
     appliedToOpeningPaise: BigInt(opening?.to ?? "0"),
     appliedFromOpeningPaise: BigInt(opening?.from ?? "0"),
     unallocatedPaise: unallocated.reduce((sum, row) => sum + row.availablePaise, 0n),
+    refundedPaise: refunded,
   };
 }
 
@@ -305,4 +311,64 @@ export async function listPayments(
     .where(tenantScope(ctx, payments, ...conditions))
     .orderBy(desc(payments.paymentDate), desc(payments.id))
     .limit(options.limit);
+}
+
+export interface LiveAllocation {
+  id: string;
+  /** Null = from the customer's opening advance. */
+  paymentId: string | null;
+  paymentDate: string | null;
+  amountPaise: bigint;
+}
+
+/** What pays an invoice now: its allocations from live payments and the opening advance. */
+export async function liveAllocationsForInvoice(
+  db: Executor,
+  ctx: TenantContext,
+  invoiceId: string,
+): Promise<LiveAllocation[]> {
+  return db
+    .select({
+      id: paymentAllocations.id,
+      paymentId: paymentAllocations.paymentId,
+      paymentDate: payments.paymentDate,
+      amountPaise: paymentAllocations.amountPaise,
+    })
+    .from(paymentAllocations)
+    .leftJoin(
+      payments,
+      and(
+        eq(payments.businessId, paymentAllocations.businessId),
+        eq(payments.id, paymentAllocations.paymentId),
+      ),
+    )
+    .where(
+      tenantScope(
+        ctx,
+        paymentAllocations,
+        eq(paymentAllocations.invoiceId, invoiceId),
+        or(isNull(paymentAllocations.paymentId), isNull(payments.voidedAt)),
+      ),
+    );
+}
+
+/**
+ * Takes `amountPaise` back from one allocation (a credit note on a paid invoice, ADR 0011): the
+ * row shrinks, or goes when nothing is left. The money becomes the payment's unallocated part.
+ */
+export async function releaseAllocation(
+  tx: Transaction,
+  ctx: TenantContext,
+  allocation: Pick<LiveAllocation, "id" | "amountPaise">,
+  amountPaise: bigint,
+): Promise<void> {
+  const where = tenantScope(ctx, paymentAllocations, eq(paymentAllocations.id, allocation.id));
+  if (amountPaise >= allocation.amountPaise) {
+    await tx.delete(paymentAllocations).where(where);
+    return;
+  }
+  await tx
+    .update(paymentAllocations)
+    .set({ amountPaise: allocation.amountPaise - amountPaise, updatedAt: sql`now()` })
+    .where(where);
 }

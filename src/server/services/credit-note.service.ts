@@ -17,20 +17,23 @@ import {
 } from "@/server/db/repos/credit-notes.repo";
 import { lockCustomer } from "@/server/db/repos/customers.repo";
 import {
-  addCredited,
   findInvoiceById,
   findInvoiceLines,
   type Invoice,
   lockInvoice,
   markCancelled,
+  settleCredit,
 } from "@/server/db/repos/invoices.repo";
 import { takeNextNumber } from "@/server/db/repos/number-sequences.repo";
+import { liveAllocationsForInvoice, releaseAllocation } from "@/server/db/repos/payments.repo";
+import { insertRefund, type Refund, refundsForCreditNote } from "@/server/db/repos/refunds.repo";
 import { withTransaction } from "@/server/db/transaction";
 import { fyForDate, istDateFromInstant } from "@/server/domain/fy";
 import { creditForReturn, creditNoteTotals, type LineCredit } from "@/server/domain/invoice/credit";
 import { supplierSnapshot } from "@/server/domain/invoice/snapshot";
 import { balancePaise, settledStatus } from "@/server/domain/invoice/status";
 import { formatDocumentNumber } from "@/server/domain/numbering";
+import { type Release, releaseAllocations } from "@/server/domain/payment/release";
 
 import { requireId } from "./ids";
 import { parseInput } from "./validate";
@@ -47,6 +50,8 @@ export interface CreditNoteDetail {
   creditNote: CreditNote;
   lines: CreditNoteLine[];
   invoice: { id: string; number: string | null };
+  /** What was given back at the counter for a walk-in sale (ADR 0011). */
+  refunds: Refund[];
 }
 
 function invalid(issues: FieldIssue[]): ValidationError {
@@ -95,8 +100,11 @@ export async function cancelInvoice(
 
 /**
  * Issues a credit note returning quantities of an issued invoice's lines (ADR 0007). Each line is
- * credited at the invoice line's own amounts; the total can't exceed the invoice's balance
- * (SPEC §4.8). It takes the next number of the business's credit-note series.
+ * credited at the invoice line's own amounts, up to what is not yet credited (SPEC §4.8). On a
+ * paid invoice, what was paid beyond the new total is released from its payments, newest first,
+ * and stays with the customer as money on account; a walk-in sale has no account, so that money
+ * is refunded at once, as `input.refund` says (ADR 0011). It takes the next number of the
+ * business's credit-note series.
  */
 export async function createCreditNote(
   ctx: TenantContext,
@@ -105,7 +113,7 @@ export async function createCreditNote(
 ): Promise<CreditNote> {
   assertCan(ctx, "invoice:cancel");
   const id = requireId(invoiceId, "Invoice");
-  const { reason, lines: returns } = parseInput(creditNoteSchema, input);
+  const { reason, lines: returns, refund } = parseInput(creditNoteSchema, input);
 
   return withTransaction(async (tx) => {
     // Lock order (ADR 0010): the customer first, so a credit note and a payment on the same
@@ -159,8 +167,16 @@ export async function createCreditNote(
       credits.map((item) => item.credit),
       completes ? invoice.roundOffPaise : null,
     );
-    if (totals.grandTotalPaise > balancePaise(invoice)) {
+    // Returned quantities already keep the total within what is not yet credited; this guards
+    // the round-off.
+    if (totals.grandTotalPaise > invoice.grandTotalPaise - invoice.amountCreditedPaise) {
       throw invalid([{ path: "lines", message: "creditExceedsBalance" }]);
+    }
+    // Paid beyond the invoice's new total: released to the customer (ADR 0011).
+    const excess = totals.grandTotalPaise - balancePaise(invoice);
+    const walkIn = invoice.customerId === null;
+    if (excess > 0n && walkIn && !refund) {
+      throw invalid([{ path: "refund.mode", message: "refundModeRequired" }]);
     }
 
     const noteDate = istDateFromInstant(now());
@@ -218,12 +234,36 @@ export async function createCreditNote(
         };
       }),
     );
+    let released: Release[] = [];
+    let counterRefund: Refund | null = null;
+    if (excess > 0n) {
+      const paid = await liveAllocationsForInvoice(tx, ctx, invoice.id);
+      released = releaseAllocations(excess, paid);
+      const byPayment = new Map(paid.map((row) => [row.paymentId, row]));
+      for (const item of released) {
+        const row = byPayment.get(item.paymentId);
+        if (!row) throw new Error("released allocation vanished");
+        await releaseAllocation(tx, ctx, row, item.amountPaise);
+      }
+      if (walkIn && refund) {
+        counterRefund = await insertRefund(tx, ctx, {
+          customerId: null,
+          creditNoteId: note.id,
+          refundDate: noteDate,
+          amountPaise: excess,
+          mode: refund.mode,
+          reference: refund.reference,
+          notes: null,
+        });
+      }
+    }
     // A credit note can finish paying a part-paid invoice: the status follows the money.
-    const status = settledStatus({
-      ...invoice,
+    const settled = {
+      amountPaidPaise: invoice.amountPaidPaise - (excess > 0n ? excess : 0n),
       amountCreditedPaise: invoice.amountCreditedPaise + totals.grandTotalPaise,
-    });
-    await addCredited(tx, ctx, invoice.id, totals.grandTotalPaise, status);
+    };
+    const status = settledStatus({ ...invoice, ...settled });
+    await settleCredit(tx, ctx, invoice.id, { ...settled, status });
     await insertAuditLog(tx, ctx, {
       entity: "creditNote",
       entityId: note.id,
@@ -236,6 +276,12 @@ export async function createCreditNote(
           lineCount: credits.length,
           completesInvoice: completes,
           grandTotalPaise: totals.grandTotalPaise.toString(),
+          releasedPaise: (excess > 0n ? excess : 0n).toString(),
+          released: released.map((item) => ({
+            paymentId: item.paymentId,
+            amountPaise: item.amountPaise.toString(),
+          })),
+          refundId: counterRefund?.id ?? null,
         },
       },
     });
@@ -248,13 +294,15 @@ export async function getCreditNote(ctx: TenantContext, id: string): Promise<Cre
   const db = getDb();
   const creditNote = await findCreditNoteById(db, ctx, requireId(id, "Credit note"));
   if (!creditNote) throw new NotFoundError("Credit note");
-  const [lines, invoice] = await Promise.all([
+  const [lines, invoice, refunds] = await Promise.all([
     findCreditNoteLines(db, ctx, creditNote.id),
     findInvoiceById(db, ctx, creditNote.invoiceId),
+    refundsForCreditNote(db, ctx, creditNote.id),
   ]);
   return {
     creditNote,
     lines,
     invoice: { id: creditNote.invoiceId, number: invoice?.number ?? null },
+    refunds,
   };
 }

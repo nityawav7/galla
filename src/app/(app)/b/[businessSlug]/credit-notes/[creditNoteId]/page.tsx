@@ -28,7 +28,8 @@ async function CreditNoteDetail({
   const { ctx } = await requireTenant(businessSlug);
   const t = await getTranslations("creditNotes");
   const view = await getTranslations("invoices.view");
-  const { creditNote, lines, invoice } = await getCreditNote(ctx, creditNoteId).catch(
+  const tModes = await getTranslations("payments.modes");
+  const { creditNote, lines, invoice, refunds } = await getCreditNote(ctx, creditNoteId).catch(
     (error: unknown) => {
       if (error instanceof NotFoundError) notFound();
       throw error;
@@ -49,6 +50,15 @@ async function CreditNoteDetail({
         {t("backToInvoice", { number: invoice.number ?? "" })}
       </Link>
       <PdfActions href={`/b/${businessSlug}/credit-notes/${creditNote.id}/pdf`} />
+      {refunds.map((refund) => (
+        <p key={refund.id} className="rounded-lg border p-3 text-sm" data-testid="counter-refund">
+          {t("refunded", {
+            amount: formatINR(refund.amountPaise),
+            mode: tModes(refund.mode),
+            reference: refund.reference ?? "",
+          })}
+        </p>
+      ))}
       <article className="flex flex-col gap-5 rounded-xl border bg-card p-4 text-sm shadow-sm">
         <header className="flex flex-col gap-1 border-b pb-3">
           <h2 className="text-lg font-semibold">{t("documentTitle")}</h2>

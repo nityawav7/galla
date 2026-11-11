@@ -14,6 +14,7 @@ import {
   type LedgerInvoiceRow,
   ledgerPayments,
   type LedgerPaymentRow,
+  ledgerRefunds,
 } from "@/server/db/repos/ledger.repo";
 import { customerCreditSums } from "@/server/db/repos/payments.repo";
 import { istDateFromInstant } from "@/server/domain/fy";
@@ -47,7 +48,7 @@ export interface CustomerLedger {
   credit: CustomerCredit;
   /** Oldest first: the invoices with something still due. */
   openInvoices: OpenInvoiceView[];
-  /** Mode and reference of each payment row, by payment id. */
+  /** Mode and reference of each payment and refund row, by its id. */
   payments: Record<string, Pick<LedgerPaymentRow, "mode" | "reference">>;
   /** Today in Asia/Kolkata (the aging date). */
   today: string;
@@ -87,10 +88,11 @@ export async function getCustomerLedger(
   const customer = await findCustomerById(db, ctx, requireId(customerId, "Customer"));
   if (!customer) throw new NotFoundError("Customer");
 
-  const [invoices, creditNotes, payments, sums] = await Promise.all([
+  const [invoices, creditNotes, payments, refunds, sums] = await Promise.all([
     ledgerInvoices(db, ctx, customer.id),
     ledgerCreditNotes(db, ctx, customer.id),
     ledgerPayments(db, ctx, customer.id),
+    ledgerRefunds(db, ctx, customer.id),
     customerCreditSums(db, ctx, customer.id),
   ]);
   const today = istDateFromInstant(now());
@@ -117,6 +119,11 @@ export async function getCustomerLedger(
         date: row.paymentDate,
         amountPaise: row.amountPaise,
       })),
+      refunds: refunds.map((row) => ({
+        id: row.id,
+        date: row.refundDate,
+        amountPaise: row.amountPaise,
+      })),
     },
     from,
   );
@@ -137,7 +144,10 @@ export async function getCustomerLedger(
     credit,
     openInvoices: open,
     payments: Object.fromEntries(
-      payments.map((row) => [row.id, { mode: row.mode, reference: row.reference }]),
+      [...payments, ...refunds].map((row) => [
+        row.id,
+        { mode: row.mode, reference: row.reference },
+      ]),
     ),
     today,
     from,

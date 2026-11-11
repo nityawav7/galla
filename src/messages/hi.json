@@ -97,7 +97,9 @@
     "walkInPaymentInvalid": "बिना ग्राहक वाली बिक्री का भुगतान सिर्फ़ उसी बिल पर, बाकी रकम तक होता है",
     "voidReasonRequired": "बताएँ कि यह भुगतान क्यों रद्द हो रहा है",
     "openingBalanceApplied": "भुगतान इससे ज़्यादा शुरुआती बकाया चुका चुके हैं। पहले उन्हें रद्द करें।",
-    "dateInvalid": "सही तारीख़ लिखें"
+    "dateInvalid": "सही तारीख़ लिखें",
+    "refundExceedsOnAccount": "यह ग्राहक के खाते में जमा राशि से ज़्यादा है।",
+    "refundModeRequired": "चुनें कि पैसा कैसे लौटाया गया।"
   },
   "auth": {
     "fields": {
@@ -542,7 +544,8 @@
         "INVOICE": "इनवॉइस {number}",
         "CREDIT_NOTE": "क्रेडिट नोट {number}",
         "PAYMENT": "भुगतान · {mode}",
-        "BROUGHT_FORWARD": "पिछला शेष"
+        "BROUGHT_FORWARD": "पिछला शेष",
+        "REFUND": "रिफ़ंड · {mode}"
       },
       "advanceBalance": "{amount} अग्रिम",
       "empty": "इस अवधि में कोई प्रविष्टि नहीं।",
@@ -550,6 +553,18 @@
       "reminder": {
         "button": "याद दिलाएँ",
         "title": "WhatsApp पर भुगतान की याद"
+      },
+      "refund": {
+        "title": "अग्रिम लौटाएँ",
+        "hint": "{amount} खाते में है। इसमें से कुछ या पूरा लौटाएँ।",
+        "amount": "लौटाने की राशि (₹)",
+        "date": "तारीख",
+        "mode": "कैसे लौटाया",
+        "reference": "UTR या रेफ़रेंस (वैकल्पिक)",
+        "save": "रिफ़ंड दर्ज करें",
+        "saving": "सेव हो रहा है…",
+        "list": "रिफ़ंड",
+        "voided": "रद्द: {reason}"
       }
     }
   },
@@ -815,8 +830,12 @@
       "total": "कुल क्रेडिट",
       "balance": "बिल पर अभी बकाया: {amount}",
       "issue": "क्रेडिट नोट जारी करें",
-      "issuing": "जारी हो रहा है…"
-    }
+      "issuing": "जारी हो रहा है…",
+      "toAdvance": "भुगतान में से {amount} ग्राहक के अग्रिम में जाएगा।",
+      "refundTitle": "{amount} पहले ही मिल चुका है। यह कैसे लौटाया गया?",
+      "refundReference": "UTR या रेफ़रेंस (वैकल्पिक)"
+    },
+    "refunded": "{amount} {mode} से लौटाया गया {reference}"
   },
   "pdf": {
     "title": {
@@ -916,7 +935,8 @@
         "OPENING": "शुरुआती बकाया",
         "INVOICE": "इनवॉइस {number}",
         "CREDIT_NOTE": "क्रेडिट नोट {number}",
-        "PAYMENT": "भुगतान मिला · {mode}"
+        "PAYMENT": "भुगतान मिला · {mode}",
+        "REFUND": "रिफ़ंड दिया · {mode}"
       },
       "modes": {
         "CASH": "नकद",
@@ -1048,13 +1068,19 @@
         "enteredByMistake": "ग़लती से दर्ज हुआ",
         "chequeBounced": "चेक बाउंस हुआ",
         "wrongCustomer": "ग़लत ग्राहक"
-      }
+      },
+      "refundTitle": "{amount} का रिफ़ंड रद्द करें?",
+      "refundExplain": "यह सूची में कटा हुआ दिखेगा, और पैसा फिर से ग्राहक का अग्रिम माना जाएगा।",
+      "refundConfirm": "रिफ़ंड रद्द करें"
     },
     "errors": {
       "paymentAlreadyVoided": "यह भुगतान पहले ही रद्द हो चुका है",
       "invoiceNotOpen": "इस बिल पर अब कुछ बाकी नहीं है",
       "walkInPaymentInvalid": "बिना ग्राहक वाली बिक्री का भुगतान सिर्फ़ उसी बिल पर होता है",
-      "nothingOnAccount": "इस ग्राहक का कोई अग्रिम बाकी नहीं है"
+      "nothingOnAccount": "इस ग्राहक का कोई अग्रिम बाकी नहीं है",
+      "refundFirst": "इस भुगतान का कुछ पैसा लौटाया जा चुका है। पहले वह रिफ़ंड रद्द करें।",
+      "refundAlreadyVoided": "यह रिफ़ंड पहले ही रद्द हो चुका है",
+      "walkInRefundFinal": "काउंटर पर लौटाया गया पैसा अपने क्रेडिट नोट के साथ रहता है"
     }
   }
 }

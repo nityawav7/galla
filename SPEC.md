@@ -64,6 +64,7 @@ Existing apps are feature-heavy. Galla focuses on three things only:
 | Turn a public link off, make a new one | ✅ | ❌ | ❌ |
 | Record payments | ✅ | ✅ | ✅ |
 | Void a payment | ✅ | ❌ | ❌ |
+| Refund money on account, void a refund | ✅ | ❌ | ❌ |
 | View all invoices, ledger, dashboard | ✅ | ✅ | ✅ (dashboard totals hidden) |
 | Download GST exports & reports | ✅ | ✅ | ❌ |
 | View audit log | ✅ | ✅ | ❌ |
@@ -186,10 +187,10 @@ DRAFT ──issue──▶ ISSUED ──payment──▶ PARTIALLY_PAID ──pa
 - `CREDITED` (balance cleared by credit notes only) is also derived for display.
 - The stored status follows the money (a CHECK enforces it): nothing paid → `ISSUED`; paid with something still due → `PARTIALLY_PAID`; paid with nothing due → `PAID`. A payment, a credit note (one that clears a part-paid invoice makes it `PAID`) and a voided payment (back to `PARTIALLY_PAID` or `ISSUED`) all move it.
 - **Cancel** (owner only): only an issued invoice with nothing paid or credited. It keeps its number and lines; the reason is required. The dialog warns to use a credit note if the invoice is already in a filed GSTR-1 (CA question 6).
-- **Credit notes** (owner only) return quantities of the invoice's lines at their own amounts ([ADR 0007](docs/adr/0007-credit-notes-by-returned-quantity.md)): never more than is left on a line or owed on the invoice. Only the note that returns the last unit carries the invoice's round-off, so a full return credits exactly the grand total. Each takes the next number of the `CN` series.
+- **Credit notes** (owner only) return quantities of the invoice's lines at their own amounts ([ADR 0007](docs/adr/0007-credit-notes-by-returned-quantity.md)): never more than is left on a line or not yet credited on the invoice. On a paid invoice, what was paid beyond its new total is released from its payments, newest first, and becomes the customer's money on account; for a walk-in sale the owner says how it was given back and a refund is recorded with the note ([ADR 0011](docs/adr/0011-credit-notes-on-paid-invoices-and-refunds.md)). Only the note that returns the last unit carries the invoice's round-off, so a full return credits exactly the grand total. Each takes the next number of the `CN` series.
 
 ### 4.9 Udhaar / customer ledger
-- Ledger = opening balance + issued invoices − payments − credit notes, in date order with a running balance. Cancelled invoices and voided payments are left out. With a start date, earlier rows fold into a "balance brought forward".
+- Ledger = opening balance + issued invoices − payments − credit notes + refunds, in date order with a running balance. Cancelled invoices and voided payments are left out. With a start date, earlier rows fold into a "balance brought forward".
 - Payments are allocated to specific invoices or "oldest first": the opening balance owed, then invoices by invoice date and number. Nothing is allocated beyond an item's balance; the rest stays **on account** ([ADR 0010](docs/adr/0010-payments-allocation-and-ledger.md)).
 - The opening balance is an allocation end: payments can pay the opening balance owed, and an opening advance can pay invoices. Once used, the opening balance can't be lowered below what was applied.
 - Money on account (an opening advance or overpayments) is applied by "Apply advance" (oldest first, or chosen), never by itself.
@@ -285,7 +286,8 @@ Each feature is done only when its acceptance criteria pass as automated tests.
   - "Record payment" (back to this page when done), "Apply advance" (money on account to the oldest dues in one tap, when there is both an advance and something due), "Edit", and "Statement PDF".
   - **Statement PDF** (`customers/{id}/statement?period=fy|lastFy|all`): A4, the business as it is now, the customer's address and GSTIN, the period, balance brought forward, every row with Dr/Cr running balance, the closing balance, the aging and a UPI QR for the balance due. Every role can download it; the filename has part of the customer id, never a name.
   - **Send reminder** (owners and staff, when something is due): a WhatsApp click-to-chat message in English or Hindi with the total due, how much is overdue, the opening balance still owed and the 5 oldest open invoices with their balance, due date and public link ("…and N more"). The wording is fixed for now. Each opening writes an audit row `customer.reminderShared` with the amounts and invoice ids (no names or phones), the data for the "recovered within 14 days of a reminder" metric.
-- **AC:** ledger balance = Σ invoices − Σ payments − Σ credit notes for randomly generated data (property test).
+- **Refunds** (owner only, Phase 8d): "Refund advance" on the customer page pays back some or all of the money on account (cash, UPI and so on), never more than there is. A refund is never edited or deleted; the owner voids it, and the money counts as on account again. A payment whose money was refunded can't be voided until the refund is. A database trigger checks at commit that refunds never exceed what is on account.
+- **AC:** ledger balance = Σ invoices − Σ payments − Σ credit notes + Σ refunds for randomly generated data (property test).
 
 ### F8. Dashboard & reports
 - Cards: today's sales, this month's sales, GST collected this month, total receivable, overdue.

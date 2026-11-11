@@ -55,6 +55,7 @@ describe("migrations", () => {
       "payment_allocations",
       "payments",
       "products",
+      "refunds",
       "reminders_sent",
       "sessions",
       "states",
