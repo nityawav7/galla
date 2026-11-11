@@ -291,7 +291,11 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 
 ### F8. Dashboard & reports
 - Cards: today's sales, this month's sales, GST collected this month, total receivable, overdue.
-- Charts: daily sales over 30 days, top 5 products, top 5 debtors, aging buckets.
+  - **Sales** are net: invoice totals (incl. GST) dated in the period less credit notes dated in it; cancelled invoices never count. **GST collected** is the tax on those invoices less the tax on those credit notes, and is not shown to composition or unregistered businesses.
+  - **To collect** is the sum of positive customer balances plus unpaid walk-in invoices; advances customers hold are shown under it, not netted. **Overdue** is the balance of invoices due before today (the aging rule).
+  - **Paid after reminders** (SPEC §1.2): payments within 14 days of a WhatsApp reminder, credited to the latest reminder before them, up to what was overdue when it went out; reminders of the last 30 days.
+- Charts: daily sales over 30 days, top 5 products, top 5 debtors, aging buckets. Drawn on the server as SVG and CSS bars (no chart library), each with its numbers as text or a table for screen readers. Top products are by net taxable value over the last 30 days; top debtors by current balance.
+- Staff (no `dashboard:viewTotals`) see counts only: invoices today and this month, invoices overdue, and top products by quantity. The service leaves the money out, so it never reaches their browser.
 - Reports: sales register (CSV/Excel), GSTR-1 helper (§4.10), HSN summary. All use a date range picker in IST.
 - **AC:** dashboard queries return in < 300 ms p95 with 10k invoices seeded.
 

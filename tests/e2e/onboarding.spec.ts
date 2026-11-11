@@ -502,6 +502,23 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
       "Refund · Cash",
     );
   });
+
+  // SPEC F8: the dashboard adds up the day.
+  await test.step("the dashboard shows today's sales and what is still to collect", async () => {
+    await page.getByRole("link", { name: "Dashboard", exact: true }).click();
+    await expect(page).toHaveURL(/\/dashboard$/);
+    // ₹1,274.00 invoiced today, less the ₹472.00 and ₹141.60 credited back.
+    await expect(page.getByTestId("card-today").filter({ visible: true })).toHaveText("₹660.40");
+    await expect(page.getByTestId("card-receivable").filter({ visible: true })).toHaveText(
+      "₹1,402.00",
+    );
+    await expect(page.getByTestId("top-debtors").filter({ visible: true })).toContainText(
+      "Ramesh Traders",
+    );
+    await expect(page.getByTestId("top-products").filter({ visible: true })).toContainText(
+      "Paint 1 L",
+    );
+  });
 });
 
 test("a user with no membership gets 404 for another business (SPEC F1)", async ({

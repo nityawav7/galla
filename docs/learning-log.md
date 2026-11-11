@@ -151,3 +151,10 @@ What I learned and what broke while building Galla, phase by phase.
 - The invoice's paid and credited amounts change in one UPDATE: two UPDATEs would each have to pass the status CHECK on their own, with a made-up status in between.
 - One deferred trigger function serves four tables (refunds, payments, allocations, customers) by looking at `TG_TABLE_NAME`; it finds the customer of an allocation through its payment when the row has none.
 - A refund form's amount comes from on-account paise turned into rupees with the same integer helper as the payment form; `Number(paise) / 100` would have been the first float in a money path.
+
+## Phase 9a: dashboard
+
+- Seeding 10,000 invoices through the real issue path would take minutes; three set-based `INSERT … SELECT … FROM generate_series` statements take about a second. The immutability triggers rightly refuse lines on an issued invoice, so the seed runs with `set local session_replication_role = replica` inside its own transaction (test data only).
+- `date ${value}` doesn't work as a bound parameter in Postgres (`date $3` is a syntax error); `${value}::date` does.
+- The dashboard queries all used existing indexes (EXPLAIN ANALYZE: bitmap index scans, under 10 ms each), so no migration was needed; p95 was 133 ms against the 300 ms limit.
+- Bars drawn as SVG on the server cost no JavaScript at all; a screen-reader table carries the same numbers, so the picture can stay `aria-hidden`.

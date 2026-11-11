@@ -19,7 +19,8 @@
     "test": "vitest run",
     "test:unit": "vitest run --project unit",
     "test:integration": "vitest run --project integration",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "vitest run --coverage --project unit --project integration",
+    "test:perf": "vitest run --project perf",
     "test:e2e": "playwright test",
     "db:up": "docker compose up -d --wait",
     "db:down": "docker compose down",
@@ -28,7 +29,7 @@
     "db:seed": "tsx scripts/seed.ts",
     "db:seed:reference": "tsx scripts/seed.ts --reference-only",
     "db:studio": "drizzle-kit studio",
-    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:unit && pnpm test:integration",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:unit && pnpm test:integration && pnpm test:perf",
     "prepare": "husky"
   },
   "dependencies": {

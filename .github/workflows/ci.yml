@@ -75,6 +75,8 @@ jobs:
       # Unit and integration together: services are covered by integration tests, so the
       # SPEC §7.6 gates (domain 100%, services 85%) are measured over both.
       - run: pnpm test:coverage
+      # SPEC F8: the dashboard's p95 with 10,000 invoices, timed alone after coverage.
+      - run: pnpm test:perf
 
   build-e2e:
     name: Build and e2e (local server)

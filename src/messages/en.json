@@ -236,7 +236,31 @@
   "dashboard": {
     "title": "Dashboard",
     "welcome": "Welcome to {name}",
-    "comingSoon": "Invoices, payments and udhaar arrive in the next updates. Until then you can review your business settings."
+    "cards": {
+      "today": "Today's sales",
+      "month": "This month's sales",
+      "gst": "GST collected this month",
+      "receivable": "To collect",
+      "advances": "{amount} held as advance",
+      "overdue": "Overdue",
+      "overdueInvoices": "{count, plural, =0 {No invoices late} one {# invoice late} other {# invoices late}}",
+      "recovered": "Paid after reminders",
+      "recoveredDetail": "From {count, plural, one {# reminder} other {# reminders}} in 30 days, when {amount} was overdue",
+      "recoveredNone": "No reminders sent in the last 30 days",
+      "invoicesToday": "Invoices today",
+      "invoicesMonth": "Invoices this month",
+      "overdueCount": "Invoices overdue"
+    },
+    "charts": {
+      "daily": "Sales, last 30 days",
+      "date": "Date",
+      "amount": "Net sales",
+      "topProducts": "Top products, last 30 days",
+      "topProductsQty": "Top products by quantity, last 30 days",
+      "topDebtors": "Who owes the most",
+      "empty": "Nothing sold in the last 30 days.",
+      "noDebtors": "Nobody owes you anything."
+    }
   },
   "settings": {
     "title": "Business settings",
