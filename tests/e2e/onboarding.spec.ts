@@ -351,11 +351,15 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
 
     // From the payments page: pick the customer and pay ₹2,100 oldest first: the ₹1,500 opening
     // balance, then the invoice's ₹502; ₹98 stays on account.
+    // The invoice page has a "Record payment" link too: wait until it has been swapped out, or
+    // the click can latch onto it just before Next hides it.
     await page.getByRole("link", { name: "Payments", exact: true }).click();
+    await expect(page).toHaveURL(/\/payments$/);
     await page.getByRole("link", { name: "Record payment" }).filter({ visible: true }).click();
     await field(page, "Who paid?").fill("Ramesh Traders");
     await page.getByRole("button", { name: "Search" }).filter({ visible: true }).click();
     await page.getByRole("link", { name: "Ramesh Traders", exact: true }).click();
+    await expect(page).toHaveURL(/\/payments\/new\?customer=/);
     await field(page, "Amount received (₹)").fill("2100");
     await page.getByRole("radio", { name: "Oldest dues first (automatic)" }).check();
     const oldestFirst = page.getByTestId("payment-preview").filter({ visible: true });
@@ -370,6 +374,7 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
       page.getByText("₹98.00 is kept on account").filter({ visible: true }),
     ).toBeVisible();
     await page.getByRole("link", { name: "Done" }).filter({ visible: true }).click();
+    await expect(page).toHaveURL(/\/payments\?customer=/);
 
     // The owner voids the ₹2,100: the invoice is due again, the payment stays listed.
     const list = page.getByTestId("payment-list").filter({ visible: true });
