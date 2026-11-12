@@ -32,3 +32,8 @@ export const salesRegisterQuerySchema = z.strictObject({
 export const hsnQuerySchema = z.strictObject(period);
 
 export type ReportPeriodQuery = z.output<typeof reportPageQuerySchema>;
+
+/** `?period=2026-11` (a month) or `?period=26-27-Q3` (a quarter) for the GSTR-1 helper. */
+export const gstr1QuerySchema = z.strictObject({
+  period: z.string().trim().max(10),
+});

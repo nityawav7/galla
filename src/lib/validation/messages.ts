@@ -100,6 +100,7 @@ export const VALIDATION_KEYS = [
   "dateInvalid",
   "rangeReversed",
   "rangeTooLong",
+  "gstr1NotRegular",
 ] as const;
 
 export type ValidationKey = (typeof VALIDATION_KEYS)[number];

@@ -163,3 +163,8 @@ Sub-total 472.00 + 212.40 + 590.00 = **1,274.40**, so round off **−0.40**, giv
 7. **Credit-note time limit** (CGST Act s.34(2), 30 November after the FY ends): should the app warn after it? (No check in Phase 6c.)
 8. **Advances:** a customer paying before the sale (an opening advance, or money on account). For goods no GST is due on an advance (Notification 66/2017-CT); for services a receipt voucher and GST on the advance may be needed. Galla records the money only and issues no receipt voucher. (Assumed fine for goods shops; verify for service businesses.)
 9. **Credit note after payment** (Phase 8d): the credit note is the same; only the money moves on account or back to the customer. (Not expected to be a problem; listed for the CA check.)
+10. **GSTR-1 B2CL threshold** (Phase 9c): ₹1 lakh since 1 Aug 2024 for inter-state invoices to unregistered buyers. Is it the invoice value including tax, and strictly above? (The helper uses "above ₹1,00,000, incl. tax"; the amount is in `src/lib/gst-config.ts`.)
+11. **Credit notes to unregistered buyers:** only those against B2CL invoices go to CDNUR, and the rest reduce B2CS? (Assumed yes.)
+12. **0% supplies:** nil-rated, exempt and non-GST supplies are reported separately; Galla stores only "0%". Is "nil-rated" a safe default for small shops? (The helper says so on its Read me sheet.)
+13. **HSN summary:** split into B2B and B2C tables with a rate column (the 2025 format)? (Assumed yes.)
+14. **Documents summary:** a cancelled invoice counted in the period it was issued, or the one it was cancelled in? (Counted where issued.)

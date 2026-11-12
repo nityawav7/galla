@@ -206,6 +206,8 @@ An Excel workbook (built with `write-excel-file`, [ADR 0012](docs/adr/0012-repor
 
 Label the export clearly as **"Helper for your CA — not a filed return."** Match column headers to the GST offline tool template as closely as possible.
 
+Built in Phase 9c ([ADR 0013](docs/adr/0013-gstr1-helper.md)): on the Reports page, for the last 12 months or 4 quarters (QRMP), regular GST businesses only. B2CL is an inter-state invoice to an unregistered buyer above `B2CL_THRESHOLD_PAISE` incl. tax; credit notes go to CDNR (GSTIN), CDNUR (against B2CL) or reduce B2CS; 0% lines are nil-rated in EXEMP; HSN is split into B2B and B2C tables by HSN, UQC and rate; DOCS gives each series' range and cancelled count; cancelled invoices appear only in DOCS. A "Read me" sheet comes first with the label, the business, GSTIN, period and a check-before-filing list. Open CA questions 10–14 in `docs/golden-fixtures.md`.
+
 ---
 
 ## 5. Features & acceptance criteria

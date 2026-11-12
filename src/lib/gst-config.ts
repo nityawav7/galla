@@ -9,3 +9,10 @@
  * invoice total until a CA confirms which value (docs/golden-fixtures.md, question 4).
  */
 export const RECIPIENT_DETAILS_THRESHOLD_PAISE = 5_000_000n;
+
+/**
+ * GSTR-1 B2CL: an inter-state invoice to an unregistered buyer above this value (incl. tax) is
+ * reported invoice by invoice; below it, in B2CS. ₹1,00,000 since 1 Aug 2024 (was ₹2,50,000),
+ * in paise. Verify (docs/golden-fixtures.md, CA question 10).
+ */
+export const B2CL_THRESHOLD_PAISE = 10_000_000n;
