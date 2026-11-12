@@ -8,7 +8,9 @@ import { APP_NAME } from "@/lib/config";
 import { env } from "@/lib/env";
 import { ROLES } from "@/server/authz/context";
 import { authDatabase } from "@/server/db/auth-adapter";
+import { getDb } from "@/server/db/client";
 import { newId } from "@/server/db/ids";
+import { getCurrentBusiness } from "@/server/db/repos/businesses.repo";
 import { sendEmail } from "@/server/notifications/email";
 
 import { accessControl, authRoles } from "./access";
@@ -81,7 +83,7 @@ function createAuth() {
         disableSignUp: true,
         overrideDefaultEmailVerification: true,
         async sendVerificationOTP({ email, otp, type }) {
-          await sendEmail(otpEmail(email, otp, type));
+          await sendEmail(otpEmail(email, otp, type), "app");
         },
       }),
       organization({
@@ -97,6 +99,18 @@ function createAuth() {
         async sendInvitationEmail({ id, email, role, organization, inviter }) {
           const knownRole = ROLES.find((known) => known === role);
           if (!knownRole) throw new Error("invitation has an unknown role");
+          const inviterRole = ROLES.find((known) => known === inviter.role);
+          if (!inviterRole) throw new Error("inviter has an unknown role");
+          // The inviter's own business, read through the tenant repo: demo businesses never
+          // send email (SPEC F12).
+          const business = await getCurrentBusiness(getDb(), {
+            userId: inviter.user.id,
+            businessId: organization.id,
+            role: inviterRole,
+          });
+          if (!business) throw new Error("invitation for a missing business");
+          // The invite is still made and its link shown to copy; only the email is skipped.
+          if (business.isDemo) return;
           await sendEmail(
             inviteEmail(email, {
               inviterName: inviter.user.name,
@@ -104,6 +118,7 @@ function createAuth() {
               role: knownRole,
               link: `${authBaseUrl()}/invite/${id}`,
             }),
+            business,
           );
         },
         teams: { enabled: false },

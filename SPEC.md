@@ -305,7 +305,8 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 - **AC:** dashboard queries return in < 300 ms p95 with 10k invoices seeded.
 
 ### F9. Notifications & jobs
-- Email an invoice to the customer (via Resend) with the PDF link.
+- Email an invoice to the customer (via Resend) with the PDF link. "Email invoice" sits next to "Share on WhatsApp" on the issued sheet and the invoice page (owner and staff, `invoice:share`) when the customer has an email, the invoice's link is on and email is set up (on Vercel, `RESEND_API_KEY`; otherwise the button is hidden rather than saying "sent" for an email that would be dropped). The email is in the business's language: the amount due (or the total once paid), the due date, a "View, download or pay by UPI" button to the public link and the shop's name, phone and GSTIN; Reply-To is the shop's email when set. No attachment: the link always shows the invoice as it is now. At most 30 invoice emails an hour per business; each send is audited (`invoice.emailed`, no address).
+- **Demo businesses never send email:** `sendEmail` takes the sender (a business or the app itself) and refuses a demo business, so no caller can forget. Demo invites are still created, with the link to copy.
 - **Daily job** (once a day fits Vercel Hobby cron): (a) email reminders for invoices due today or overdue on day 1, 7 and 14, for customers who have an email; (b) an owner digest: "₹X overdue from N customers", with WhatsApp reminder links.
 - Every job is **idempotent** (it records what was already sent) and protected by a `CRON_SECRET` header.
 - **AC:** running the job twice sends each reminder once.

@@ -9,7 +9,7 @@ import { EMPTY_BUSINESS_FORM } from "@/lib/validation/business";
 import { type TenantContext } from "@/server/authz/context";
 import { getDb } from "@/server/db/client";
 import { listAuditLogs } from "@/server/db/repos/audit.repo";
-import { invitations } from "@/server/db/schema";
+import { businesses, invitations } from "@/server/db/schema";
 import { clearTestOutbox, readTestOutbox } from "@/server/notifications/email";
 import { createBusiness } from "@/server/services/business.service";
 import {
@@ -91,6 +91,21 @@ describe("inviteMember", () => {
 
     const [audit] = await listAuditLogs(getDb(), owner.ctx, { entity: "invitation" });
     expect(audit).toMatchObject({ action: "invitation.created", actorUserId: owner.id });
+  });
+
+  it("never emails an invite from a demo business (SPEC F12)", async () => {
+    const owner = await ownerWithBusiness();
+    await getDb()
+      .update(businesses)
+      .set({ isDemo: true })
+      .where(eq(businesses.id, owner.ctx.businessId));
+    // The invite exists and its link can be copied; no email goes out.
+    const { link } = await inviteMember(owner.ctx, owner.headers, {
+      email: "demo-invitee@example.com",
+      role: "STAFF",
+    });
+    expect(link).toContain("/invite/");
+    expect(readTestOutbox()).toEqual([]);
   });
 
   it.each(["ACCOUNTANT", "STAFF"] as const)("is owner-only: %s is forbidden", async (role) => {

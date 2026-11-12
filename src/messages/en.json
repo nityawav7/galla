@@ -322,6 +322,23 @@
       "action": "Open the invite",
       "expiry": "The invite works for 7 days. Sign in with this email address to accept it.",
       "ignore": "If you were not expecting this, you can ignore this email."
+    },
+    "invoice": {
+      "subject": "Invoice {number} from {shop}",
+      "greeting": "Namaste {customer},",
+      "intro": "{shop} has sent you invoice {number}.",
+      "number": "Invoice",
+      "amountDue": "Amount due",
+      "total": "Invoice total",
+      "dueDate": "Due",
+      "onReceipt": "On receipt",
+      "paid": "This invoice is fully paid. Thank you!",
+      "button": "View, download or pay by UPI",
+      "linkHint": "Or open this link:",
+      "phone": "Phone: {phone}",
+      "gstin": "GSTIN: {gstin}",
+      "reply": "Questions? Reply to this email to reach {shop}.",
+      "footer": "Sent by {shop} using {app}."
     }
   },
   "roleHints": {
@@ -826,6 +843,13 @@
       "button": "Share on WhatsApp",
       "opensWhatsApp": "(opens WhatsApp)",
       "noPhone": "This customer has no phone number. WhatsApp will ask whom to send it to."
+    },
+    "emailInvoice": {
+      "button": "Email invoice",
+      "sending": "Sending…",
+      "sent": "Sent to the customer's email",
+      "tooMany": "Too many invoice emails this hour. Please try again later.",
+      "failed": "Couldn't send the email. Please try again."
     }
   },
   "creditNotes": {

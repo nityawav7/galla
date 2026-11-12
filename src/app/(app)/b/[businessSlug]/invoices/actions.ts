@@ -8,6 +8,7 @@ import { requireTenant } from "@/server/auth/session";
 import { formatRupees } from "@/server/domain/money";
 import { cancelInvoice, createCreditNote } from "@/server/services/credit-note.service";
 import { getCustomer, listCustomers } from "@/server/services/customer.service";
+import { canEmailInvoice, emailInvoice } from "@/server/services/invoice-email.service";
 import {
   createDraft,
   deleteDraft,
@@ -39,6 +40,8 @@ export type IssueActionResult =
       publicUrl: string | null;
       /** What "Share on WhatsApp" needs (SPEC F6). */
       share: ShareInfo | null;
+      /** "Email invoice" is offered (SPEC F9): the customer has an email and the link is on. */
+      canEmail: boolean;
     }
   | { status: "needsConfirmation"; warnings: string[] };
 
@@ -92,6 +95,7 @@ export async function issueInvoiceAction(
       grandTotalPaise: result.invoice.grandTotalPaise.toString(),
       publicUrl: result.invoice.publicToken ? publicInvoiceUrl(result.invoice.publicToken) : null,
       share: await getShareInfo(ctx, result.invoice.id),
+      canEmail: await canEmailInvoice(ctx, result.invoice.id),
     };
   });
 }
@@ -180,5 +184,16 @@ export async function regeneratePublicLinkAction(
   return runAction(async () => {
     const { ctx } = await requireTenant(businessSlug);
     return regeneratePublicLink(ctx, invoiceId);
+  });
+}
+
+export async function emailInvoiceAction(
+  businessSlug: string,
+  invoiceId: string,
+): Promise<ActionResult<null>> {
+  return runAction(async () => {
+    const { ctx } = await requireTenant(businessSlug);
+    await emailInvoice(ctx, invoiceId);
+    return null;
   });
 }

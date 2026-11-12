@@ -138,6 +138,7 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     await page.getByRole("link", { name: "Add customer" }).click();
     await field(page, "Customer name").fill("Ramesh Traders");
     await field(page, "Phone (optional)").fill("98765 43210");
+    await field(page, "Email (optional)").fill("ramesh@example.com");
     await field(page, "GSTIN (optional)").fill("29AAACI1681G1ZL");
     await expect(field(page, "Billing state")).toHaveValue("29");
     await field(page, "Amount (₹)").fill("1500");
@@ -205,6 +206,11 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     await expectPdf(page, (await download.getAttribute("href")) ?? "");
     // ...and the customer's link (SPEC F5).
     await expect(issued.getByTestId("public-link")).toHaveValue(/\/i\/[A-Za-z0-9_-]{22}$/);
+    // SPEC F9: the customer has an email, so the invoice can be emailed from here.
+    await issued.getByRole("button", { name: "Email invoice" }).click();
+    await expect(issued.getByTestId("email-invoice-status")).toHaveText(
+      "Sent to the customer's email",
+    );
     await issued.getByRole("link", { name: "View invoice" }).click();
     await expect(page.getByTestId("invoice-total")).toHaveText("₹1,274.00");
     // The 80 mm slip for a thermal printer: Print opens it in a new tab.
