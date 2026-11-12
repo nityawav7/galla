@@ -1,6 +1,6 @@
 import { type Metadata } from "next";
 import Link from "next/link";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,7 @@ import { formatRate } from "@/server/domain/invoice/printable";
 import { formatINR } from "@/server/domain/money";
 import { formatQuantity } from "@/server/domain/quantity";
 import { REPORT_PRESETS } from "@/server/domain/reports/period";
+import { getGstr1Options } from "@/server/services/gstr1.service";
 import {
   getHsnSummary,
   getSalesRegister,
@@ -64,7 +65,16 @@ async function ReportsView({ params, searchParams }: Pick<Params, "params" | "se
     return <p className="text-muted-foreground">{t("notAllowed")}</p>;
   }
   const query = reportPageQuerySchema.parse(await searchParams);
-  const { register, hsn, problem } = await load(ctx, query);
+  const [{ register, hsn, problem }, gstr1, locale] = await Promise.all([
+    load(ctx, query),
+    getGstr1Options(ctx),
+    getLocale(),
+  ]);
+  const monthName = new Intl.DateTimeFormat(locale === "hi" ? "hi-IN" : "en-IN", {
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
   const { period, totals } = register;
   const base = `/b/${businessSlug}/reports`;
   const files = (path: string, extra = "") => `${base}/${path}?${periodQuery(period)}${extra}`;
@@ -249,6 +259,52 @@ async function ReportsView({ params, searchParams }: Pick<Params, "params" | "se
               </tfoot>
             </table>
           </div>
+        )}
+      </section>
+
+      <section aria-labelledby="gstr1" className="flex flex-col gap-3 rounded-lg border p-4">
+        <h2 id="gstr1" className="text-lg font-semibold">
+          {t("gstr1.title")}
+        </h2>
+        {gstr1.available ? (
+          <>
+            <p className="text-sm text-muted-foreground">{t("gstr1.hint")}</p>
+            <p className="text-sm font-medium">{t("gstr1.label")}</p>
+            <form action={`${base}/gstr1`} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="gstr1-period">{t("gstr1.period")}</Label>
+                <select
+                  id="gstr1-period"
+                  name="period"
+                  defaultValue={gstr1.months[1] ?? gstr1.months[0]}
+                  className="h-9 rounded-lg border border-input bg-transparent px-2.5 text-base outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 md:text-sm"
+                >
+                  <optgroup label={t("gstr1.months")}>
+                    {gstr1.months.map((value) => (
+                      <option key={value} value={value}>
+                        {monthName.format(new Date(`${value}-01T00:00:00Z`))}
+                      </option>
+                    ))}
+                  </optgroup>
+                  <optgroup label={t("gstr1.quarters")}>
+                    {gstr1.quarters.map((value) => (
+                      <option key={value} value={value}>
+                        {t("gstr1.quarterLabel", {
+                          quarter: value.slice(6),
+                          fy: value.slice(0, 5),
+                        })}
+                      </option>
+                    ))}
+                  </optgroup>
+                </select>
+              </div>
+              <Button type="submit" size="lg" variant="outline">
+                {t("gstr1.download")}
+              </Button>
+            </form>
+          </>
+        ) : (
+          <p className="text-sm text-muted-foreground">{t("gstr1.notRegular")}</p>
         )}
       </section>
     </>

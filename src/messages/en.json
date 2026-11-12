@@ -101,7 +101,8 @@
     "refundExceedsOnAccount": "That's more than the customer has on account.",
     "refundModeRequired": "Choose how the money was given back.",
     "rangeReversed": "The start date is after the end date.",
-    "rangeTooLong": "Choose a period of at most 366 days."
+    "rangeTooLong": "Choose a period of at most 366 days.",
+    "gstr1NotRegular": "Only a regular GST business files GSTR-1."
   },
   "auth": {
     "fields": {
@@ -1192,6 +1193,33 @@
       "sgstUtgst": "SGST/UTGST",
       "totalValue": "Total value",
       "noHsn": "No HSN"
+    },
+    "gstr1": {
+      "title": "GSTR-1 helper",
+      "hint": "An Excel workbook in the GST offline tool's layout (B2B, B2CL, B2CS, credit notes, nil-rated, HSN and documents), for your CA to check and file.",
+      "label": "Helper for your CA — not a filed return.",
+      "period": "Month or quarter",
+      "months": "Months",
+      "quarters": "Quarters (QRMP)",
+      "quarterLabel": "{quarter} of FY {fy}",
+      "download": "Download GSTR-1 helper",
+      "notRegular": "Only a regular GST business files GSTR-1, so there is no helper for a composition dealer or an unregistered shop.",
+      "readme": {
+        "title": "GSTR-1 helper for your CA — not a filed return",
+        "notFiled": "Galla prepared these tables from your invoices and credit notes. Check every figure with your CA before filing; Galla does not file returns.",
+        "business": "Business",
+        "gstin": "GSTIN",
+        "period": "Period",
+        "generated": "Generated",
+        "checkTitle": "Check before filing",
+        "noHsn": "{count, plural, one {# line has} other {# lines have}} no HSN code; the HSN tables need one.",
+        "b2cl": "B2CL: inter-state invoices to unregistered buyers above {threshold} (invoice value including tax). The rest are in B2CS.",
+        "nilRated": "0% items are shown as nil-rated in exemp. If any are exempt or non-GST, move them.",
+        "b2csNotes": "Credit notes on B2CS sales reduce B2CS; those against B2CL invoices are in cdnur.",
+        "cancelled": "Cancelled invoices are counted only in docs.",
+        "verify": "Rates, thresholds and the template change: check them against the GST portal.",
+        "quarterPeriod": "{quarter} of FY {fy} ({from} to {to})"
+      }
     }
   }
 }

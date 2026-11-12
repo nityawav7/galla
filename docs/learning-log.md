@@ -164,3 +164,9 @@ What I learned and what broke while building Galla, phase by phase.
 - `TextDecoder` drops a UTF-8 byte-order mark by default, so a test "the CSV starts with a BOM" failed on a correct file; `new TextDecoder("utf-8", { ignoreBOM: true })` keeps it.
 - A formula-injection guard must not touch negative numbers: `-118.00` starts with `-` but is data, so only cells that aren't plain numbers get the leading apostrophe.
 - `exceljs` looked like the default choice but hadn't been released since 2023 and carried nine old dependencies; a write-only library with one dependency did everything the reports need. Checking `npm view <pkg> time.modified dependencies` before adding anything took a minute.
+
+## Phase 9c: GSTR-1 helper
+
+- One property ("every rupee of taxable value lands in exactly one table") checks the whole classification at once, including credit notes that cross tables; it found nothing, but it is the test that would catch a double count.
+- Zip archives store file names uncompressed, so a test can see that an .xlsx has ten sheets (`xl/worksheets/sheet10.xml`) without unzipping it.
+- Docker Desktop doesn't start by itself after the laptop restarts overnight; the integration tests then fail at startup with an unhelpful stack-trace error rather than "connection refused".

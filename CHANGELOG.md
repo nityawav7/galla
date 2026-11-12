@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Phase 9c:** the GSTR-1 helper. On the Reports page, a regular GST business downloads an Excel workbook for a month or quarter in the GST offline tool's layout: b2b, b2cl, b2cs, cdnr, cdnur, exemp, hsn(b2b), hsn(b2c) and docs, after a "Read me" sheet that says it is a helper for the CA, not a filed return, with a check-before-filing list. ADR 0013; open CA questions 10–14.
+
 - **Phase 9b:** the Reports page for owners and accountants: this month, last month, this or last quarter, this FY or custom dates. The sales register (every invoice and credit note, cancelled ones at zero) downloads as CSV or Excel, and the HSN summary shows on screen and downloads as CSV. Excel files use `write-excel-file` instead of `exceljs` (ADR 0012).
 
 - **Phase 9a:** the dashboard. Today's and this month's net sales, GST collected this month, money to collect (advances shown apart), overdue, and what was paid within 14 days of a WhatsApp reminder; a 30-day sales chart, top 5 products, top 5 debtors and the aging of what is due. Staff see counts and quantities only. Charts are server-drawn SVG with a table for screen readers. With 10,000 invoices it answers in 133 ms at p95 (limit 300 ms); EXPLAIN ANALYZE showed no index was missing.

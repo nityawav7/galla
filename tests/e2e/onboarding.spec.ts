@@ -543,6 +543,16 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     expect(excel.headers()["content-type"]).toBe(
       "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     );
+
+    // SPEC §4.10: the GSTR-1 helper for this month (the first month offered).
+    await expect(page.getByText("Helper for your CA — not a filed return.")).toBeVisible();
+    const thisMonth = await page.locator("#gstr1-period option").first().getAttribute("value");
+    const reportsPath = new URL(page.url()).pathname;
+    const gstr1 = await page.request.get(`${reportsPath}/gstr1?period=${thisMonth ?? ""}`);
+    expect(gstr1.status()).toBe(200);
+    expect(gstr1.headers()["content-disposition"]).toBe(
+      `attachment; filename="gstr1-helper-${thisMonth ?? ""}.xlsx"`,
+    );
   });
 });
 
@@ -595,6 +605,8 @@ test("a user with no membership gets 404 for another business (SPEC F1)", async 
   expect((await stranger.request.get(statementPath)).status(), statementPath).toBe(404);
   const registerPath = `/b/${slug}/reports/sales-register?format=csv`;
   expect((await stranger.request.get(registerPath)).status(), registerPath).toBe(404);
+  const gstr1Path = `/b/${slug}/reports/gstr1?period=2026-11`;
+  expect((await stranger.request.get(gstr1Path)).status(), gstr1Path).toBe(404);
   // An invoice link that was never issued is a plain 404 too, with no sign-in needed.
   const unknownLink = await stranger.goto("/i/AAAAAAAAAAAAAAAAAAAAAA");
   expect(unknownLink?.status()).toBe(404);
