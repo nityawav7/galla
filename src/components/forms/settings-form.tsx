@@ -18,6 +18,7 @@ import {
 } from "@/lib/validation/business";
 
 import { DetailsFields, EmailField, GstFields, InvoicingFields } from "./business-fields";
+import { CheckboxField } from "./checkbox-field";
 import { SelectField } from "./select-field";
 import { applyServerErrors } from "./server-errors";
 import { useFormMessages } from "./use-form-messages";
@@ -28,11 +29,18 @@ interface SettingsFormProps {
   defaultValues: BusinessFormValues;
   /** The built-in WhatsApp messages, for "Use the default". */
   defaultTemplates: Record<ShareLocale, string>;
+  /** Whether emails can go out at all (on Vercel, RESEND_API_KEY is set). */
+  emailReady: boolean;
 }
 
 type Status = "idle" | "saved" | "error";
 
-export function SettingsForm({ businessSlug, defaultValues, defaultTemplates }: SettingsFormProps) {
+export function SettingsForm({
+  businessSlug,
+  defaultValues,
+  defaultTemplates,
+  emailReady,
+}: SettingsFormProps) {
   const t = useTranslations("settings");
   const common = useTranslations("common");
   const errors = useTranslations("errors");
@@ -96,6 +104,21 @@ export function SettingsForm({ businessSlug, defaultValues, defaultTemplates }: 
               name="whatsappTemplateHi"
               locale="hi"
               defaultTemplate={defaultTemplates.hi}
+            />
+          </section>
+          <section className="flex flex-col gap-4">
+            <h2 className="text-lg font-semibold">{t("dailyEmails")}</h2>
+            <p className="text-sm text-muted-foreground">{t("dailyEmailsHint")}</p>
+            {emailReady ? null : <p className="text-sm">{t("emailNotSetUp")}</p>}
+            <CheckboxField
+              label={t("emailReminders")}
+              hint={t("emailRemindersHint")}
+              {...form.register("emailReminders")}
+            />
+            <CheckboxField
+              label={t("ownerDigest")}
+              hint={t("ownerDigestHint")}
+              {...form.register("ownerDigest")}
             />
           </section>
           <div className="flex flex-col gap-3" aria-live="polite">

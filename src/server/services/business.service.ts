@@ -40,6 +40,8 @@ const EDITABLE_FIELDS = [
   "hsnDigitsRequired",
   "whatsappTemplateEn",
   "whatsappTemplateHi",
+  "emailReminders",
+  "ownerDigest",
 ] as const satisfies readonly (keyof Business)[];
 
 type EditableField = (typeof EDITABLE_FIELDS)[number];

@@ -9,6 +9,7 @@ import { requireTenant } from "@/server/auth/session";
 import { can } from "@/server/authz/permissions";
 import { type Business } from "@/server/db/repos/businesses.repo";
 import { formatIndianPhone } from "@/server/domain/phone";
+import { canSendEmail } from "@/server/notifications/email";
 import { getBusiness } from "@/server/services/business.service";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -36,6 +37,8 @@ function toFormValues(business: Business): BusinessFormValues {
     // The form shows the message that will be sent, the default included.
     whatsappTemplateEn: business.whatsappTemplateEn ?? defaultShareTemplate("en"),
     whatsappTemplateHi: business.whatsappTemplateHi ?? defaultShareTemplate("hi"),
+    emailReminders: business.emailReminders,
+    ownerDigest: business.ownerDigest,
   };
 }
 
@@ -52,6 +55,7 @@ async function Settings({ params }: { params: Promise<{ businessSlug: string }> 
       businessSlug={businessSlug}
       defaultValues={toFormValues(business)}
       defaultTemplates={{ en: defaultShareTemplate("en"), hi: defaultShareTemplate("hi") }}
+      emailReady={canSendEmail()}
     />
   );
 }

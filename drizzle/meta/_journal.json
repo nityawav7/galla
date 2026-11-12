@@ -78,6 +78,13 @@
       "when": 1794413349222,
       "tag": "0010_refunds",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1794475811591,
+      "tag": "0011_daily_job",
+      "breakpoints": true
     }
   ]
 }

@@ -20,3 +20,18 @@ export const LEDGER_PAGE_ROWS = 100;
 
 /** The longest custom report period, both ends counted (decision 10 of the Phase 9 plan). */
 export const MAX_REPORT_DAYS = 366;
+
+/** Email reminders: due today, then 1, 7 and 14 days overdue (decision 7 of the Phase 10 plan). */
+export const REMINDER_STAGE_DAYS = { DUE: 0, D1: 1, D7: 7, D14: 14 } as const;
+
+/** A stage whose day was missed (no run that day) still goes out up to this many days late. */
+export const REMINDER_CATCH_UP_DAYS = 2;
+
+/** The daily job reads businesses in batches of this size (decision 12). */
+export const DAILY_JOB_BATCH_SIZE = 25;
+
+/** The daily job starts no new business after this long; Hobby functions stop at 60 s. */
+export const DAILY_JOB_BUDGET_MS = 45_000;
+
+/** How many customers the owner digest lists (decision 10). */
+export const OWNER_DIGEST_TOP = 10;

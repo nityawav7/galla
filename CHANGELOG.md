@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Phase 10b:** the daily job at 09:00 IST (Vercel Cron → `/api/cron/daily`, protected by `CRON_SECRET`). Email payment reminders to customers (off until the owner turns them on in Settings): due today, then 1, 7 and 14 days overdue, a missed day caught up within 2 days, one email per customer, each stage sent once. An owner digest (on by default): what is overdue, from how many customers, the 10 biggest with WhatsApp reminder links. Idempotent: running it twice sends nothing new. Migration `0011_daily_job`, ADR 0014.
+
 - **Phase 10a:** "Email invoice" on the issued sheet and the invoice page, for owners and staff, when the customer has an email and the invoice link is on. The email (English or Hindi, the business's language) has the amount due, the due date, a button to the invoice's public page and the shop's details; replies go to the shop's email. Up to 30 an hour per business, each send audited without the address. Demo businesses never send email, enforced inside `sendEmail`.
 
 - **Phase 9c:** the GSTR-1 helper. On the Reports page, a regular GST business downloads an Excel workbook for a month or quarter in the GST offline tool's layout: b2b, b2cl, b2cs, cdnr, cdnur, exemp, hsn(b2b), hsn(b2c) and docs, after a "Read me" sheet that says it is a helper for the CA, not a filed return, with a check-before-filing list. ADR 0013; open CA questions 10–14.
