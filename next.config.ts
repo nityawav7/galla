@@ -1,13 +1,15 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
+import { STATIC_SECURITY_HEADERS } from "./src/server/http/security-headers";
+
 // Fail the build early if required env vars are missing or malformed.
 import "./src/lib/env";
 
 const nextConfig: NextConfig = {
-  cacheComponents: true,
-  partialPrefetching: true,
   poweredByHeader: false,
+  // SPEC §6.2. The Content-Security-Policy, with its per-request nonce, comes from src/proxy.ts.
+  headers: () => Promise.resolve([{ source: "/:path*", headers: [...STATIC_SECURITY_HEADERS] }]),
   // react-pdf loads fonts and its layout engine at runtime; keep it out of the bundle (ADR 0008).
   serverExternalPackages: ["@react-pdf/renderer"],
   // The PDF fonts are read from disk, so Vercel must copy them into the routes that render PDFs.

@@ -1,7 +1,7 @@
 "use server";
 
 import { type ActionResult } from "@/lib/action-result";
-import { runAction } from "@/server/action";
+import { runMutation } from "@/server/action";
 import { requireUser } from "@/server/auth/session";
 import { createBusiness } from "@/server/services/business.service";
 
@@ -9,7 +9,7 @@ import { createBusiness } from "@/server/services/business.service";
 export async function createBusinessAction(
   values: unknown,
 ): Promise<ActionResult<{ slug: string }>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const user = await requireUser();
     const { slug } = await createBusiness(user.id, values);
     return { slug };

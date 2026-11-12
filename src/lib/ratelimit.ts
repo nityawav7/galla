@@ -15,11 +15,13 @@ export interface Limiter {
   limit: (key: string) => Promise<LimitResult>;
 }
 
-/** SPEC §6.2 limits. More (mutations, demo) arrive with their routes. */
+/** SPEC §6.2 limits. The demo's stricter ones arrive with demo mode (Phase 12). */
 export const LIMITS = {
   auth: { requests: 5, windowSeconds: 60 },
   /** The public invoice page and its PDF together (/i/{token}). */
   publicInvoice: { requests: 60, windowSeconds: 60 },
+  /** Every server action that changes data, per user (SPEC §6.2; Phase 11a). */
+  mutation: { requests: 120, windowSeconds: 60 },
   /** "Email invoice", per business (decision 4 of the Phase 10 plan). */
   invoiceEmail: { requests: 30, windowSeconds: 60 * 60 },
 } as const;

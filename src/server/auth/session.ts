@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { notFound, redirect } from "next/navigation";
 import { cache } from "react";
 
+import { setRequestBusiness } from "@/lib/request-context";
 import { type ResolvedTenant, resolveTenant } from "@/server/services/tenant.service";
 
 import { getAuth } from "./auth";
@@ -40,6 +41,7 @@ export const requireTenant = cache(
     const user = await requireUser();
     const tenant = await resolveTenant(user.id, slug);
     if (!tenant) notFound();
+    setRequestBusiness(tenant.ctx.businessId);
     return { ...tenant, user };
   },
 );

@@ -54,3 +54,22 @@ describe("logger", () => {
     expect(lines).toHaveLength(0);
   });
 });
+
+describe("request context", () => {
+  it("adds the request id and business to every line inside a request, and nothing outside", async () => {
+    const { withRequestContext, setRequestBusiness } = await import("@/lib/request-context");
+    const { logger, lines } = captureLogger();
+    logger.info("outside");
+    await withRequestContext({ requestId: "req-1" }, async () => {
+      logger.info("before");
+      await Promise.resolve();
+      setRequestBusiness("biz-1");
+      logger.info("after");
+    });
+    setRequestBusiness("ignored");
+    expect(lines[0]).not.toHaveProperty("requestId");
+    expect(lines[1]).toMatchObject({ requestId: "req-1" });
+    expect(lines[1]).not.toHaveProperty("businessId");
+    expect(lines[2]).toMatchObject({ requestId: "req-1", businessId: "biz-1" });
+  });
+});

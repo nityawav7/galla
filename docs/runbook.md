@@ -68,3 +68,11 @@ Vercel Cron calls `GET /api/cron/daily` at 03:30 UTC (09:00 IST) with `Authoriza
 - **`emailSetUp: false`:** `RESEND_API_KEY` isn't set, so the job sent and recorded nothing.
 - **`failed` above 0:** look for `reminder email failed` or `owner digest failed` (business and customer ids only). Their reminders are retried on the next run, up to 2 days late.
 - **`stoppedEarly: true` often:** the 45-second budget ran out; the rest waited for the next day. Time to move the job to a queue (ADR 0014).
+
+## Finding a request in the logs
+
+Every page response has an `X-Request-Id` header: Vercel's own request id (`x-vercel-id`) when there is one. Every log line written while serving that request has the same `requestId` (and `businessId` once known). To follow up a user's report: get the time and page, find the request in Vercel → **Logs**, and search for its `requestId`. Logs never hold names, phones, emails or GSTINs (CLAUDE.md rule 9).
+
+## A page stops working after a deploy, with nothing in the logs
+
+Check the browser console for "violates the following Content Security Policy directive" ([ADR 0015](adr/0015-csp-with-nonces.md)). A new third-party script or service must be added to the policy in `src/server/http/security-headers.ts`; a page that is prerendered again (for example after turning `cacheComponents` back on) loses the nonce on all its scripts.

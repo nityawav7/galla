@@ -5,6 +5,7 @@ import { NotFoundError, toHttpStatus, ValidationError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
 import { getSessionUser } from "@/server/auth/session";
 import { type TenantContext } from "@/server/authz/context";
+import { withRouteContext } from "@/server/http/route-context";
 import { type DownloadFile } from "@/server/reports/files";
 import { resolveTenant } from "@/server/services/tenant.service";
 
@@ -21,7 +22,18 @@ function plain(status: number): Response {
  * membership of /b/{slug} → Zod-parsed query → the service. Not a member, a bad query, a role
  * without `reports:export` and unknown data all look like 404. Always saved as a file.
  */
-export async function tenantDownloadResponse<Q>(
+export function tenantDownloadResponse<Q>(
+  request: NextRequest,
+  slug: string,
+  schema: z.ZodType<Q>,
+  render: (ctx: TenantContext, query: Q) => Promise<DownloadFile>,
+): Promise<Response> {
+  return withRouteContext(request, () =>
+    tenantDownloadResponseUnwrapped<Q>(request, slug, schema, render),
+  );
+}
+
+async function tenantDownloadResponseUnwrapped<Q>(
   request: NextRequest,
   slug: string,
   schema: z.ZodType<Q>,

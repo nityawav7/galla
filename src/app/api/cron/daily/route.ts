@@ -1,5 +1,6 @@
 import { env } from "@/lib/env";
 import { checkCronAuth } from "@/server/http/cron-auth";
+import { withRouteContext } from "@/server/http/route-context";
 import { runDailyJob } from "@/server/jobs/daily";
 
 // The job stops starting businesses at 45 s (DAILY_JOB_BUDGET_MS); Hobby allows 60.
@@ -17,6 +18,6 @@ export async function GET(request: Request): Promise<Response> {
   if (auth === "unauthorized") {
     return Response.json({ code: "UNAUTHORIZED" }, { status: 401, headers: NO_STORE });
   }
-  const summary = await runDailyJob(new Date());
+  const summary = await withRouteContext(request, () => runDailyJob(new Date()));
   return Response.json(summary, { headers: NO_STORE });
 }

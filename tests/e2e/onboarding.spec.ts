@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { expect, type Page, test } from "@playwright/test";
 
-import { expectPdf, field, onlyOn, signUp } from "./support";
+import { expectPdf, field, onlyOn, signUp, watchCsp } from "./support";
 
 // Creates accounts and businesses, so never against production.
 test.skip(process.env.E2E_ENVIRONMENT === "production", "creates accounts");
@@ -48,6 +48,7 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
   // rate-limited), so this test runs longer than the 30 s default.
   test.setTimeout(150_000);
   const shopName = `E2E Shop ${randomUUID().slice(0, 6)}`;
+  const cspViolations = watchCsp(page);
   await signUp(page, "E2E Owner");
   await onboard(page, shopName);
   await expect(page.getByText(`Welcome to ${shopName}`)).toBeVisible();
@@ -573,6 +574,9 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
       `attachment; filename="gstr1-helper-${thisMonth ?? ""}.xlsx"`,
     );
   });
+
+  // SPEC §6.2: every page of the journey ran under the strict CSP without a blocked script.
+  expect(cspViolations).toEqual([]);
 });
 
 test("a user with no membership gets 404 for another business (SPEC F1)", async ({
