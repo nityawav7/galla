@@ -55,3 +55,35 @@ export function decodeDateCursor(text: string | undefined): DateCursor | undefin
     return undefined;
   }
 }
+
+/**
+ * Keyset cursor for the audit log, newest first. `at` is Postgres's own text of the timestamp
+ * (microseconds kept): a JavaScript Date would round to milliseconds and skip or repeat rows.
+ */
+export interface InstantCursor {
+  at: string;
+  id: string;
+}
+
+const PG_TIMESTAMPTZ = /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(\.\d{1,6})?[+-]\d{2}(:\d{2})?$/;
+
+const instantCursorSchema = z.object({
+  at: z.string().regex(PG_TIMESTAMPTZ),
+  id: z.uuid(),
+});
+
+export function encodeInstantCursor(cursor: InstantCursor): string {
+  return Buffer.from(JSON.stringify({ at: cursor.at, id: cursor.id })).toString("base64url");
+}
+
+export function decodeInstantCursor(text: string | undefined): InstantCursor | undefined {
+  if (!text) return undefined;
+  try {
+    const result = instantCursorSchema.safeParse(
+      JSON.parse(Buffer.from(text, "base64url").toString()),
+    );
+    return result.success ? result.data : undefined;
+  } catch {
+    return undefined;
+  }
+}

@@ -50,6 +50,13 @@ export function istDateFromInstant(instant: Date): string {
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
+/** The instant a business date starts in India (midnight IST), e.g. for "from" filters. */
+export function istStartOfDay(date: string): Date {
+  const parts = parseIsoDateParts(date);
+  if (!parts) throw new RangeError("Invalid date");
+  return new Date(Date.UTC(parts.year, parts.month - 1, parts.day) - IST_OFFSET_MS);
+}
+
 /** Display format for business dates (SPEC §6.5): "2026-11-06" → "06-11-2026". */
 export function formatIndianDate(date: string): string {
   const parts = parseIsoDateParts(date);

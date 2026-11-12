@@ -321,6 +321,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 ### F11. Audit log
 - Append-only table: actor, business, entity type and id, action, before and after JSON diff, IP hash, timestamp.
 - Written in the **same transaction** as the change. Viewable by owner and accountant with filters.
+- **Activity page** (`/b/{slug}/audit`, "Activity" in the menu for owners and accountants): newest first, 50 a page (keyset on `at`, `id`, no OFFSET). Filters in a plain GET form: from and to dates (India time), what changed (invoices and credit notes, payments and refunds, customers, products, settings, members) and who (current members). Each row says when (IST), who (the member's name, "Daily job" or "System"), what in words with the invoice or credit note number, customer, product or member name ("Issued invoice SH/26-27/0004", "Recorded a payment from Mehta Traders") linking to it, and the recorded values and edits as before → after, money in ₹, in English or Hindi. Only fields on a fixed list are shown: ids, IP hashes and anything not yet on the list never are.
 
 ### F12. Demo mode (for recruiters)
 - "Try the live demo" on the landing page logs in to a shared **demo business** as the Owner or Staff role, with no signup.

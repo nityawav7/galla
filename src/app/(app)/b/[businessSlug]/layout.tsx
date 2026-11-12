@@ -93,6 +93,14 @@ async function TenantShell({
           >
             {t("shell.members")}
           </Link>
+          {can(membership, "audit:view") ? (
+            <Link
+              href={`${base}/audit`}
+              className="text-sm font-medium underline-offset-4 hover:underline"
+            >
+              {t("shell.activity")}
+            </Link>
+          ) : null}
         </nav>
       </header>
       <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6">
