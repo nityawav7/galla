@@ -20,6 +20,8 @@ export const LIMITS = {
   auth: { requests: 5, windowSeconds: 60 },
   /** The public invoice page and its PDF together (/i/{token}). */
   publicInvoice: { requests: 60, windowSeconds: 60 },
+  /** "Email invoice", per business (decision 4 of the Phase 10 plan). */
+  invoiceEmail: { requests: 30, windowSeconds: 60 * 60 },
 } as const;
 
 export type LimitName = keyof typeof LIMITS;

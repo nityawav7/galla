@@ -14,6 +14,7 @@ import {
 import { CheckboxField } from "@/components/forms/checkbox-field";
 import { SelectField } from "@/components/forms/select-field";
 import { TextField } from "@/components/forms/text-field";
+import { EmailInvoice } from "@/components/invoice/email-invoice";
 import { PdfActions } from "@/components/invoice/pdf-actions";
 import { CopyLink } from "@/components/invoice/public-link-panel";
 import { WhatsAppShare } from "@/components/invoice/whatsapp-share";
@@ -561,6 +562,9 @@ export function InvoiceBuilder({ businessSlug, options, today, initial }: Invoic
           {issued ? <PdfActions href={`/b/${businessSlug}/invoices/${issued.id}/pdf`} /> : null}
           {issued?.publicUrl && issued.share ? (
             <WhatsAppShare share={issued.share} url={issued.publicUrl} />
+          ) : null}
+          {issued?.publicUrl && issued.canEmail ? (
+            <EmailInvoice businessSlug={businessSlug} invoiceId={issued.id} />
           ) : null}
           {issued?.publicUrl ? <CopyLink url={issued.publicUrl} /> : null}
         </DialogContent>

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { type ShareInfo } from "@/server/services/share.service";
 
+import { EmailInvoice } from "./email-invoice";
 import { WhatsAppShare } from "./whatsapp-share";
 
 /*
@@ -68,6 +69,7 @@ export function PublicLinkPanel({
   url: initialUrl,
   canManage,
   share,
+  canEmail,
 }: {
   businessSlug: string;
   invoiceId: string;
@@ -75,6 +77,8 @@ export function PublicLinkPanel({
   canManage: boolean;
   /** WhatsApp sharing (SPEC F6), offered while the link is on. */
   share: ShareInfo | null;
+  /** "Email invoice" (SPEC F9), also only while the link is on. */
+  canEmail: boolean;
 }) {
   const t = useTranslations("invoices.link");
   const errors = useTranslations("errors");
@@ -112,6 +116,7 @@ export function PublicLinkPanel({
         <>
           <p className="text-sm text-muted-foreground">{t("hint")}</p>
           {share ? <WhatsAppShare share={share} url={url} /> : null}
+          {canEmail ? <EmailInvoice businessSlug={businessSlug} invoiceId={invoiceId} /> : null}
           <CopyLink url={url} />
         </>
       ) : (

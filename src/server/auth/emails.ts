@@ -3,6 +3,7 @@ import { createTranslator } from "next-intl";
 import { APP_NAME } from "@/lib/config";
 import messages from "@/messages/en.json";
 import { type Role } from "@/server/authz/context";
+import { escapeHtml } from "@/server/emails/html";
 import { type Email } from "@/server/notifications/email";
 
 export type OtpPurpose = "sign-in" | "email-verification" | "forget-password" | "change-email";
@@ -33,11 +34,6 @@ export function otpEmail(to: string, otp: string, purpose: OtpPurpose): Email {
 const tInvite = createTranslator({ locale: "en", messages, namespace: "emails.invite" });
 const tRoles = createTranslator({ locale: "en", messages, namespace: "roles" });
 
-/** Shop and inviter names are typed by users, so they are escaped before going into HTML. */
-export function escapeHtml(text: string): string {
-  return text.replace(/[&<>"']/g, (char) => `&#${String(char.charCodeAt(0))};`);
-}
-
 export interface InviteEmailInput {
   inviterName: string;
   businessName: string;
@@ -45,6 +41,7 @@ export interface InviteEmailInput {
   link: string;
 }
 
+/** Shop and inviter names are typed by users, so they are escaped before going into HTML. */
 export function inviteEmail(to: string, input: InviteEmailInput): Email {
   const values = {
     app: APP_NAME,

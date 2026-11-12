@@ -16,6 +16,7 @@ import { now } from "@/server/clock";
 import { formatIndianDate, istDateFromInstant } from "@/server/domain/fy";
 import { balancePaise, displayStatus } from "@/server/domain/invoice/status";
 import { formatINR } from "@/server/domain/money";
+import { canEmailInvoice } from "@/server/services/invoice-email.service";
 import { getInvoice } from "@/server/services/invoice.service";
 import { getPublicLink } from "@/server/services/public-link.service";
 import { getShareInfo } from "@/server/services/share.service";
@@ -127,6 +128,7 @@ async function InvoiceDetail({
           url={(await getPublicLink(ctx, invoice.id)).url}
           canManage={can(ctx, "invoice:manageLink")}
           share={await getShareInfo(ctx, invoice.id)}
+          canEmail={await canEmailInvoice(ctx, invoice.id)}
         />
       ) : null}
       <InvoiceView invoice={invoice} lines={lines} status={status} />

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Phase 10a:** "Email invoice" on the issued sheet and the invoice page, for owners and staff, when the customer has an email and the invoice link is on. The email (English or Hindi, the business's language) has the amount due, the due date, a button to the invoice's public page and the shop's details; replies go to the shop's email. Up to 30 an hour per business, each send audited without the address. Demo businesses never send email, enforced inside `sendEmail`.
+
 - **Phase 9c:** the GSTR-1 helper. On the Reports page, a regular GST business downloads an Excel workbook for a month or quarter in the GST offline tool's layout: b2b, b2cl, b2cs, cdnr, cdnur, exemp, hsn(b2b), hsn(b2c) and docs, after a "Read me" sheet that says it is a helper for the CA, not a filed return, with a check-before-filing list. ADR 0013; open CA questions 10–14.
 
 - **Phase 9b:** the Reports page for owners and accountants: this month, last month, this or last quarter, this FY or custom dates. The sales register (every invoice and credit note, cancelled ones at zero) downloads as CSV or Excel, and the HSN summary shows on screen and downloads as CSV. Excel files use `write-excel-file` instead of `exceljs` (ADR 0012).

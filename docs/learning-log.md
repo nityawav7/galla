@@ -170,3 +170,9 @@ What I learned and what broke while building Galla, phase by phase.
 - One property ("every rupee of taxable value lands in exactly one table") checks the whole classification at once, including credit notes that cross tables; it found nothing, but it is the test that would catch a double count.
 - Zip archives store file names uncompressed, so a test can see that an .xlsx has ten sheets (`xl/worksheets/sheet10.xml`) without unzipping it.
 - Docker Desktop doesn't start by itself after the laptop restarts overnight; the integration tests then fail at startup with an unhelpful stack-trace error rather than "connection refused".
+
+## Phase 10a: email an invoice
+
+- The plan was to write email templates as React components and render them with `react-dom/server`. Next.js builds server actions and route handlers against React's server-components build, where `react-dom/server` is a file that only throws "not supported in React Server Components". Vitest runs in plain Node, so the unit tests would have passed and the first click in production would have failed. Emails are built with a 30-line `html` tagged template instead: every value is escaped unless it is already `SafeHtml`, which is the same safety React gives, with no dependency.
+- Better Auth sends invite emails as a background task and still returns the invite, so throwing from the email callback only logs an error; a demo business's invite skips the email instead, and the link is still there to copy.
+- A per-business rate limit needs no new code: the existing Upstash limiter takes any key, so the business id is the key and the window is an hour.

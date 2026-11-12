@@ -131,7 +131,8 @@ describe("invoice PDF", () => {
     }
   });
 
-  it("continues a long invoice on more pages, numbered", async () => {
+  // 60 lines over several pages: slow under coverage with every test file running at once.
+  it("continues a long invoice on more pages, numbered", { timeout: 20_000 }, async () => {
     const lines = Array.from({ length: 60 }, (_, index) => ({
       ...INTRA_STATE.lines[0],
       description: `Item ${String(index + 1)}`,
