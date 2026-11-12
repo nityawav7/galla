@@ -235,7 +235,8 @@
     "customers": "ग्राहक",
     "invoices": "बिल",
     "payments": "भुगतान",
-    "reports": "रिपोर्ट"
+    "reports": "रिपोर्ट",
+    "activity": "गतिविधि"
   },
   "dashboard": {
     "title": "डैशबोर्ड",
@@ -1275,5 +1276,209 @@
         "quarterPeriod": "वित्त वर्ष {fy} की {quarter} ({from} से {to})"
       }
     }
+  },
+  "audit": {
+    "title": "गतिविधि",
+    "intro": "बिल, भुगतान, ग्राहक, सामान, सेटिंग और सदस्यों में हर बदलाव, सबसे नया पहले।",
+    "notAllowed": "गतिविधि केवल मालिक और अकाउंटेंट देख सकते हैं।",
+    "filters": {
+      "from": "से",
+      "to": "तक",
+      "category": "क्या बदला",
+      "allCategories": "सब कुछ",
+      "actor": "किसने",
+      "allActors": "कोई भी",
+      "apply": "दिखाएँ",
+      "clear": "फ़िल्टर हटाएँ"
+    },
+    "categories": {
+      "invoices": "बिल और क्रेडिट नोट",
+      "payments": "भुगतान और रिफ़ंड",
+      "customers": "ग्राहक",
+      "products": "सामान",
+      "settings": "सेटिंग",
+      "members": "सदस्य"
+    },
+    "empty": "अभी तक कुछ नहीं बदला।",
+    "emptyFiltered": "इन फ़िल्टर से कुछ नहीं मिला।",
+    "list": "गतिविधि",
+    "pages": "पेज",
+    "firstPage": "सबसे नए",
+    "nextPage": "पुराने",
+    "actor": {
+      "job": "रोज़ का काम",
+      "system": "सिस्टम",
+      "unknown": "हटाया गया यूज़र"
+    },
+    "fallback": {
+      "invoices": "एक ड्राफ़्ट",
+      "payments": "काउंटर ग्राहक",
+      "customers": "एक ग्राहक",
+      "products": "एक सामान",
+      "settings": "व्यवसाय",
+      "members": "पुराना सदस्य"
+    },
+    "actions": {
+      "invoice": {
+        "draftCreated": "ड्राफ़्ट बिल शुरू किया",
+        "draftDeleted": "ड्राफ़्ट बिल हटाया",
+        "issued": "बिल {subject} जारी किया",
+        "cancelled": "बिल {subject} रद्द किया",
+        "emailed": "बिल {subject} ईमेल किया",
+        "linkRevoked": "बिल {subject} का लिंक बंद किया",
+        "linkRegenerated": "बिल {subject} का नया लिंक बनाया"
+      },
+      "creditNote": {
+        "issued": "क्रेडिट नोट {subject} जारी किया"
+      },
+      "payment": {
+        "recorded": "{subject} से भुगतान दर्ज किया",
+        "voided": "{subject} का भुगतान रद्द किया",
+        "applied": "{subject} की जमा राशि लगाई"
+      },
+      "refund": {
+        "recorded": "{subject} को रिफ़ंड दिया",
+        "voided": "{subject} का रिफ़ंड रद्द किया"
+      },
+      "customer": {
+        "created": "ग्राहक {subject} जोड़ा",
+        "updated": "ग्राहक {subject} बदला",
+        "archived": "ग्राहक {subject} आर्काइव किया",
+        "restored": "ग्राहक {subject} वापस लाया",
+        "reminderShared": "{subject} को WhatsApp रिमाइंडर भेजा"
+      },
+      "product": {
+        "created": "सामान {subject} जोड़ा",
+        "updated": "सामान {subject} बदला",
+        "archived": "सामान {subject} आर्काइव किया",
+        "restored": "सामान {subject} वापस लाया"
+      },
+      "business": {
+        "created": "व्यवसाय बनाया",
+        "updated": "सेटिंग बदली"
+      },
+      "invitation": {
+        "created": "{subject} को बुलाया",
+        "cancelled": "{subject} का न्योता रद्द किया",
+        "declined": "न्योता ठुकराया"
+      },
+      "member": {
+        "joined": "व्यवसाय से जुड़े",
+        "role_changed": "{subject} की भूमिका बदली",
+        "removed": "{subject} को हटाया"
+      },
+      "other": "अन्य बदलाव"
+    },
+    "fields": {
+      "name": "नाम",
+      "phoneE164": "फ़ोन",
+      "email": "ईमेल",
+      "gstin": "GSTIN",
+      "billingAddressLine1": "बिलिंग पता",
+      "billingAddressLine2": "बिलिंग पता पंक्ति 2",
+      "billingCity": "बिलिंग शहर",
+      "billingPincode": "बिलिंग पिन कोड",
+      "billingStateCode": "बिलिंग राज्य",
+      "shippingAddressLine1": "डिलीवरी पता",
+      "shippingAddressLine2": "डिलीवरी पता पंक्ति 2",
+      "shippingCity": "डिलीवरी शहर",
+      "shippingPincode": "डिलीवरी पिन कोड",
+      "shippingStateCode": "डिलीवरी राज्य",
+      "openingBalancePaise": "शुरुआती बकाया",
+      "creditDays": "उधार के दिन",
+      "stateOverride": "अलग राज्य रखा",
+      "source": "कहाँ से जोड़ा",
+      "hsnSac": "HSN/SAC",
+      "unit": "इकाई",
+      "pricePaise": "दाम",
+      "rateBp": "GST दर",
+      "priceIncludesTax": "दाम में GST शामिल",
+      "sku": "SKU",
+      "legalName": "कानूनी नाम",
+      "tradeName": "दुकान का नाम",
+      "addressLine1": "पता",
+      "addressLine2": "पता पंक्ति 2",
+      "city": "शहर",
+      "pincode": "पिन कोड",
+      "stateCode": "राज्य",
+      "gstScheme": "GST योजना",
+      "invoicePrefix": "बिल प्रीफ़िक्स",
+      "creditNotePrefix": "क्रेडिट नोट प्रीफ़िक्स",
+      "upiVpa": "UPI ID",
+      "hsnDigitsRequired": "HSN अंक",
+      "whatsappTemplateEn": "WhatsApp संदेश (अंग्रेज़ी)",
+      "whatsappTemplateHi": "WhatsApp संदेश (हिंदी)",
+      "emailReminders": "ईमेल रिमाइंडर",
+      "ownerDigest": "रोज़ का सारांश ईमेल",
+      "number": "नंबर",
+      "type": "प्रकार",
+      "invoiceDate": "बिल की तारीख",
+      "placeOfSupplyStateCode": "आपूर्ति का स्थान",
+      "lineCount": "पंक्तियाँ",
+      "taxablePaise": "कर योग्य मूल्य",
+      "taxPaise": "GST",
+      "roundOffPaise": "राउंड ऑफ़",
+      "grandTotalPaise": "कुल",
+      "status": "स्थिति",
+      "reason": "कारण",
+      "linkOn": "लिंक चालू",
+      "locale": "भाषा",
+      "invoiceNumber": "बिल",
+      "completesInvoice": "पूरा बिल",
+      "releasedPaise": "खाते में डाला",
+      "paymentDate": "भुगतान की तारीख",
+      "refundDate": "रिफ़ंड की तारीख",
+      "amountPaise": "राशि",
+      "mode": "तरीका",
+      "onAccountPaise": "खाते में जमा",
+      "balancePaise": "बकाया",
+      "overduePaise": "समय पार बकाया",
+      "voided": "रद्द",
+      "role": "भूमिका"
+    },
+    "values": {
+      "empty": "(खाली)",
+      "yes": "हाँ",
+      "no": "नहीं",
+      "mode": {
+        "CASH": "नकद",
+        "UPI": "UPI",
+        "BANK_TRANSFER": "बैंक ट्रांसफ़र",
+        "CHEQUE": "चेक",
+        "CARD": "कार्ड",
+        "OTHER": "अन्य"
+      },
+      "role": {
+        "OWNER": "मालिक",
+        "ACCOUNTANT": "अकाउंटेंट",
+        "STAFF": "स्टाफ़"
+      },
+      "status": {
+        "DRAFT": "ड्राफ़्ट",
+        "ISSUED": "जारी",
+        "PARTIALLY_PAID": "आंशिक भुगतान",
+        "PAID": "भुगतान हो गया",
+        "CANCELLED": "रद्द"
+      },
+      "gstScheme": {
+        "REGULAR": "नियमित",
+        "COMPOSITION": "कंपोज़िशन",
+        "UNREGISTERED": "पंजीकृत नहीं"
+      },
+      "type": {
+        "TAX_INVOICE": "टैक्स इनवॉइस",
+        "BILL_OF_SUPPLY": "बिल ऑफ़ सप्लाई",
+        "INVOICE": "बिल"
+      },
+      "locale": {
+        "en": "अंग्रेज़ी",
+        "hi": "हिंदी"
+      },
+      "source": {
+        "csv": "CSV इम्पोर्ट"
+      }
+    },
+    "change": "{field}: {before} → {after}",
+    "detail": "{field}: {value}"
   }
 }

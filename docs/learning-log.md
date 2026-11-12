@@ -192,3 +192,10 @@ What I learned and what broke while building Galla, phase by phase.
 - The browser pane keeps console messages across reloads, so the first check after the fix still showed the old errors; comparing the nonce in the message with the one in the new response told them apart.
 - pino's `mixin` plus `AsyncLocalStorage` puts the request id on every log line without passing a logger around; `requireTenant` adds the business id to the same store once it knows it.
 - Searches and import previews are server actions too, and fire while typing (every 250 ms), so the mutation limit wraps only actions that change data (`runMutation`).
+
+## Phase 11b: the activity page
+
+- A keyset cursor on a `timestamptz` must keep Postgres's microseconds. A JavaScript `Date` rounds to milliseconds, so a cursor built from it skips rows that fall inside the same millisecond (or repeats them). The repo selects `at::text` for the cursor and compares `(at, id) < ($1::timestamptz, $2::uuid)`; the test moves rows by 1–2 µs to prove nothing is skipped.
+- next-intl reads dots in message keys as nesting, so action names like `invoice.issued` became `audit.actions.invoice.issued` rather than a flat key with a dot in it.
+- Showing audit rows safely meant an allow-list: only fields named in `src/server/domain/audit/describe.ts` are shown, each with a format (money, rate, state, enum). A new field in some future audit diff stays hidden until someone gives it a label, instead of leaking an id or hash.
+- EXPLAIN on 40,000 rows for one business: Postgres turns `(at, id) < (…)` into an index condition `at <= …` on the existing `(business_id, at)` index, so a page 30,000 rows deep took 0.15 ms. No new index.

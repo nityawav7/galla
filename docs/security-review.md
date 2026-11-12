@@ -37,6 +37,8 @@ Phase 11a (SPEC §6.2), 2026-11-12. Every way into the server, what protects it,
 
 "id" means the service runs `requireId` (a malformed id is 404, never a database error) and reads through a tenant-scoped repo.
 
+The Activity page (`/b/{slug}/audit`) is a page, not an action: `listAuditEntries` and `getAuditFilterOptions` check `audit:view` (owner, accountant), parse the URL with `auditQuerySchema` (bad values mean no filter) and read through tenant-scoped repos; user names are looked up only for ids read from that business's own audit rows and members.
+
 ## Route handlers
 
 | Route                                                   | Who                                                         | Input checks                                                   | Limit                                                     |

@@ -10,6 +10,7 @@ import {
   fyForInstant,
   fyRange,
   istDateFromInstant,
+  istStartOfDay,
   isValidIsoDate,
   parseFy,
 } from "@/server/domain/fy";
@@ -158,5 +159,16 @@ describe("formatIndianDate", () => {
   it("shows DD-MM-YYYY and leaves anything else as it is", () => {
     expect(formatIndianDate("2026-04-01")).toBe("01-04-2026");
     expect(formatIndianDate("nope")).toBe("nope");
+  });
+});
+
+describe("istStartOfDay", () => {
+  it("is midnight in India, 18:30 UTC the day before", () => {
+    expect(istStartOfDay("2026-11-12").toISOString()).toBe("2026-11-11T18:30:00.000Z");
+    expect(istDateFromInstant(istStartOfDay("2027-03-01"))).toBe("2027-03-01");
+  });
+
+  it("refuses a date that doesn't exist", () => {
+    expect(() => istStartOfDay("2026-02-30")).toThrow(RangeError);
   });
 });

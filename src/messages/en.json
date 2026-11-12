@@ -235,7 +235,8 @@
     "customers": "Customers",
     "invoices": "Invoices",
     "payments": "Payments",
-    "reports": "Reports"
+    "reports": "Reports",
+    "activity": "Activity"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1275,5 +1276,209 @@
         "quarterPeriod": "{quarter} of FY {fy} ({from} to {to})"
       }
     }
+  },
+  "audit": {
+    "title": "Activity",
+    "intro": "Every change to invoices, payments, customers, products, settings and members, newest first.",
+    "notAllowed": "Only owners and accountants can see the activity log.",
+    "filters": {
+      "from": "From",
+      "to": "To",
+      "category": "What changed",
+      "allCategories": "Everything",
+      "actor": "Who",
+      "allActors": "Anyone",
+      "apply": "Show",
+      "clear": "Clear filters"
+    },
+    "categories": {
+      "invoices": "Invoices and credit notes",
+      "payments": "Payments and refunds",
+      "customers": "Customers",
+      "products": "Products",
+      "settings": "Settings",
+      "members": "Members"
+    },
+    "empty": "Nothing has changed yet.",
+    "emptyFiltered": "Nothing matches these filters.",
+    "list": "Activity",
+    "pages": "Pages",
+    "firstPage": "Newest",
+    "nextPage": "Older",
+    "actor": {
+      "job": "Daily job",
+      "system": "System",
+      "unknown": "A deleted user"
+    },
+    "fallback": {
+      "invoices": "a draft",
+      "payments": "a walk-in customer",
+      "customers": "a customer",
+      "products": "a product",
+      "settings": "the business",
+      "members": "a former member"
+    },
+    "actions": {
+      "invoice": {
+        "draftCreated": "Started a draft invoice",
+        "draftDeleted": "Deleted a draft invoice",
+        "issued": "Issued invoice {subject}",
+        "cancelled": "Cancelled invoice {subject}",
+        "emailed": "Emailed invoice {subject}",
+        "linkRevoked": "Turned off the link of invoice {subject}",
+        "linkRegenerated": "Made a new link for invoice {subject}"
+      },
+      "creditNote": {
+        "issued": "Issued credit note {subject}"
+      },
+      "payment": {
+        "recorded": "Recorded a payment from {subject}",
+        "voided": "Voided a payment from {subject}",
+        "applied": "Applied money on account for {subject}"
+      },
+      "refund": {
+        "recorded": "Refunded {subject}",
+        "voided": "Voided a refund to {subject}"
+      },
+      "customer": {
+        "created": "Added customer {subject}",
+        "updated": "Edited customer {subject}",
+        "archived": "Archived customer {subject}",
+        "restored": "Restored customer {subject}",
+        "reminderShared": "Sent a WhatsApp reminder to {subject}"
+      },
+      "product": {
+        "created": "Added product {subject}",
+        "updated": "Edited product {subject}",
+        "archived": "Archived product {subject}",
+        "restored": "Restored product {subject}"
+      },
+      "business": {
+        "created": "Created the business",
+        "updated": "Changed the settings"
+      },
+      "invitation": {
+        "created": "Invited {subject}",
+        "cancelled": "Cancelled the invitation for {subject}",
+        "declined": "Declined an invitation"
+      },
+      "member": {
+        "joined": "Joined the business",
+        "role_changed": "Changed the role of {subject}",
+        "removed": "Removed {subject}"
+      },
+      "other": "Other change"
+    },
+    "fields": {
+      "name": "Name",
+      "phoneE164": "Phone",
+      "email": "Email",
+      "gstin": "GSTIN",
+      "billingAddressLine1": "Billing address",
+      "billingAddressLine2": "Billing address line 2",
+      "billingCity": "Billing city",
+      "billingPincode": "Billing PIN code",
+      "billingStateCode": "Billing state",
+      "shippingAddressLine1": "Shipping address",
+      "shippingAddressLine2": "Shipping address line 2",
+      "shippingCity": "Shipping city",
+      "shippingPincode": "Shipping PIN code",
+      "shippingStateCode": "Shipping state",
+      "openingBalancePaise": "Opening balance",
+      "creditDays": "Credit days",
+      "stateOverride": "Kept a different state",
+      "source": "Added from",
+      "hsnSac": "HSN/SAC",
+      "unit": "Unit",
+      "pricePaise": "Price",
+      "rateBp": "GST rate",
+      "priceIncludesTax": "Price includes GST",
+      "sku": "SKU",
+      "legalName": "Legal name",
+      "tradeName": "Shop name",
+      "addressLine1": "Address",
+      "addressLine2": "Address line 2",
+      "city": "City",
+      "pincode": "PIN code",
+      "stateCode": "State",
+      "gstScheme": "GST scheme",
+      "invoicePrefix": "Invoice prefix",
+      "creditNotePrefix": "Credit note prefix",
+      "upiVpa": "UPI ID",
+      "hsnDigitsRequired": "HSN digits",
+      "whatsappTemplateEn": "WhatsApp message (English)",
+      "whatsappTemplateHi": "WhatsApp message (Hindi)",
+      "emailReminders": "Email reminders",
+      "ownerDigest": "Daily summary email",
+      "number": "Number",
+      "type": "Type",
+      "invoiceDate": "Invoice date",
+      "placeOfSupplyStateCode": "Place of supply",
+      "lineCount": "Lines",
+      "taxablePaise": "Taxable value",
+      "taxPaise": "GST",
+      "roundOffPaise": "Round off",
+      "grandTotalPaise": "Total",
+      "status": "Status",
+      "reason": "Reason",
+      "linkOn": "Link on",
+      "locale": "Language",
+      "invoiceNumber": "Invoice",
+      "completesInvoice": "Whole invoice",
+      "releasedPaise": "Moved to account",
+      "paymentDate": "Payment date",
+      "refundDate": "Refund date",
+      "amountPaise": "Amount",
+      "mode": "Mode",
+      "onAccountPaise": "On account",
+      "balancePaise": "Balance",
+      "overduePaise": "Overdue",
+      "voided": "Voided",
+      "role": "Role"
+    },
+    "values": {
+      "empty": "(blank)",
+      "yes": "Yes",
+      "no": "No",
+      "mode": {
+        "CASH": "Cash",
+        "UPI": "UPI",
+        "BANK_TRANSFER": "Bank transfer",
+        "CHEQUE": "Cheque",
+        "CARD": "Card",
+        "OTHER": "Other"
+      },
+      "role": {
+        "OWNER": "Owner",
+        "ACCOUNTANT": "Accountant",
+        "STAFF": "Staff"
+      },
+      "status": {
+        "DRAFT": "Draft",
+        "ISSUED": "Issued",
+        "PARTIALLY_PAID": "Partly paid",
+        "PAID": "Paid",
+        "CANCELLED": "Cancelled"
+      },
+      "gstScheme": {
+        "REGULAR": "Regular",
+        "COMPOSITION": "Composition",
+        "UNREGISTERED": "Not registered"
+      },
+      "type": {
+        "TAX_INVOICE": "Tax invoice",
+        "BILL_OF_SUPPLY": "Bill of supply",
+        "INVOICE": "Invoice"
+      },
+      "locale": {
+        "en": "English",
+        "hi": "Hindi"
+      },
+      "source": {
+        "csv": "CSV import"
+      }
+    },
+    "change": "{field}: {before} → {after}",
+    "detail": "{field}: {value}"
   }
 }

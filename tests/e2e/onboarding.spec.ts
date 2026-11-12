@@ -575,6 +575,29 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     );
   });
 
+  // SPEC F11: the owner sees the invoice they issued in the activity log, and can filter it.
+  await test.step("activity: who did what, newest first", async () => {
+    await page.getByRole("link", { name: "Activity", exact: true }).click();
+    await expect(page).toHaveURL(/\/audit$/);
+    const entries = page.getByTestId("audit-entry");
+    const issuedEntry = entries.filter({ hasText: /^Issued invoice SH\/\d{2}-\d{2}\/0001/ });
+    await expect(issuedEntry).toHaveCount(1);
+    await expect(issuedEntry).toContainText("E2E Owner");
+    await expect(issuedEntry).toContainText("Total: ₹");
+    await expect(
+      entries.filter({ hasText: "Recorded a payment from Ramesh Traders" }),
+    ).not.toHaveCount(0);
+
+    await page.getByLabel("What changed").selectOption({ label: "Invoices and credit notes" });
+    await page.getByRole("button", { name: "Show" }).click();
+    await expect(page).toHaveURL(/category=invoices/);
+    await expect(entries.filter({ hasText: "Recorded a payment" })).toHaveCount(0);
+    await expect(entries.filter({ hasText: /^Issued credit note / })).toHaveCount(2);
+
+    await issuedEntry.getByRole("link").click();
+    await expect(page).toHaveURL(/\/invoices\/[0-9a-f-]{36}$/);
+  });
+
   // SPEC §6.2: every page of the journey ran under the strict CSP without a blocked script.
   expect(cspViolations).toEqual([]);
 });

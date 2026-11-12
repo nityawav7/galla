@@ -2,7 +2,12 @@ import { afterAll, describe, expect, it } from "vitest";
 
 import { NotFoundError } from "@/lib/errors";
 import { getDb, closeDb } from "@/server/db/client";
-import { insertAuditLog, listAuditLogs } from "@/server/db/repos/audit.repo";
+import {
+  findAuditSubjects,
+  insertAuditLog,
+  listAuditLogs,
+  listAuditPage,
+} from "@/server/db/repos/audit.repo";
 import { getCurrentBusiness } from "@/server/db/repos/businesses.repo";
 import {
   archiveCustomer,
@@ -196,6 +201,28 @@ describe("businesses and audit repos", () => {
         }),
       act: (intruder, entry) =>
         listAuditLogs(db(), intruder.ctx, { entity: entry.entity, entityId: entry.entityId }),
+    }),
+    listAuditPage: isolationCase({
+      arrange: (owner) =>
+        insertAuditLog(db(), owner.ctx, {
+          entity: "product",
+          entityId: owner.business.id,
+          action: "product.created",
+        }),
+      act: (intruder) => listAuditPage(db(), intruder.ctx, { limit: 10 }),
+    }),
+    findAuditSubjects: isolationCase({
+      arrange: (owner) => insertCustomer(db(), owner.ctx, { name: "Hidden Traders" }),
+      act: (intruder, customer) =>
+        findAuditSubjects(db(), intruder.ctx, {
+          invoices: [customer.id],
+          creditNotes: [customer.id],
+          customers: [customer.id],
+          products: [customer.id],
+          payments: [customer.id],
+          refunds: [customer.id],
+          members: [customer.id],
+        }),
     }),
   });
 });
