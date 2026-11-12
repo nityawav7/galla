@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Phase 11c:** axe accessibility checks in the e2e tests on 14 pages at phone and desktop widths (serious or critical issues fail the build). Fixed what they found: text contrast on grey panels and light red fills (darker muted and destructive colours), WhatsApp placeholder buttons named after what they show, and sideways-scrolling tables reachable from the keyboard. Lighthouse scores recorded in `docs/hardening-checklist.md`: accessibility 100 on every page measured; performance 90–99 except the production sign-in page (83, open).
+
 - **Phase 11b:** the Activity page (SPEC F11) for owners and accountants: every audited change in words ("Issued invoice SH/26-27/0004", "Voided a payment from Mehta Traders"), who did it and when (IST), what changed as before → after, links to the invoice, customer or product. Filters by dates, what changed and who; 50 a page. No migration: the existing `(business_id, at)` index serves it.
 
 - **Phase 11a:** security headers on every response (HSTS, `X-Frame-Options: DENY`, `nosniff`, Referrer-Policy, Permissions-Policy) and a strict Content-Security-Policy with a fresh nonce per request; to make that work every page is now rendered per request (`cacheComponents` off, ADR 0015). Every server action that changes data counts against 120 a minute per user. Log lines carry the request id (Vercel's) and the business. `docs/security-review.md` lists every action and route with its permission, input checks and limit.

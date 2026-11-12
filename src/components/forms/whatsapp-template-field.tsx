@@ -98,7 +98,7 @@ export function WhatsAppTemplateField({
             size="sm"
             variant="outline"
             title={t(`placeholders.${placeholder}`)}
-            aria-label={t(`placeholders.${placeholder}`)}
+            aria-label={`{${placeholder}}: ${t(`placeholders.${placeholder}`)}`}
             onClick={() => {
               insert(placeholder);
             }}

@@ -363,6 +363,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 
 ### 6.5 Accessibility & i18n
 - WCAG 2.1 AA: labels on all inputs, focus states, color contrast, full keyboard navigation, `aria-live` on totals.
+- Checked automatically: axe (WCAG 2.x A/AA rules) runs in the e2e tests at 360 px and 1280 px on the public pages, settings, the invoice builder and page, the public invoice, payments, a customer, the dashboard, reports and activity; a serious or critical violation fails the build. Lighthouse scores are recorded by hand in `docs/hardening-checklist.md`.
 - `next-intl` with `en` and `hi`. Money via `Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' })`. Dates are DD-MM-YYYY in IST.
 
 ---
