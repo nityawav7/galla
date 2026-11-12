@@ -208,3 +208,12 @@ What I learned and what broke while building Galla, phase by phase.
 - Playwright `expect.soft` lets one run list every page's issues instead of stopping at the first.
 - Lighthouse's default "simulated" throttling scored the same sign-in page 99 on a local production build and 83 on production; with real DevTools throttling both were about 60. The simulation flatters a server on the same machine, so production is the number that counts. Lighthouse also couldn't launch Playwright's bundled Chromium here (`spawn UNKNOWN`); the installed Chrome worked.
 - Next's `polyfill` chunk (112 KB) is `noModule`, so modern browsers download nothing from it; count only the scripts that run.
+
+## Phase 11d: Sentry and PostHog
+
+- Measure before trusting an SDK's size: Sentry and PostHog imported up front took the sign-in page from 762 KB to 1.54 MB of JavaScript. Lazy loading (Sentry on idle, PostHog on first event) brought it to 775 KB.
+- Two more surprises from counting bytes. `instrumentation-client.ts` made Turbopack ship a second copy of Next's router (about 130 KB). And `global-error.tsx`, which every page loads, had imported both message files (about 120 KB) to show one sentence.
+- A Next.js rewrite to PostHog forwards the browser's cookies, including the session cookie. A small route handler that forwards only the body is safer and keeps the visitor's IP from PostHog too.
+- posthog-js posts to `/e/`. Next's trailing-slash redirect turned that into a 308 to `https://localhost/...`, which the CSP blocked over plain HTTP. `skipTrailingSlashRedirect` plus a redirect in the proxy for pages fixed it.
+- Sentry's SDK keeps its own reference to `fetch`, so patching `fetch` in the console shows nothing. The client's `beforeEnvelope` hook shows exactly what would be sent.
+- pnpm's minimum release age refused a posthog-js published the same day; letting pnpm pick the newest allowed version beats adding an exception.

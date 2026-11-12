@@ -56,6 +56,15 @@ See [`security-review.md`](security-review.md) and [ADR 0015](adr/0015-csp-with-
 
 The Activity page (SPEC F11): owners and accountants, filters, keyset paging; no new index needed (EXPLAIN on 40,000 rows: 0.15 ms for a page 30,000 rows deep).
 
+## Observability (11d)
+
+Sentry and PostHog, off until their keys are set ([ADR 0016](adr/0016-observability-without-pii.md)). Verified on a local production build with placeholder keys, so nothing left the machine:
+
+- **What Sentry would send:** an error thrown from `/login?next=/b/sharma-hardware` was sent to `/api/monitoring` (Sentry's `beforeEnvelope` hook shows the envelope). Its message `…/b/sharma-hardware/customers?q=Ravi` arrived as `…/b/:slug/customers`; its URL had no query string, and it carried no user, no headers, `infer_ip: never` and the commit as its release.
+- **What PostHog would send:** "Email invoice" sent one event to `/api/relay/e/` with only `event`, `$lib`, `$lib_version`, a random `distinct_id`, the project key and `$process_person_profile: false`.
+- **Cost:** sign-in page JavaScript went from 762 KB to 775 KB; Sentry loads when the page is idle and PostHog on its first event.
+- **No CSP violations:** both go to our own origin.
+
 ## Still to come in Phase 11
 
 - 11d: error tracking (Sentry) and product analytics (PostHog), without PII.

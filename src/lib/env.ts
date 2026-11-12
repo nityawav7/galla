@@ -40,10 +40,24 @@ export const env = createEnv({
     VERCEL_URL: z.string().optional(),
     VERCEL_BRANCH_URL: z.string().optional(),
     VERCEL_PROJECT_PRODUCTION_URL: z.string().optional(),
+    // Sentry source map upload at build time (ADR 0016); skipped unless all three are set.
+    SENTRY_AUTH_TOKEN: z.string().optional(),
+    SENTRY_ORG: z.string().optional(),
+    SENTRY_PROJECT: z.string().optional(),
   },
-  client: {},
+  client: {
+    // Sentry error tracking; everything is off without it (ADR 0016).
+    NEXT_PUBLIC_SENTRY_DSN: z.url({ protocol: /^https$/ }).optional(),
+    // PostHog product analytics: the project API key; off without it.
+    NEXT_PUBLIC_POSTHOG_KEY: z.string().optional(),
+    // PostHog's ingestion host for the project's region (US or EU).
+    NEXT_PUBLIC_POSTHOG_HOST: z.url({ protocol: /^https$/ }).default("https://us.i.posthog.com"),
+  },
   experimental__runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
+    NEXT_PUBLIC_POSTHOG_KEY: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+    NEXT_PUBLIC_POSTHOG_HOST: process.env.NEXT_PUBLIC_POSTHOG_HOST,
   },
   // Lint and build jobs in CI have no real secrets.
   skipValidation: Boolean(process.env.SKIP_ENV_VALIDATION),

@@ -41,15 +41,17 @@ The Activity page (`/b/{slug}/audit`) is a page, not an action: `listAuditEntrie
 
 ## Route handlers
 
-| Route                                                   | Who                                                         | Input checks                                                   | Limit                                                     |
-| ------------------------------------------------------- | ----------------------------------------------------------- | -------------------------------------------------------------- | --------------------------------------------------------- |
-| `/api/auth/*`                                           | anyone (Better Auth)                                        | Better Auth; `/organization/*` blocked (404)                   | auth: 5/min/IP on sign-in, sign-up, codes, password reset |
-| `/api/health`                                           | anyone                                                      | none (no input)                                                | none; returns status, version and commit only             |
-| `/api/cron/daily`                                       | Vercel Cron: `Bearer CRON_SECRET`, constant-time; 401 / 503 | none                                                           | none (secret-protected)                                   |
-| `/i/{token}`, `/i/{token}/pdf`                          | anyone with a live link (ADR 0009)                          | token checked in the proxy and again in the service; Zod query | public invoice: 60/min/IP                                 |
-| `/b/{slug}/invoices/{id}/pdf`, `/credit-notes/{id}/pdf` | members (session + membership)                              | Zod `?format=&download=`                                       | none                                                      |
-| `/b/{slug}/customers/{id}/statement`                    | members with `records:view`                                 | Zod `?period=`                                                 | none                                                      |
-| `/b/{slug}/reports/sales-register`, `/hsn`, `/gstr1`    | `reports:export` (owner, accountant)                        | Zod query, unknown keys refused                                | none                                                      |
+| Route                                                   | Who                                                         | Input checks                                                           | Limit                                                        |
+| ------------------------------------------------------- | ----------------------------------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `/api/auth/*`                                           | anyone (Better Auth)                                        | Better Auth; `/organization/*` blocked (404)                           | auth: 5/min/IP on sign-in, sign-up, codes, password reset    |
+| `/api/monitoring`                                       | anyone (the page's Sentry SDK)                              | Sentry's tunnel: only envelopes for our DSN; no headers forwarded      | none (Sentry's own quotas); refuses everything without a DSN |
+| `/api/relay/{e,i/v0/e,batch,capture}`                   | anyone (the page's PostHog SDK)                             | only those paths; body ≤ 256 KB; only content-type/-encoding forwarded | analytics: 120/min/IP; 404 without a PostHog key             |
+| `/api/health`                                           | anyone                                                      | none (no input)                                                        | none; returns status, version and commit only                |
+| `/api/cron/daily`                                       | Vercel Cron: `Bearer CRON_SECRET`, constant-time; 401 / 503 | none                                                                   | none (secret-protected)                                      |
+| `/i/{token}`, `/i/{token}/pdf`                          | anyone with a live link (ADR 0009)                          | token checked in the proxy and again in the service; Zod query         | public invoice: 60/min/IP                                    |
+| `/b/{slug}/invoices/{id}/pdf`, `/credit-notes/{id}/pdf` | members (session + membership)                              | Zod `?format=&download=`                                               | none                                                         |
+| `/b/{slug}/customers/{id}/statement`                    | members with `records:view`                                 | Zod `?period=`                                                         | none                                                         |
+| `/b/{slug}/reports/sales-register`, `/hsn`, `/gstr1`    | `reports:export` (owner, accountant)                        | Zod query, unknown keys refused                                        | none                                                         |
 
 ## Pages
 

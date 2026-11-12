@@ -1,6 +1,7 @@
 allowBuilds:
   "@parcel/watcher": false
   "@swc/core": false
+  core-js: false
   esbuild: true
   sharp: false
   unrs-resolver: false

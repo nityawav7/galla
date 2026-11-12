@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import { connection } from "next/server";
 import { NextIntlClientProvider } from "next-intl";
 
+import { StartObservability } from "@/components/observability/start-observability";
 import { APP_NAME, APP_TAGLINE } from "@/lib/config";
 import { DEFAULT_LOCALE } from "@/lib/i18n/config";
 
@@ -39,6 +40,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col">
         {/* Passes the locale and messages to client components (next-intl). */}
         <NextIntlClientProvider>{children}</NextIntlClientProvider>
+        <StartObservability />
       </body>
     </html>
   );

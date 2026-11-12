@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { type FieldIssue } from "@/lib/errors";
+import { track } from "@/lib/observability/track";
 import {
   type AllocationChoice,
   defaultPaymentValues,
@@ -103,6 +104,7 @@ export function RecordPaymentForm({ businessSlug, options, returnHref }: RecordP
     setFailed(null);
     const result = await recordPaymentAction(businessSlug, toPaymentInput(form, options));
     if (result.ok) {
+      track("payment_recorded", { mode: form.mode });
       setSaved(result.data);
       return;
     }

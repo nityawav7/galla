@@ -59,6 +59,15 @@ async function route(request: NextRequest, headers: Headers): Promise<NextRespon
  * back in the response, then the access rules above.
  */
 export async function proxy(request: NextRequest): Promise<NextResponse> {
+  // Next's own trailing-slash redirect is off (next.config.ts) so the analytics relay can take
+  // posthog-js's "/e/"; pages still lose a trailing slash here, as before.
+  const { pathname } = request.nextUrl;
+  if (pathname.length > 1 && pathname.endsWith("/")) {
+    const url = new URL(request.url);
+    url.pathname = pathname.replace(/\/+$/, "") || "/";
+    return NextResponse.redirect(url, 308);
+  }
+
   const nonce = newNonce();
   const csp = contentSecurityPolicy(nonce, { dev: process.env.NODE_ENV === "development" });
   const requestId = requestIdFrom(request.headers);
