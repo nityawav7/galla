@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 
 import { expect, type Page, test } from "@playwright/test";
 
-import { expectPdf, field, onlyOn, signUp, watchCsp } from "./support";
+import { expectAccessible, expectPdf, field, onlyOn, signUp, watchCsp } from "./support";
 
 // Creates accounts and businesses, so never against production.
 test.skip(process.env.E2E_ENVIRONMENT === "production", "creates accounts");
@@ -56,6 +56,7 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
   // Settings are reachable and pre-filled for the owner.
   await page.getByRole("link", { name: "Settings" }).click();
   await expect(field(page, "Shop name (if different)")).toHaveValue(shopName);
+  await expectAccessible(page, "settings");
 
   // Invite a member: the link is shown to share, and the invite is listed until cancelled.
   // (Accepting needs the emailed verification code, so the integration tests cover it.)
@@ -192,6 +193,7 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     await paint.getByLabel("Price includes GST").check();
     await expect(page.getByTestId("line-total-2")).toHaveText("₹590.00");
     await expect(page.getByTestId("grand-total")).toHaveText("Total ₹1,274.00");
+    await expectAccessible(page, "invoice builder");
 
     await page.getByRole("button", { name: "Issue invoice" }).click();
     const issued = page.getByRole("dialog");
@@ -214,6 +216,7 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     );
     await issued.getByRole("link", { name: "View invoice" }).click();
     await expect(page.getByTestId("invoice-total")).toHaveText("₹1,274.00");
+    await expectAccessible(page, "invoice page");
     // The 80 mm slip for a thermal printer: Print opens it in a new tab.
     await field(page, "Paper size").selectOption("80mm");
     const print = page.getByRole("link", { name: /^Print/ });
@@ -268,6 +271,7 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     expect(response?.headers()["x-robots-tag"]).toBe("noindex, nofollow");
     await expect(customer.locator('meta[name="robots"]')).toHaveAttribute("content", /noindex/);
     await expect(customer.getByTestId("amount-due")).toHaveText("₹802.00");
+    await expectAccessible(customer, "public invoice");
     await expect(customer.getByRole("link", { name: "Pay ₹802.00 via UPI" })).toHaveAttribute(
       "href",
       /^upi:\/\/pay\?pa=shop@oksbi&pn=E2E%20Shop%20[0-9a-f]{6}&am=802\.00&cu=INR&tn=SH%2F\d{2}-\d{2}%2F0001$/,
@@ -375,12 +379,14 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     // the click can latch onto it just before Next hides it.
     await page.getByRole("link", { name: "Payments", exact: true }).click();
     await expect(page).toHaveURL(/\/payments$/);
+    await expectAccessible(page, "payments");
     await page.getByRole("link", { name: "Record payment" }).filter({ visible: true }).click();
     await field(page, "Who paid?").fill("Ramesh Traders");
     await page.getByRole("button", { name: "Search" }).filter({ visible: true }).click();
     await page.getByRole("link", { name: "Ramesh Traders", exact: true }).click();
     await expect(page).toHaveURL(/\/payments\/new\?customer=/);
     await field(page, "Amount received (₹)").fill("2100");
+    await expectAccessible(page, "record payment");
     await page.getByRole("radio", { name: "Oldest dues first (automatic)" }).check();
     const oldestFirst = page.getByTestId("payment-preview").filter({ visible: true });
     await expect(oldestFirst).toContainText("Opening balance₹1,500.00");
@@ -428,6 +434,7 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     await expect(page).toHaveURL(/\/customers\/[0-9a-f-]{36}$/);
     const balance = page.getByTestId("customer-balance").filter({ visible: true });
     await expect(balance).toHaveText("Owes you ₹2,002.00");
+    await expectAccessible(page, "customer page");
 
     // Opening ₹1,500 + invoice ₹1,274 − credit note ₹472 − ₹300 UPI; the voided ₹2,100 is left out.
     const ledger = page.getByTestId("ledger").filter({ visible: true });
@@ -529,6 +536,7 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     await expect(page).toHaveURL(/\/dashboard$/);
     // ₹1,274.00 invoiced today, less the ₹472.00 and ₹141.60 credited back.
     await expect(page.getByTestId("card-today").filter({ visible: true })).toHaveText("₹660.40");
+    await expectAccessible(page, "dashboard");
     await expect(page.getByTestId("card-receivable").filter({ visible: true })).toHaveText(
       "₹1,402.00",
     );
@@ -544,6 +552,7 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
   await test.step("reports: the sales register and HSN summary download", async () => {
     await page.getByRole("link", { name: "Reports", exact: true }).click();
     await expect(page).toHaveURL(/\/reports$/);
+    await expectAccessible(page, "reports");
     // One invoice and two credit notes so far.
     const summary = page.getByTestId("register-summary").filter({ visible: true });
     await expect(summary).toContainText("Invoices1");
@@ -582,6 +591,7 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
     const entries = page.getByTestId("audit-entry");
     const issuedEntry = entries.filter({ hasText: /^Issued invoice SH\/\d{2}-\d{2}\/0001/ });
     await expect(issuedEntry).toHaveCount(1);
+    await expectAccessible(page, "activity");
     await expect(issuedEntry).toContainText("E2E Owner");
     await expect(issuedEntry).toContainText("Total: ₹");
     await expect(

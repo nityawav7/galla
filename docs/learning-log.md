@@ -199,3 +199,12 @@ What I learned and what broke while building Galla, phase by phase.
 - next-intl reads dots in message keys as nesting, so action names like `invoice.issued` became `audit.actions.invoice.issued` rather than a flat key with a dot in it.
 - Showing audit rows safely meant an allow-list: only fields named in `src/server/domain/audit/describe.ts` are shown, each with a format (money, rate, state, enum). A new field in some future audit diff stays hidden until someone gives it a label, instead of leaking an id or hash.
 - EXPLAIN on 40,000 rows for one business: Postgres turns `(at, id) < (…)` into an index condition `at <= …` on the existing `(business_id, at)` index, so a page 30,000 rows deep took 0.15 ms. No new index.
+
+## Phase 11c: accessibility and Lighthouse
+
+- axe's first run found real issues the eye missed: `text-muted-foreground` passes on white (4.7:1) but not on `bg-muted` (4.3:1), and red-600 text on a 10% red fill fails too. Fixing the two colour tokens fixed every page at once.
+- `label-content-name-mismatch`: a button showing `{dueDate}` with `aria-label="Due date"` can't be clicked by voice ("click dueDate"); the accessible name has to start with the visible text.
+- A table in an `overflow-x-auto` box needs `tabIndex={0}` (plus a role and label) so keyboard users can scroll it.
+- Playwright `expect.soft` lets one run list every page's issues instead of stopping at the first.
+- Lighthouse's default "simulated" throttling scored the same sign-in page 99 on a local production build and 83 on production; with real DevTools throttling both were about 60. The simulation flatters a server on the same machine, so production is the number that counts. Lighthouse also couldn't launch Playwright's bundled Chromium here (`spawn UNKNOWN`); the installed Chrome worked.
+- Next's `polyfill` chunk (112 KB) is `noModule`, so modern browsers download nothing from it; count only the scripts that run.

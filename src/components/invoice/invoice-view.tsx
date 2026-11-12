@@ -120,7 +120,13 @@ export async function InvoiceView({
         </section>
       </div>
 
-      <div className="overflow-x-auto">
+      {/* Scrolls sideways on a phone: focusable so keyboard users can scroll it too. */}
+      <div
+        className="overflow-x-auto rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
+        tabIndex={0}
+        role="region"
+        aria-label={t("items")}
+      >
         <table className="w-full min-w-[36rem] text-left">
           <caption className="sr-only">{t("items")}</caption>
           <thead className="border-b text-xs text-muted-foreground">

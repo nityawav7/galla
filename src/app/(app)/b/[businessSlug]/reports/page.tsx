@@ -200,7 +200,12 @@ async function ReportsView({ params, searchParams }: Pick<Params, "params" | "se
         {hsn.rows.length === 0 ? (
           <p className="text-muted-foreground">{t("hsn.empty")}</p>
         ) : (
-          <div className="overflow-x-auto">
+          <div
+            className="overflow-x-auto rounded-sm focus-visible:outline-2 focus-visible:outline-ring"
+            tabIndex={0}
+            role="region"
+            aria-label={t("hsn.title")}
+          >
             <table className="w-full min-w-[32rem] text-sm" data-testid="hsn-summary">
               <thead>
                 <tr className="border-b text-left text-xs text-muted-foreground">

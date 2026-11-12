@@ -45,7 +45,16 @@ The data model and data-access layers are in [docs/architecture.md](docs/archite
 
 ## Metrics
 
-_Load test p95 and Lighthouse scores coming in Phase 11._
+Lighthouse mobile (13.6.0, median of 3; details in [docs/hardening-checklist.md](docs/hardening-checklist.md)):
+
+| Page                 | Performance | Accessibility |
+| -------------------- | ----------- | ------------- |
+| Sign-in (production) | 83          | 100           |
+| Dashboard            | 94          | 100           |
+| Invoice page         | 90          | 100           |
+| Public invoice       | 99          | 100           |
+
+Dashboard, invoice page and public invoice were measured on a local production build. Load test p95: coming in Phase 11f.
 
 ## Roadmap
 

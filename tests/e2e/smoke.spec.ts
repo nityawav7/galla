@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { watchCsp } from "./support";
+import { expectAccessible, watchCsp } from "./support";
 
 test("home page renders", async ({ page }) => {
   await page.goto("/");
@@ -25,6 +25,19 @@ test("pages carry the security headers and run under the CSP (SPEC §6.2)", asyn
   await codeTab.click();
   await expect(codeTab).toHaveAttribute("aria-selected", "true");
   expect(violations).toEqual([]);
+});
+
+test("the public pages have no serious accessibility issues (Phase 11c)", async ({ page }) => {
+  for (const [path, heading] of [
+    ["/", "Galla"],
+    ["/login", "Sign in"],
+    ["/signup", "Create your account"],
+    ["/forgot-password", null],
+  ] as const) {
+    await page.goto(path);
+    if (heading) await expect(page.getByRole("heading", { level: 1, name: heading })).toBeVisible();
+    await expectAccessible(page, path);
+  }
 });
 
 test("health check reports ok", async ({ request }) => {
