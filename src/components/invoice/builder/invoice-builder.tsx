@@ -25,6 +25,7 @@ import { type FieldIssue } from "@/lib/errors";
 import { RECIPIENT_DETAILS_THRESHOLD_PAISE } from "@/lib/gst-config";
 import { evaluateDraft, lineIssues } from "@/lib/invoice-evaluation";
 import { type CustomerOption, type ProductOption } from "@/lib/invoice-options";
+import { secondsSince, startTimer, track } from "@/lib/observability/track";
 import { draftSchema, type InvoiceDraft, isInvoiceErrorKey } from "@/lib/validation/invoices";
 import { isValidationKey } from "@/lib/validation/messages";
 import { formatIndianDate } from "@/server/domain/fy";
@@ -98,6 +99,11 @@ export function InvoiceBuilder({ businessSlug, options, today, initial }: Invoic
   const [acknowledged, setAcknowledged] = useState(false);
   const [issued, setIssued] = useState<Issued | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  // SPEC's "time to issue": from opening the builder to issuing (analytics, ADR 0016).
+  const openedAt = useRef<number | null>(null);
+  useEffect(() => {
+    openedAt.current = startTimer();
+  }, []);
   const [editPlace, setEditPlace] = useState(draft.placeOfSupplyOverride !== null);
 
   const autosave = useAutosave({
@@ -238,6 +244,10 @@ export function InvoiceBuilder({ businessSlug, options, today, initial }: Invoic
       return;
     }
     setWarnings([]);
+    track("invoice_issued", {
+      seconds_to_issue: secondsSince(openedAt.current),
+      line_count: evaluation.lines.length,
+    });
     setIssued(result.data);
   };
 

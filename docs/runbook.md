@@ -76,3 +76,23 @@ Every page response has an `X-Request-Id` header: Vercel's own request id (`x-ve
 ## A page stops working after a deploy, with nothing in the logs
 
 Check the browser console for "violates the following Content Security Policy directive" ([ADR 0015](adr/0015-csp-with-nonces.md)). A new third-party script or service must be added to the policy in `src/server/http/security-headers.ts`; a page that is prerendered again (for example after turning `cacheComponents` back on) loses the nonce on all its scripts.
+
+## Sentry and PostHog (ADR 0016)
+
+Both are off until their keys are in Vercel (Settings → Environment Variables, Production and Preview), and a redeploy is needed after adding them (the `NEXT_PUBLIC_` ones are built into the page).
+
+| Variable                       | Where it comes from                                                    |
+| ------------------------------ | ---------------------------------------------------------------------- |
+| `NEXT_PUBLIC_SENTRY_DSN`       | Sentry → project → Settings → Client Keys (DSN)                        |
+| `SENTRY_AUTH_TOKEN`            | Sentry → Settings → Auth Tokens → Create (scope: project releases)     |
+| `SENTRY_ORG`, `SENTRY_PROJECT` | the slugs in the Sentry project URL                                    |
+| `NEXT_PUBLIC_POSTHOG_KEY`      | PostHog → Project settings → Project API key                           |
+| `NEXT_PUBLIC_POSTHOG_HOST`     | `https://us.i.posthog.com` or `https://eu.i.posthog.com` (your region) |
+
+In PostHog's project settings also turn on **Discard client IP data** and leave autocapture, session replay, heatmaps and "capture console logs" off.
+
+**Checking it works:** after the deploy, Sentry → Issues shows nothing until an error happens. To test, open the browser console on the production site and run `setTimeout(() => { throw new Error("Sentry test") })`: the issue appears in Sentry within a minute, with `/b/:slug` instead of the shop's name. PostHog → Activity shows `invoice_issued` after you issue an invoice.
+
+**If events stop:** our routes answer 500 (`/api/monitoring`) or 502 (`/api/relay`) when Sentry or PostHog is unreachable; check their status pages. A 404 from `/api/relay` means `NEXT_PUBLIC_POSTHOG_KEY` isn't set on that deployment.
+
+**Rotating:** create a new Sentry DSN or auth token or PostHog key, update Vercel, redeploy, then revoke the old one.

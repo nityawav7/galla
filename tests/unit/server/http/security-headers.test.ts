@@ -87,6 +87,22 @@ describe("proxy", () => {
     expect(first.headers.get("x-middleware-request-x-nonce")).toEqual(expect.any(String));
   });
 
+  it("drops a trailing slash from page URLs, keeping the query", async () => {
+    for (const [path, target] of [
+      ["/login/", "https://galla.test/login"],
+      [
+        "/b/sharma-hardware/invoices/?status=paid",
+        "https://galla.test/b/sharma-hardware/invoices?status=paid",
+      ],
+      ["//", "https://galla.test/"],
+    ] as const) {
+      const response = await visit(path);
+      expect(response.status, path).toBe(308);
+      expect(response.headers.get("location"), path).toBe(target);
+    }
+    expect((await visit("/")).status).toBe(200);
+  });
+
   it("still sends signed-out visitors of app pages to sign in, with the headers", async () => {
     for (const path of ["/b/sharma-hardware/invoices", "/onboarding"]) {
       const response = await visit(path);

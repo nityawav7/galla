@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { FATAL_ERROR_MESSAGE } from "@/lib/i18n/fatal-error";
 import en from "@/messages/en.json";
 import hi from "@/messages/hi.json";
 import { AUDIT_ACTIONS, AUDIT_CATEGORIES, AUDIT_FIELDS } from "@/server/domain/audit/describe";
@@ -48,5 +49,11 @@ describe("activity page messages", () => {
       expect(english[key], key).toBeTruthy();
       expect(hindi[key], key).toBeTruthy();
     }
+  });
+});
+
+describe("the last-resort error page", () => {
+  it("says what errors.generic says, in both languages", () => {
+    expect(FATAL_ERROR_MESSAGE).toEqual({ en: en.errors.generic, hi: hi.errors.generic });
   });
 });

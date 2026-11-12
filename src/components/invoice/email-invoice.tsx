@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { emailInvoiceAction } from "@/app/(app)/b/[businessSlug]/invoices/actions";
 import { Button } from "@/components/ui/button";
+import { track } from "@/lib/observability/track";
 
 type State = "idle" | "sending" | "sent" | "tooMany" | "failed";
 
@@ -25,8 +26,10 @@ export function EmailInvoice({
   const send = async () => {
     setState("sending");
     const result = await emailInvoiceAction(businessSlug, invoiceId);
-    if (result.ok) setState("sent");
-    else setState(result.error.code === "RATE_LIMITED" ? "tooMany" : "failed");
+    if (result.ok) {
+      track("invoice_emailed");
+      setState("sent");
+    } else setState(result.error.code === "RATE_LIMITED" ? "tooMany" : "failed");
   };
 
   const message =

@@ -5,6 +5,7 @@ import { useId, useState } from "react";
 
 import { reminderSharedAction } from "@/app/(app)/b/[businessSlug]/customers/actions";
 import { Button } from "@/components/ui/button";
+import { track } from "@/lib/observability/track";
 import { type ShareLocale } from "@/lib/share-templates";
 import { waMeLink } from "@/server/domain/share/whatsapp";
 import { type ReminderInfo } from "@/server/services/reminder.service";
@@ -68,6 +69,7 @@ export function ReminderShare({
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => {
+                track("reminder_shared", { channel: "whatsapp" });
                 void reminderSharedAction(businessSlug, customerId);
               }}
             >

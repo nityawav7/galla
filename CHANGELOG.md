@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Phase 11d:** Sentry error tracking and PostHog product analytics, both off until their keys are set (ADR 0016). They go through our own routes (`/api/monitoring`, `/api/relay`), so the CSP is unchanged and neither service sees cookies or IP addresses. Sentry loads when the page is idle (early errors are held and sent), PostHog on its first event, which costs the sign-in page 13 KB. Nothing personal is sent: URLs lose invoice tokens and business slugs; analytics are four named events with no identity. A last-resort error page. Pages with a trailing slash are now redirected by the proxy.
+
 - **Phase 11c:** axe accessibility checks in the e2e tests on 14 pages at phone and desktop widths (serious or critical issues fail the build). Fixed what they found: text contrast on grey panels and light red fills (darker muted and destructive colours), WhatsApp placeholder buttons named after what they show, and sideways-scrolling tables reachable from the keyboard. Lighthouse scores recorded in `docs/hardening-checklist.md`: accessibility 100 on every page measured; performance 90–99 except the production sign-in page (83, open).
 
 - **Phase 11b:** the Activity page (SPEC F11) for owners and accountants: every audited change in words ("Issued invoice SH/26-27/0004", "Voided a payment from Mehta Traders"), who did it and when (IST), what changed as before → after, links to the invoice, customer or product. Filters by dates, what changed and who; 50 a page. No migration: the existing `(business_id, at)` index serves it.
