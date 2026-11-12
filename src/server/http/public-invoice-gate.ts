@@ -44,6 +44,8 @@ export async function publicInvoiceGate(
   request: NextRequest,
   token: string,
   deps: GateDependencies,
+  /** The request headers the page gets (the CSP nonce and request id from the proxy). */
+  headers: Headers = request.headers,
 ): Promise<NextResponse> {
   const { success, reset } = await deps.limiter.limit(hashIp(clientIp(request.headers)));
   if (!success) {
@@ -56,9 +58,11 @@ export async function publicInvoiceGate(
     );
   }
   if (!(await deps.isLive(token))) {
-    return withHeaders(NextResponse.rewrite(new URL(deps.notFoundPath, request.url)));
+    return withHeaders(
+      NextResponse.rewrite(new URL(deps.notFoundPath, request.url), { request: { headers } }),
+    );
   }
-  return withHeaders(NextResponse.next());
+  return withHeaders(NextResponse.next({ request: { headers } }));
 }
 
 export function defaultGateDependencies(notFoundPath: string): GateDependencies {

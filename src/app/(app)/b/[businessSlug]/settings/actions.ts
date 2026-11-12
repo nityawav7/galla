@@ -1,7 +1,7 @@
 "use server";
 
 import { type ActionResult } from "@/lib/action-result";
-import { runAction } from "@/server/action";
+import { runMutation } from "@/server/action";
 import { requireTenant } from "@/server/auth/session";
 import { updateBusinessSettings } from "@/server/services/business.service";
 
@@ -10,7 +10,7 @@ export async function updateBusinessAction(
   businessSlug: string,
   values: unknown,
 ): Promise<ActionResult<null>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     await updateBusinessSettings(ctx, values);
     return null;

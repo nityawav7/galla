@@ -6,6 +6,7 @@ import { logger } from "@/lib/logger";
 import { pdfQuerySchema } from "@/lib/validation/pdf";
 import { getSessionUser } from "@/server/auth/session";
 import { type TenantContext } from "@/server/authz/context";
+import { withRouteContext } from "@/server/http/route-context";
 import { type PdfFormat } from "@/server/pdf/formats";
 import { type RenderedPdf } from "@/server/pdf/invoice-pdf";
 import { resolveTenant } from "@/server/services/tenant.service";
@@ -68,7 +69,18 @@ export async function tenantPdfResponse(
 }
 
 /** The same, for a PDF route with its own query (the customer statement's `?period=`). */
-export async function tenantQueryPdfResponse<Q extends { download?: "1" | undefined }>(
+export function tenantQueryPdfResponse<Q extends { download?: "1" | undefined }>(
+  request: NextRequest,
+  slug: string,
+  schema: z.ZodType<Q>,
+  render: (ctx: TenantContext, query: Q) => Promise<RenderedPdf>,
+): Promise<Response> {
+  return withRouteContext(request, () =>
+    tenantQueryPdfResponseUnwrapped<Q>(request, slug, schema, render),
+  );
+}
+
+async function tenantQueryPdfResponseUnwrapped<Q extends { download?: "1" | undefined }>(
   request: NextRequest,
   slug: string,
   schema: z.ZodType<Q>,
@@ -89,7 +101,14 @@ export async function tenantQueryPdfResponse<Q extends { download?: "1" | undefi
  * The public link's PDF (`/i/{token}/pdf`): no session; the proxy has already rate-limited the
  * request and checked the link is live, and the service checks the token again (ADR 0009).
  */
-export async function publicPdfResponse(
+export function publicPdfResponse(
+  request: NextRequest,
+  render: (format: PdfFormat) => Promise<RenderedPdf>,
+): Promise<Response> {
+  return withRouteContext(request, () => publicPdfResponseUnwrapped(request, render));
+}
+
+async function publicPdfResponseUnwrapped(
   request: NextRequest,
   render: (format: PdfFormat) => Promise<RenderedPdf>,
 ): Promise<Response> {

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { connection } from "next/server";
 import { NextIntlClientProvider } from "next-intl";
 
 import { APP_NAME, APP_TAGLINE } from "@/lib/config";
@@ -27,7 +28,9 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  // Every page is rendered per request, so each gets its own CSP nonce (SPEC §6.2, ADR 0015).
+  await connection();
   return (
     <html
       lang={DEFAULT_LOCALE}

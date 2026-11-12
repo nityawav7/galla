@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 
 import { type ActionResult } from "@/lib/action-result";
-import { runAction } from "@/server/action";
+import { runMutation } from "@/server/action";
 import { requireTenant } from "@/server/auth/session";
 import {
   cancelInvitation,
@@ -18,7 +18,7 @@ export async function inviteMemberAction(
   businessSlug: string,
   values: unknown,
 ): Promise<ActionResult<{ link: string }>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     const { link } = await inviteMember(ctx, await headers(), values);
     return { link };
@@ -29,7 +29,7 @@ export async function cancelInvitationAction(
   businessSlug: string,
   invitationId: string,
 ): Promise<ActionResult<null>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     await cancelInvitation(ctx, await headers(), invitationId);
     return null;
@@ -41,7 +41,7 @@ export async function updateMemberRoleAction(
   memberId: string,
   role: unknown,
 ): Promise<ActionResult<null>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     await updateMemberRole(ctx, await headers(), memberId, role);
     return null;
@@ -52,7 +52,7 @@ export async function removeMemberAction(
   businessSlug: string,
   memberId: string,
 ): Promise<ActionResult<null>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     await removeMember(ctx, await headers(), memberId);
     return null;

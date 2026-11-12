@@ -1,7 +1,7 @@
 "use server";
 
 import { type ActionResult } from "@/lib/action-result";
-import { runAction } from "@/server/action";
+import { runAction, runMutation } from "@/server/action";
 import { requireTenant } from "@/server/auth/session";
 import {
   archiveCustomer,
@@ -28,7 +28,7 @@ export async function createCustomerAction(
   businessSlug: string,
   values: unknown,
 ): Promise<ActionResult<SaveCustomerActionResult>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     const result = await createCustomer(ctx, values);
     return result.status === "saved" ? { status: "saved", id: result.customer.id } : result;
@@ -40,7 +40,7 @@ export async function updateCustomerAction(
   customerId: string,
   values: unknown,
 ): Promise<ActionResult<SaveCustomerActionResult>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     const result = await updateCustomer(ctx, customerId, values);
     return result.status === "saved" ? { status: "saved", id: result.customer.id } : result;
@@ -51,7 +51,7 @@ export async function archiveCustomerAction(
   businessSlug: string,
   customerId: string,
 ): Promise<ActionResult<null>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     await archiveCustomer(ctx, customerId);
     return null;
@@ -62,7 +62,7 @@ export async function restoreCustomerAction(
   businessSlug: string,
   customerId: string,
 ): Promise<ActionResult<null>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     await restoreCustomer(ctx, customerId);
     return null;
@@ -83,7 +83,7 @@ export async function importCustomersAction(
   businessSlug: string,
   csvText: unknown,
 ): Promise<ActionResult<ImportResult>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     return importCustomers(ctx, csvText);
   });
@@ -94,7 +94,7 @@ export async function applyAdvanceAction(
   businessSlug: string,
   customerId: string,
 ): Promise<ActionResult<string>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     const result = await applyCredit(ctx, customerId, { allocation: { kind: "AUTO" } });
     const applied = result.allocations.reduce((sum, pair) => sum + pair.amountPaise, 0n);
@@ -107,7 +107,7 @@ export async function reminderSharedAction(
   businessSlug: string,
   customerId: string,
 ): Promise<ActionResult<boolean>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     return recordReminderShared(ctx, customerId);
   });
@@ -119,7 +119,7 @@ export async function refundAdvanceAction(
   customerId: string,
   values: unknown,
 ): Promise<ActionResult<null>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     await refundCredit(ctx, customerId, values);
     return null;
@@ -131,7 +131,7 @@ export async function voidRefundAction(
   refundId: string,
   values: unknown,
 ): Promise<ActionResult<null>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     await voidRefund(ctx, refundId, values);
     return null;

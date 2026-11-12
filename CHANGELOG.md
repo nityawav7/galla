@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Phase 11a:** security headers on every response (HSTS, `X-Frame-Options: DENY`, `nosniff`, Referrer-Policy, Permissions-Policy) and a strict Content-Security-Policy with a fresh nonce per request; to make that work every page is now rendered per request (`cacheComponents` off, ADR 0015). Every server action that changes data counts against 120 a minute per user. Log lines carry the request id (Vercel's) and the business. `docs/security-review.md` lists every action and route with its permission, input checks and limit.
+
 - **Phase 10b:** the daily job at 09:00 IST (Vercel Cron → `/api/cron/daily`, protected by `CRON_SECRET`). Email payment reminders to customers (off until the owner turns them on in Settings): due today, then 1, 7 and 14 days overdue, a missed day caught up within 2 days, one email per customer, each stage sent once. An owner digest (on by default): what is overdue, from how many customers, the 10 biggest with WhatsApp reminder links. Idempotent: running it twice sends nothing new. Migration `0011_daily_job`, ADR 0014.
 
 - **Phase 10a:** "Email invoice" on the issued sheet and the invoice page, for owners and staff, when the customer has an email and the invoice link is on. The email (English or Hindi, the business's language) has the amount due, the due date, a button to the invoice's public page and the shop's details; replies go to the shop's email. Up to 30 an hour per business, each send audited without the address. Demo businesses never send email, enforced inside `sendEmail`.

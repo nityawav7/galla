@@ -4,7 +4,7 @@ What I learned and what broke while building Galla, phase by phase.
 
 ## Phase 1: scaffold
 
-- Next.js 16 with `cacheComponents` prerenders route handlers by default. A health check must call `await connection()` so it runs on every request.
+- Next.js 16 with `cacheComponents` prerenders route handlers by default. A health check must call `await connection()` so it runs on every request. (`cacheComponents` was turned off in Phase 11a, ADR 0015; the call stays.)
 - Neon's serverless `Pool` talks WebSockets, so it cannot connect to plain Docker Postgres. The DB client picks `node-postgres` locally and Neon in production, behind the same Drizzle API.
 - pnpm 12 blocks dependency install scripts by default. Allowed builds are listed in `pnpm-workspace.yaml` (`allowBuilds`).
 - Vercel picks the pnpm version from the lockfile format (`9.0` → pnpm 9 or 10), not from `packageManager`. `vercel.json` pins pnpm 12 in the install and build commands; keep it in sync with `packageManager`. Region, install and build settings live in `vercel.json` so they are versioned instead of hidden in the dashboard. Node 24 comes from `engines`.
@@ -185,3 +185,10 @@ What I learned and what broke while building Galla, phase by phase.
 - `connection()` from `next/server` throws outside a real request, so a route handler that calls it can't be tested by calling `GET` directly. Reading `request.headers` already makes a route dynamic.
 - Request headers are trimmed by the `Headers` class, so "a trailing space" is not a case the secret check can ever see.
 - ICU plurals in Hindi: `one` covers 0 and 1, so "{count, plural, one {# ग्राहक} other {# ग्राहकों}}" reads right for both.
+
+## Phase 11a: security headers and CSP
+
+- A nonce-based CSP and prerendered HTML don't mix: the build of `/login` had every script blocked by the new policy, silently (the page looked fine and did nothing). The browser's console was the only place it showed, so the e2e journey now fails on any CSP message. Turning off `cacheComponents` and awaiting `connection()` in the root layout made every page per-request, and all 18 scripts on `/login` then carried the nonce.
+- The browser pane keeps console messages across reloads, so the first check after the fix still showed the old errors; comparing the nonce in the message with the one in the new response told them apart.
+- pino's `mixin` plus `AsyncLocalStorage` puts the request id on every log line without passing a logger around; `requireTenant` adds the business id to the same store once it knows it.
+- Searches and import previews are server actions too, and fire while typing (every 250 ms), so the mutation limit wraps only actions that change data (`runMutation`).

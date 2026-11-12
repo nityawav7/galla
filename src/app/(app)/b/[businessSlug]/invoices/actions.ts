@@ -3,7 +3,7 @@
 import { type ActionResult } from "@/lib/action-result";
 import { publicInvoiceUrl } from "@/lib/app-url";
 import { type CustomerOption, type ProductOption, toCustomerOption } from "@/lib/invoice-options";
-import { runAction } from "@/server/action";
+import { runAction, runMutation } from "@/server/action";
 import { requireTenant } from "@/server/auth/session";
 import { formatRupees } from "@/server/domain/money";
 import { cancelInvoice, createCreditNote } from "@/server/services/credit-note.service";
@@ -49,7 +49,7 @@ export async function createDraftAction(
   businessSlug: string,
   draft: unknown,
 ): Promise<ActionResult<SavedDraft>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     const row = await createDraft(ctx, draft);
     return { id: row.id, version: row.version };
@@ -61,7 +61,7 @@ export async function updateDraftAction(
   invoiceId: string,
   input: unknown,
 ): Promise<ActionResult<SavedDraft>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     const row = await updateDraft(ctx, invoiceId, input);
     return { id: row.id, version: row.version };
@@ -72,7 +72,7 @@ export async function deleteDraftAction(
   businessSlug: string,
   invoiceId: string,
 ): Promise<ActionResult<null>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     await deleteDraft(ctx, invoiceId);
     return null;
@@ -84,7 +84,7 @@ export async function issueInvoiceAction(
   invoiceId: string,
   input: unknown,
 ): Promise<ActionResult<IssueActionResult>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     const result = await issueInvoice(ctx, invoiceId, input);
     if (result.status === "needsConfirmation") return result;
@@ -148,7 +148,7 @@ export async function cancelInvoiceAction(
   invoiceId: string,
   input: unknown,
 ): Promise<ActionResult<null>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     await cancelInvoice(ctx, invoiceId, input);
     return null;
@@ -160,7 +160,7 @@ export async function createCreditNoteAction(
   invoiceId: string,
   input: unknown,
 ): Promise<ActionResult<{ id: string; number: string }>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     const note = await createCreditNote(ctx, invoiceId, input);
     return { id: note.id, number: note.number };
@@ -171,7 +171,7 @@ export async function revokePublicLinkAction(
   businessSlug: string,
   invoiceId: string,
 ): Promise<ActionResult<PublicLink>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     return revokePublicLink(ctx, invoiceId);
   });
@@ -181,7 +181,7 @@ export async function regeneratePublicLinkAction(
   businessSlug: string,
   invoiceId: string,
 ): Promise<ActionResult<PublicLink>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     return regeneratePublicLink(ctx, invoiceId);
   });
@@ -191,7 +191,7 @@ export async function emailInvoiceAction(
   businessSlug: string,
   invoiceId: string,
 ): Promise<ActionResult<null>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     await emailInvoice(ctx, invoiceId);
     return null;

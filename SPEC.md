@@ -341,8 +341,8 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 - **Tenant isolation:** every tenant table has `business_id NOT NULL`. All data access goes through repository functions that **require** a `TenantContext { userId, businessId, role }` and always filter by `business_id`. No raw cross-tenant queries outside `src/server/db/admin/`. An isolation test suite runs every service function as a user of a different business and expects `NotFound`.
 - Validate every input with Zod at the boundary (server actions, route handlers, CSV rows).
 - IDs are UUIDv7 (sortable, not guessable). Public tokens are separate random 128-bit values.
-- Secure, HttpOnly, SameSite=Lax cookies. Strict CSP with nonces, HSTS, X-Frame-Options DENY, Referrer-Policy, Permissions-Policy.
-- Rate limits with `@upstash/ratelimit`: auth 5/min/IP; public invoice 60/min/IP (in the proxy, page and PDF together); mutations 120/min/user; demo stricter.
+- Secure, HttpOnly, SameSite=Lax cookies. Strict CSP with nonces, HSTS, X-Frame-Options DENY, Referrer-Policy, Permissions-Policy. The proxy makes a nonce per request for every page (`script-src 'self' 'nonce-…' 'strict-dynamic'`, no framing, no other origins), so every page is rendered per request (ADR 0015). Every server action and route is listed with its permission, input checks and limit in `docs/security-review.md`.
+- Rate limits with `@upstash/ratelimit`: auth 5/min/IP; public invoice 60/min/IP (in the proxy, page and PDF together); mutations 120/min/user (every server action that changes data, through `runMutation`; searches and previews are not counted); "Email invoice" 30/hour/business; demo stricter.
 - Secrets live only in env vars, validated at boot with `@t3-oss/env-nextjs`. `.env.example` is committed; real `.env` never is.
 - Never log PII (phone, email, GSTIN, addresses). Logs use IDs only.
 - Dependabot, `pnpm audit` in CI, and GitHub CodeQL. Run `gitleaks` in CI for secret scanning.
@@ -356,7 +356,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 ### 6.4 Reliability & operations
 - `/api/health` checks DB connectivity and returns version and commit SHA. An uptime monitor (UptimeRobot or Better Stack free) checks it every 5 minutes.
 - Errors and performance are tracked in **Sentry** with source maps and release tags. Product analytics are in **PostHog** (no PII, and respect Do Not Track).
-- Structured JSON logs (`pino`) with `requestId` and `businessId`.
+- Structured JSON logs (`pino`) with `requestId` and `businessId`: the proxy passes Vercel's request id (`x-vercel-id`) on as `x-request-id`, and every log line inside a server action or route handler carries it, plus the business once `requireTenant` has resolved it.
 - **Backups:** Neon point-in-time restore (limited window on the free plan), **plus** a nightly `pg_dump` from GitHub Actions, encrypted with `age` and uploaded to object storage (Cloudflare R2 or Backblaze B2). The restore steps are documented and tested monthly into a Neon branch.
 - `docs/runbook.md`: how to roll back a deploy, restore the DB, rotate secrets, and handle "invoice numbers out of sequence".
 

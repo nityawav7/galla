@@ -2,7 +2,7 @@
 
 import { type ActionResult } from "@/lib/action-result";
 import { type RecordedPayment } from "@/lib/payment-view";
-import { runAction } from "@/server/action";
+import { runMutation } from "@/server/action";
 import { requireTenant } from "@/server/auth/session";
 import { recordPayment, voidPayment } from "@/server/services/payment.service";
 
@@ -13,7 +13,7 @@ export async function recordPaymentAction(
   businessSlug: string,
   input: unknown,
 ): Promise<ActionResult<RecordedPayment>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     const result = await recordPayment(ctx, input);
     return {
@@ -34,7 +34,7 @@ export async function voidPaymentAction(
   paymentId: string,
   input: unknown,
 ): Promise<ActionResult<null>> {
-  return runAction(async () => {
+  return runMutation(async () => {
     const { ctx } = await requireTenant(businessSlug);
     await voidPayment(ctx, paymentId, input);
     return null;

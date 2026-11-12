@@ -43,3 +43,24 @@ export async function expectPdf(page: Page, href: string): Promise<void> {
   expect(response.headers()["content-type"]).toBe("application/pdf");
   expect((await response.body()).subarray(0, 5).toString("latin1")).toBe("%PDF-");
 }
+
+/**
+ * Collects Content-Security-Policy violations the browser reports on this page (SPEC §6.2). A
+ * test asserts the list is empty at its end: a blocked script would break the page silently.
+ */
+export function watchCsp(page: Page): string[] {
+  const violations: string[] = [];
+  page.on("console", (message) => {
+    const text = message.text();
+    // Vercel's preview toolbar (vercel.live) is injected into preview deployments without our
+    // nonce; it is blocked on purpose (ADR 0015) and isn't part of the app.
+    if (
+      message.type() === "error" &&
+      text.includes("Content Security Policy") &&
+      !text.includes("vercel.live")
+    ) {
+      violations.push(text);
+    }
+  });
+  return violations;
+}

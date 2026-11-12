@@ -6,6 +6,7 @@ import pino, {
 } from "pino";
 
 import { env } from "@/lib/env";
+import { currentRequestContext } from "@/lib/request-context";
 
 /**
  * Keys that can hold PII or secrets. They are censored wherever they appear,
@@ -54,6 +55,8 @@ export function createLogger({ level, destination }: CreateLoggerOptions = {}): 
     timestamp: pino.stdTimeFunctions.isoTime,
     formatters: { level: (label) => ({ level: label }) },
     redact: { paths: redactPaths(REDACTED_KEYS), censor: REDACT_CENSOR },
+    // requestId and businessId of the request being served, when there is one.
+    mixin: () => ({ ...currentRequestContext() }),
   };
   return destination ? pino(options, destination) : pino(options);
 }
