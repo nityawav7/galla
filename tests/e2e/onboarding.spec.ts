@@ -304,8 +304,21 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
       .getByRole("textbox", { name: "Message in English" })
       .filter({ visible: true });
     await english.fill(`${await english.inputValue()}\nSee you again soon!`);
+    // SPEC F9: email reminders are off until the owner turns them on; the digest starts on.
+    const reminders = page
+      .getByRole("checkbox", { name: "Email payment reminders to customers" })
+      .filter({ visible: true });
+    const digest = page
+      .getByRole("checkbox", { name: "Email me what is overdue" })
+      .filter({ visible: true });
+    await expect(reminders).not.toBeChecked();
+    await expect(digest).toBeChecked();
+    await reminders.check();
     await page.getByRole("button", { name: "Save changes" }).click();
     await expect(page.getByText("Changes saved")).toBeVisible();
+    await page.reload();
+    await expect(reminders).toBeChecked();
+    await expect(digest).toBeChecked();
 
     await page.goto(invoicePath);
     const share = page.getByRole("link", { name: /^Share on WhatsApp/ }).filter({ visible: true });

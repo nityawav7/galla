@@ -50,6 +50,21 @@ Set these in **Vercel → Project → Settings → Environment Variables**. Each
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | Production (Preview optional)          | Added by the Upstash integration (it may name them `KV_REST_API_URL` / `KV_REST_API_TOKEN`, which also work). **Without them every sign-in in production fails** with "Rate limiting needs …". |
 | `RESEND_API_KEY`                                     | Production, Preview                    | Without it, emails are dropped with a warning in the logs. Until a domain is verified in Resend, only the Resend account owner receives emails.                                                |
 | `EMAIL_FROM`                                         | optional                               | Defaults to Resend's shared sender. Set it to an address on the verified domain once there is one.                                                                                             |
+| `CRON_SECRET`                                        | Production, Preview                    | `openssl rand -base64 32` (at least 32 characters). Vercel Cron sends it to `/api/cron/daily`; without it the route answers 503 and no reminders or digests go out.                            |
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`           | Production                             | The Google button only shows when both are set. The OAuth client's redirect URI must be `<production origin>/api/auth/callback/google`.                                                        |
 
 If sign-in breaks after a deploy, check the function logs for `[Better Auth]`. A "Drizzle schema mismatch" means a Better Auth upgrade expects a column we don't have: add a migration, never edit `0002_auth`.
+
+## The daily job
+
+Vercel Cron calls `GET /api/cron/daily` at 03:30 UTC (09:00 IST) with `Authorization: Bearer <CRON_SECRET>` ([ADR 0014](adr/0014-daily-job.md)). On Hobby it runs once a day, some time in that hour.
+
+- **Did it run?** Vercel → Project → **Logs**, search `daily job finished`. The line has counts only: `businesses`, `reminderEmails`, `reminders`, `digests`, `failed`, `stoppedEarly`, `emailSetUp`. Vercel → Settings → **Cron Jobs** shows the schedule and lets you run it now.
+- **Run it by hand** (safe: nothing already sent is sent again):
+  ```bash
+  curl -H "Authorization: Bearer <CRON_SECRET>" https://<production host>/api/cron/daily
+  ```
+  401 means the secret is wrong; 503 means `CRON_SECRET` isn't set in that environment.
+- **`emailSetUp: false`:** `RESEND_API_KEY` isn't set, so the job sent and recorded nothing.
+- **`failed` above 0:** look for `reminder email failed` or `owner digest failed` (business and customer ids only). Their reminders are retried on the next run, up to 2 days late.
+- **`stoppedEarly: true` often:** the 45-second budget ran out; the rest waited for the next day. Time to move the job to a queue (ADR 0014).

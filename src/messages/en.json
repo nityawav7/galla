@@ -292,7 +292,14 @@
       "amount": "Amount due",
       "dueDate": "Due date",
       "link": "Invoice link"
-    }
+    },
+    "dailyEmails": "Daily emails",
+    "dailyEmailsHint": "Sent every morning at about 9.",
+    "emailNotSetUp": "Email isn't set up for this app yet, so nothing is sent for now.",
+    "emailReminders": "Email payment reminders to customers",
+    "emailRemindersHint": "Customers with an email get one reminder when an invoice is due today, and again at 1, 7 and 14 days overdue, all their invoices in one email.",
+    "ownerDigest": "Email me what is overdue",
+    "ownerDigestHint": "Owners get one email a day when something is overdue, with WhatsApp reminder links for the biggest amounts."
   },
   "roles": {
     "OWNER": "Owner",
@@ -339,6 +346,29 @@
       "gstin": "GSTIN: {gstin}",
       "reply": "Questions? Reply to this email to reach {shop}.",
       "footer": "Sent by {shop} using {app}."
+    },
+    "reminder": {
+      "subject": "Payment reminder from {shop}",
+      "greeting": "Namaste {customer},",
+      "intro": "This is a friendly reminder from {shop}. Please pay:",
+      "dueToday": "due today",
+      "overdue": "{days, plural, one {# day} other {# days}} overdue",
+      "line": "{number} · {amount} · {status}",
+      "total": "Total: {amount}",
+      "view": "View or pay by UPI",
+      "phone": "Phone: {phone}",
+      "reply": "Already paid? Reply to this email to let {shop} know.",
+      "paidAlready": "Already paid? Please ignore this email.",
+      "footer": "Sent by {shop} using {app}."
+    },
+    "digest": {
+      "subject": "{amount} overdue from {count, plural, one {# customer} other {# customers}} · {shop}",
+      "intro": "Good morning! Today, {amount} is overdue from {count, plural, one {# customer} other {# customers}}.",
+      "line": "{name} · {amount}",
+      "remind": "Remind on WhatsApp",
+      "more": "…and {count, plural, one {# more customer} other {# more customers}}.",
+      "dashboard": "Open the dashboard",
+      "footer": "You get this email because you own {shop} on {app}. To stop it, turn off “Email me what is overdue” in Settings."
     }
   },
   "roleHints": {

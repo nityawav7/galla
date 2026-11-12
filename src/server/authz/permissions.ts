@@ -1,6 +1,6 @@
 import { ForbiddenError } from "@/lib/errors";
 
-import { type Role, type TenantContext } from "./context";
+import { JOB_USER_ID, type Role, type TenantContext } from "./context";
 
 /**
  * The SPEC §2.1 permission matrix, defined once. Services call `assertCan` before doing
@@ -43,4 +43,9 @@ export function can(ctx: Pick<TenantContext, "role">, action: Action): boolean {
 
 export function assertCan(ctx: Pick<TenantContext, "role">, action: Action): void {
   if (!can(ctx, action)) throw new ForbiddenError();
+}
+
+/** Work only the daily job does (sending reminders and digests): never a signed-in user. */
+export function assertJob(ctx: Pick<TenantContext, "userId">): void {
+  if (ctx.userId !== JOB_USER_ID) throw new ForbiddenError();
 }

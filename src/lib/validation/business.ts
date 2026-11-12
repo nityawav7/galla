@@ -62,6 +62,9 @@ export const businessFields = {
     .transform((value) => (value === "6" ? 6 : 4)),
   whatsappTemplateEn: whatsappTemplate,
   whatsappTemplateHi: whatsappTemplate,
+  /** The daily job's emails (SPEC F9). Settings only; onboarding gets the defaults. */
+  emailReminders: z.boolean().default(false),
+  ownerDigest: z.boolean().default(true),
 };
 
 /** The fields each onboarding step shows (and validates before "Next"). */
@@ -129,4 +132,6 @@ export const EMPTY_BUSINESS_FORM: BusinessFormValues = {
   hsnDigitsRequired: "4",
   whatsappTemplateEn: "",
   whatsappTemplateHi: "",
+  emailReminders: false,
+  ownerDigest: true,
 };

@@ -46,6 +46,10 @@ export const businesses = pgTable(
     whatsappTemplateEn: text(),
     whatsappTemplateHi: text(),
     isDemo: boolean().notNull().default(false),
+    /** The daily job emails payment reminders to customers (SPEC F9). Off until the owner opts in. */
+    emailReminders: boolean().notNull().default(false),
+    /** The daily job emails owners what is overdue (SPEC F9). */
+    ownerDigest: boolean().notNull().default(true),
     /** Better Auth organization metadata (JSON string). */
     metadata: text(),
     ...audited(),

@@ -25,6 +25,9 @@ export const env = createEnv({
     RESEND_API_KEY: z.string().optional(),
     // Resend's shared sender only reaches the account owner until a domain is verified.
     EMAIL_FROM: z.string().default("Galla <onboarding@resend.dev>"),
+    // Vercel Cron sends it as "Authorization: Bearer …" to /api/cron/daily. Without it the job
+    // refuses to run (503). Generate with `openssl rand -base64 32`.
+    CRON_SECRET: z.string().min(32).optional(),
     // Upstash Redis for rate limits: required in production, in-memory elsewhere. The Vercel
     // Upstash integration may name them KV_REST_API_URL / KV_REST_API_TOKEN instead.
     UPSTASH_REDIS_REST_URL: z.url().optional(),

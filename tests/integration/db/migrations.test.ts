@@ -52,6 +52,7 @@ describe("migrations", () => {
       "invoices",
       "members",
       "number_sequences",
+      "owner_digests_sent",
       "payment_allocations",
       "payments",
       "products",

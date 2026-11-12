@@ -176,3 +176,12 @@ What I learned and what broke while building Galla, phase by phase.
 - The plan was to write email templates as React components and render them with `react-dom/server`. Next.js builds server actions and route handlers against React's server-components build, where `react-dom/server` is a file that only throws "not supported in React Server Components". Vitest runs in plain Node, so the unit tests would have passed and the first click in production would have failed. Emails are built with a 30-line `html` tagged template instead: every value is escaped unless it is already `SafeHtml`, which is the same safety React gives, with no dependency.
 - Better Auth sends invite emails as a background task and still returns the invite, so throwing from the email callback only logs an error; a demo business's invite skips the email instead, and the link is still there to copy.
 - A per-business rate limit needs no new code: the existing Upstash limiter takes any key, so the business id is the key and the window is an hour.
+
+## Phase 10b: the daily job
+
+- "Claim, then send" makes idempotency a database question: `INSERT … ON CONFLICT DO NOTHING RETURNING` tells each run exactly which reminders are its own, even when two runs overlap, and deleting the claims after a failed send turns a lost email into a retry instead of a duplicate.
+- A customer with no credit days gets a due date equal to the invoice date, not an empty one, so "due on receipt" has two spellings. A test caught the job about to send "due today" on the day of the sale.
+- The test database keeps every business earlier runs created (13,000 of them), so a job test that walked them all would be slow and would claim other tests' digests. The job tests page over their own businesses through a mocked admin read, and the real admin read is tested by paging after a marker business: UUIDv7 ids sort by creation time.
+- `connection()` from `next/server` throws outside a real request, so a route handler that calls it can't be tested by calling `GET` directly. Reading `request.headers` already makes a route dynamic.
+- Request headers are trimmed by the `Headers` class, so "a trailing space" is not a case the secret check can ever see.
+- ICU plurals in Hindi: `one` covers 0 and 1, so "{count, plural, one {# ग्राहक} other {# ग्राहकों}}" reads right for both.
