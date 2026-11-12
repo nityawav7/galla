@@ -98,6 +98,8 @@ export const VALIDATION_KEYS = [
   "voidReasonRequired",
   "openingBalanceApplied",
   "dateInvalid",
+  "rangeReversed",
+  "rangeTooLong",
 ] as const;
 
 export type ValidationKey = (typeof VALIDATION_KEYS)[number];

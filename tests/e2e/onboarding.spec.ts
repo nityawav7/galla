@@ -519,6 +519,31 @@ test("sign up → onboard → reach the dashboard (SPEC F1)", async ({ page }, t
       "Paint 1 L",
     );
   });
+
+  // SPEC F8: the owner's reports for this month, on screen and as files.
+  await test.step("reports: the sales register and HSN summary download", async () => {
+    await page.getByRole("link", { name: "Reports", exact: true }).click();
+    await expect(page).toHaveURL(/\/reports$/);
+    // One invoice and two credit notes so far.
+    const summary = page.getByTestId("register-summary").filter({ visible: true });
+    await expect(summary).toContainText("Invoices1");
+    await expect(summary).toContainText("Credit notes2");
+    await expect(summary).toContainText("Net total₹660.40");
+    await expect(page.getByTestId("hsn-summary").filter({ visible: true })).toContainText("3208");
+
+    const csvLink = page.getByRole("link", { name: "Download CSV" }).first();
+    const csv = await page.request.get((await csvLink.getAttribute("href")) ?? "");
+    expect(csv.status()).toBe(200);
+    expect(csv.headers()["content-type"]).toBe("text/csv; charset=utf-8");
+    expect(await csv.text()).toMatch(/Invoice,SH\/\d{2}-\d{2}\/0001,,Ramesh Traders/);
+    const excel = await page.request.get(
+      (await page.getByRole("link", { name: "Download Excel" }).getAttribute("href")) ?? "",
+    );
+    expect(excel.status()).toBe(200);
+    expect(excel.headers()["content-type"]).toBe(
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    );
+  });
 });
 
 test("a user with no membership gets 404 for another business (SPEC F1)", async ({
@@ -557,6 +582,7 @@ test("a user with no membership gets 404 for another business (SPEC F1)", async 
     `/b/${slug}/payments/new`,
     customerPath,
     `${customerPath}/edit`,
+    `/b/${slug}/reports`,
   ]) {
     const response = await stranger.goto(path);
     expect(response?.status(), path).toBe(404);
@@ -567,6 +593,8 @@ test("a user with no membership gets 404 for another business (SPEC F1)", async 
   expect((await stranger.request.get(pdfPath)).status(), pdfPath).toBe(404);
   const statementPath = `${customerPath}/statement`;
   expect((await stranger.request.get(statementPath)).status(), statementPath).toBe(404);
+  const registerPath = `/b/${slug}/reports/sales-register?format=csv`;
+  expect((await stranger.request.get(registerPath)).status(), registerPath).toBe(404);
   // An invoice link that was never issued is a plain 404 too, with no sign-in needed.
   const unknownLink = await stranger.goto("/i/AAAAAAAAAAAAAAAAAAAAAA");
   expect(unknownLink?.status()).toBe(404);

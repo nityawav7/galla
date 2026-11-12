@@ -4,6 +4,7 @@ import { type ReactNode, Suspense } from "react";
 
 import { SignOutButton } from "@/components/forms/sign-out-button";
 import { requireTenant } from "@/server/auth/session";
+import { can } from "@/server/authz/permissions";
 import { listBusinessesForUser } from "@/server/services/tenant.service";
 
 async function TenantShell({
@@ -60,6 +61,14 @@ async function TenantShell({
           >
             {t("shell.payments")}
           </Link>
+          {can(membership, "reports:export") ? (
+            <Link
+              href={`${base}/reports`}
+              className="text-sm font-medium underline-offset-4 hover:underline"
+            >
+              {t("shell.reports")}
+            </Link>
+          ) : null}
           <Link
             href={`${base}/products`}
             className="text-sm font-medium underline-offset-4 hover:underline"

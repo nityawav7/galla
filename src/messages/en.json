@@ -99,7 +99,9 @@
     "openingBalanceApplied": "Payments already settled more of the opening balance than this. Void them first.",
     "dateInvalid": "Enter a valid date",
     "refundExceedsOnAccount": "That's more than the customer has on account.",
-    "refundModeRequired": "Choose how the money was given back."
+    "refundModeRequired": "Choose how the money was given back.",
+    "rangeReversed": "The start date is after the end date.",
+    "rangeTooLong": "Choose a period of at most 366 days."
   },
   "auth": {
     "fields": {
@@ -231,7 +233,8 @@
     "products": "Products",
     "customers": "Customers",
     "invoices": "Invoices",
-    "payments": "Payments"
+    "payments": "Payments",
+    "reports": "Reports"
   },
   "dashboard": {
     "title": "Dashboard",
@@ -1105,6 +1108,90 @@
       "refundFirst": "Some of this payment's money has been refunded. Void that refund first.",
       "refundAlreadyVoided": "This refund was already voided",
       "walkInRefundFinal": "Money given back at the counter stays with its credit note"
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "notAllowed": "Only the owner and the accountant can see reports.",
+    "period": {
+      "label": "Period",
+      "thisMonth": "This month",
+      "lastMonth": "Last month",
+      "thisQuarter": "This quarter",
+      "lastQuarter": "Last quarter",
+      "thisFy": "This FY",
+      "custom": "Custom dates",
+      "from": "From",
+      "to": "To",
+      "apply": "Show",
+      "showing": "{from} to {to}"
+    },
+    "register": {
+      "title": "Sales register",
+      "hint": "Every invoice and credit note in the period. Cancelled invoices are listed at zero.",
+      "invoices": "Invoices",
+      "cancelled": "Cancelled",
+      "creditNotes": "Credit notes",
+      "taxable": "Taxable value",
+      "gst": "GST",
+      "total": "Net total",
+      "csv": "Download CSV",
+      "xlsx": "Download Excel"
+    },
+    "hsn": {
+      "title": "HSN summary",
+      "hsn": "HSN/SAC",
+      "uqc": "Unit",
+      "rate": "Rate",
+      "quantity": "Quantity",
+      "taxable": "Taxable value",
+      "tax": "GST",
+      "total": "Total value",
+      "totals": "Total",
+      "noHsn": "No HSN",
+      "noHsnHint": "Some lines have no HSN code. Add it to those products so your CA can file the HSN summary.",
+      "empty": "Nothing sold in this period.",
+      "csv": "Download CSV"
+    },
+    "export": {
+      "date": "Date",
+      "type": "Type",
+      "number": "Number",
+      "against": "Against invoice",
+      "customer": "Customer",
+      "gstin": "GSTIN",
+      "placeOfSupply": "Place of supply",
+      "status": "Status",
+      "taxable": "Taxable value",
+      "cgst": "CGST",
+      "sgst": "SGST",
+      "utgst": "UTGST",
+      "igst": "IGST",
+      "roundOff": "Round off",
+      "total": "Total",
+      "paid": "Paid",
+      "credited": "Credited",
+      "balance": "Balance",
+      "totals": "Total",
+      "invoice": "Invoice",
+      "creditNote": "Credit note",
+      "walkIn": "Walk-in customer",
+      "invoicesSheet": "Invoices",
+      "creditNotesSheet": "Credit notes",
+      "statuses": {
+        "ISSUED": "Unpaid",
+        "PARTIALLY_PAID": "Part paid",
+        "PAID": "Paid",
+        "CANCELLED": "Cancelled",
+        "CREDIT_NOTE": "Credit note"
+      },
+      "hsn": "HSN/SAC",
+      "uqc": "UQC",
+      "rate": "Rate",
+      "quantity": "Total quantity",
+      "sgstUtgst": "SGST/UTGST",
+      "totalValue": "Total value",
+      "noHsn": "No HSN"
     }
   }
 }
