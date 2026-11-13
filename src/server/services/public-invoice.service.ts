@@ -31,6 +31,8 @@ export interface SharedInvoiceView {
   shopName: string;
   /** The UPI link and QR for the balance, or null when nothing can be paid. */
   payment: PdfPayment | null;
+  /** The demo shop's invoice: a sample, never to be paid (SPEC F12). */
+  sample: boolean;
 }
 
 async function load(token: string): Promise<SharedInvoice> {
@@ -54,7 +56,8 @@ export async function getSharedInvoice(token: string): Promise<SharedInvoiceView
     status: displayStatus({ ...invoice, today: istDateFromInstant(now()) }),
     balancePaise: balancePaise(invoice),
     shopName: supplier ? (supplier.tradeName ?? supplier.legalName) : business.legalName,
-    payment: paymentFor(invoice, business),
+    payment: business.isDemo ? null : paymentFor(invoice, business),
+    sample: business.isDemo,
   };
 }
 

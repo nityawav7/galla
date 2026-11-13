@@ -114,6 +114,8 @@ jobs:
       - run: pnpm db:migrate
       # States, tax rates and units: onboarding cannot save a business without them.
       - run: pnpm db:seed:reference
+      # The demo shop, for tests/e2e/demo.spec.ts (SPEC F12; about 40 s).
+      - run: pnpm db:seed:demo
       - run: google-chrome --version
       - run: pnpm test:e2e
       - uses: actions/upload-artifact@v7

@@ -36,5 +36,5 @@ Issued invoices, credit notes, payments and refunds are protected by triggers th
 
 - The demo is only as correct as the app, by construction; a bug fixed in a service fixes the demo at the next reset.
 - During the reset (under a minute) the demo is partly built; at 04:00 IST nobody should notice. A visitor's changes are gone the next morning.
-- Visitors share one demo, so they see each other's changes. Phase 12b adds the guard rails (no settings, members or account changes; "sample" marks; stricter limits) and the sign-in.
+- Visitors share one demo, so they see each other's changes. Phase 12b added the sign-in and guard rails: no settings, members or account changes; "sample" marks; stricter limits (see SPEC F12). The reset also writes the demo users' password hashes, so run it once after rotating `BETTER_AUTH_SECRET`.
 - Tests replay the full six months twice (about 75 s of the integration suite).

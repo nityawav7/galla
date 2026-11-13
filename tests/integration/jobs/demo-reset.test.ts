@@ -1,9 +1,13 @@
 import { and, asc, eq, sql } from "drizzle-orm";
+import { extractText, getDocumentProxy } from "unpdf";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
+import { ForbiddenError } from "@/lib/errors";
 import { type DraftLine } from "@/lib/validation/invoices";
+import { authBaseUrl, getAuth } from "@/server/auth/auth";
 import { ensureDemoBusiness, ensureDemoUsers, wipeDemoBusiness } from "@/server/db/admin/demo";
 import { closeDb, getDb } from "@/server/db/client";
+import { findMembership } from "@/server/db/repos/members.repo";
 import {
   auditLogs,
   businesses,
@@ -19,9 +23,12 @@ import {
 } from "@/server/db/schema";
 import { withTransaction } from "@/server/db/transaction";
 import { DEMO_BUSINESS } from "@/server/demo/catalog";
-import { DEMO_USERS } from "@/server/demo/users";
+import { demoPassword, demoUser, DEMO_USERS } from "@/server/demo/users";
 import { type DemoResetSummary, runDemoReset } from "@/server/jobs/demo-reset";
+import { createBusiness, updateBusinessSettings } from "@/server/services/business.service";
 import { createDraft, issueInvoice } from "@/server/services/invoice.service";
+import { inviteMember } from "@/server/services/member.service";
+import { getSharedInvoice, renderSharedInvoicePdf } from "@/server/services/public-invoice.service";
 
 import { createTenant, type Tenant } from "../support/tenants";
 import { createUser } from "../support/users";
@@ -261,5 +268,114 @@ describe("demo guard rails", () => {
       .from(invoices)
       .where(eq(invoices.id, bystanderInvoice));
     expect(stillThere).toBeDefined();
+  });
+});
+
+describe("trying the demo (12b)", () => {
+  async function demoUserId(email: string): Promise<string> {
+    const [row] = await db().select({ id: users.id }).from(users).where(eq(users.email, email));
+    if (!row) throw new Error("no demo user");
+    return row.id;
+  }
+  const ownerCtx = async () => ({
+    userId: await demoUserId(demoUser("OWNER").email),
+    businessId: first.businessId,
+    role: "OWNER" as const,
+  });
+  const http = (path: string, body: unknown, cookie?: string) =>
+    getAuth().handler(
+      new Request(`${authBaseUrl()}/api/auth${path}`, {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          origin: authBaseUrl(),
+          ...(cookie ? { cookie } : {}),
+        },
+        body: JSON.stringify(body),
+      }),
+    );
+
+  it("signs in on the server with the derived password, but never from a browser", async () => {
+    // Back to a clean demo: the guard-rail test above changed the members.
+    await runDemoReset(AT);
+    const owner = demoUser("OWNER");
+    const session = await getAuth().api.signInEmail({
+      body: { email: owner.email, password: demoPassword("OWNER") },
+    });
+    expect(session.user.email).toBe(owner.email);
+    const membership = await findMembership(db(), session.user.id, DEMO_BUSINESS.slug);
+    expect(membership).toMatchObject({ role: "OWNER", isDemo: true });
+
+    const browser = await http("/sign-in/email", {
+      email: owner.email,
+      password: demoPassword("OWNER"),
+    });
+    expect(browser.status).toBe(403);
+  }, 240_000);
+
+  it("refuses account changes and email codes for the demo users", async () => {
+    const response = await getAuth().api.signInEmail({
+      body: { email: demoUser("STAFF").email, password: demoPassword("STAFF") },
+      asResponse: true,
+    });
+    const cookie = response.headers
+      .getSetCookie()
+      .map((header) => header.split(";")[0] ?? "")
+      .join("; ");
+    expect((await http("/update-user", { name: "Hacked" }, cookie)).status).toBe(403);
+    expect(
+      (
+        await http(
+          "/change-password",
+          { currentPassword: "x", newPassword: "y".repeat(12) },
+          cookie,
+        )
+      ).status,
+    ).toBe(403);
+    expect(
+      (
+        await http("/email-otp/send-verification-otp", {
+          email: demoUser("OWNER").email,
+          type: "sign-in",
+        })
+      ).status,
+    ).toBe(403);
+    const [staff] = await db()
+      .select({ name: users.name })
+      .from(users)
+      .where(eq(users.email, demoUser("STAFF").email));
+    expect(staff?.name).toBe("Demo Staff");
+  });
+
+  it("keeps the demo shop's settings, members and businesses out of visitors' hands", async () => {
+    const ctx = await ownerCtx();
+    await expect(updateBusinessSettings(ctx, {})).rejects.toBeInstanceOf(ForbiddenError);
+    await expect(
+      inviteMember(ctx, new Headers(), { email: "friend@example.com", role: "STAFF" }),
+    ).rejects.toBeInstanceOf(ForbiddenError);
+    await expect(createBusiness(ctx.userId, {})).rejects.toBeInstanceOf(ForbiddenError);
+  });
+
+  it("marks a demo invoice's public link and PDF as a sample, with nothing to pay", async () => {
+    const [row] = await db()
+      .select({ token: invoices.publicToken })
+      .from(invoices)
+      .where(
+        and(
+          eq(invoices.businessId, first.businessId),
+          eq(invoices.status, "ISSUED"),
+          sql`${invoices.publicToken} is not null`,
+        ),
+      )
+      .limit(1);
+    const token = row?.token ?? "";
+    const shared = await getSharedInvoice(token);
+    expect(shared.sample).toBe(true);
+    expect(shared.payment).toBeNull();
+    expect(shared.balancePaise).toBeGreaterThan(0n);
+    const pdf = await renderSharedInvoicePdf(token, "a4");
+    const { text } = await extractText(await getDocumentProxy(pdf.bytes), { mergePages: true });
+    expect(text).toContain("SAMPLE");
+    expect(text).not.toContain("UPI ID:");
   });
 });

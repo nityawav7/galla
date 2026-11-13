@@ -6,6 +6,7 @@ import { type PrintableLine } from "@/server/domain/invoice/printable";
 import { PDF_FONTS } from "./fonts";
 import {
   CancelledStamp,
+  SampleStamp,
   documentTitle,
   INK,
   KeyValue,
@@ -144,7 +145,7 @@ function Label({ children }: { children: string }) {
 }
 
 export function DocumentA4(props: DocumentPdfProps) {
-  const { doc, creditNote, payment, bank, cancelled, t } = props;
+  const { doc, creditNote, payment, bank, cancelled, sample, t } = props;
   const title = documentTitle(props);
   const cols = columns(props);
   const recipientName = doc.recipient.name ?? t("walkIn");
@@ -172,6 +173,7 @@ export function DocumentA4(props: DocumentPdfProps) {
               <Text style={{ fontSize: SMALL, textAlign: "right" }}>{t("compositionLine")}</Text>
             ) : null}
             {cancelled ? <CancelledStamp t={t} fontSize={11} /> : null}
+            {sample ? <SampleStamp t={t} fontSize={11} /> : null}
           </View>
         </View>
 

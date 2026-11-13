@@ -50,6 +50,15 @@ export function UpiQr({ link, size }: { link: string; size: number }) {
 
 /** "CANCELLED" across the top of a cancelled document. */
 export function CancelledStamp({ t, fontSize }: { t: PdfTranslator; fontSize: number }) {
+  return <Stamp label={t("cancelled")} fontSize={fontSize} />;
+}
+
+/** "SAMPLE — demo data, not a real bill" on the demo shop's documents (SPEC F12). */
+export function SampleStamp({ t, fontSize }: { t: PdfTranslator; fontSize: number }) {
+  return <Stamp label={t("sample")} fontSize={fontSize} />;
+}
+
+function Stamp({ label, fontSize }: { label: string; fontSize: number }) {
   return (
     <Text
       style={{
@@ -63,7 +72,7 @@ export function CancelledStamp({ t, fontSize }: { t: PdfTranslator; fontSize: nu
         alignSelf: "flex-start",
       }}
     >
-      {t("cancelled")}
+      {label}
     </Text>
   );
 }

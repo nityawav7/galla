@@ -1,7 +1,16 @@
 import { Document, Page, Text, View } from "@react-pdf/renderer";
 
 import { PDF_FONTS } from "./fonts";
-import { CancelledStamp, documentTitle, INK, KeyValue, MUTED, PartyLines, UpiQr } from "./parts";
+import {
+  CancelledStamp,
+  SampleStamp,
+  documentTitle,
+  INK,
+  KeyValue,
+  MUTED,
+  PartyLines,
+  UpiQr,
+} from "./parts";
 import { type DocumentPdfProps } from "./types";
 
 /*
@@ -29,7 +38,7 @@ function Rule() {
 }
 
 export function DocumentThermal(props: DocumentPdfProps) {
-  const { doc, creditNote, payment, cancelled, t } = props;
+  const { doc, creditNote, payment, cancelled, sample, t } = props;
   const title = documentTitle(props);
   return (
     <Document title={`${title} ${doc.number}`} author={doc.supplier.name ?? undefined}>
@@ -49,6 +58,7 @@ export function DocumentThermal(props: DocumentPdfProps) {
             <Text style={{ fontSize: SMALL, textAlign: "center" }}>{t("compositionLine")}</Text>
           ) : null}
           {cancelled ? <CancelledStamp t={t} fontSize={9} /> : null}
+          {sample ? <SampleStamp t={t} fontSize={9} /> : null}
         </View>
         <Rule />
 

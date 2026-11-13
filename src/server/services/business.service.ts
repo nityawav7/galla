@@ -1,6 +1,6 @@
 import { randomInt } from "node:crypto";
 
-import { ConflictError, ForbiddenError, NotFoundError } from "@/lib/errors";
+import { ConflictError, NotFoundError } from "@/lib/errors";
 import { storedTemplate } from "@/lib/share-templates";
 import { type BusinessInput, businessSchema } from "@/lib/validation/business";
 import { type TenantContext } from "@/server/authz/context";
@@ -19,7 +19,7 @@ import { insertMember } from "@/server/db/repos/members.repo";
 import { type Executor, withTransaction } from "@/server/db/transaction";
 import { slugify, slugWithSuffix } from "@/server/domain/slug";
 
-import { assertNotDemoUser, DEMO_READ_ONLY } from "./demo-guard";
+import { assertNotDemoBusiness, assertNotDemoUser } from "./demo-guard";
 import { parseInput } from "./validate";
 
 /** Fields the settings form edits, which are also the ones the audit diff compares. */
@@ -100,8 +100,8 @@ export async function createBusiness(
   userId: string,
   input: unknown,
 ): Promise<{ businessId: string; slug: string }> {
-  const business = parseInput(businessSchema, input);
   await assertNotDemoUser(userId);
+  const business = parseInput(businessSchema, input);
   return withTransaction(async (tx) => {
     const slug = await availableSlug(tx, business.tradeName ?? business.legalName);
     const row = await insertBusiness(tx, { ...toColumns(business), slug }, userId);
@@ -138,10 +138,10 @@ export async function updateBusinessSettings(
   input: unknown,
 ): Promise<Business> {
   assertCan(ctx, "business:manage");
+  await assertNotDemoBusiness(ctx);
   const patch: BusinessPatch = toColumns(parseInput(businessSchema, input));
   return withTransaction(async (tx) => {
     const before = await currentBusinessOrThrow(tx, ctx);
-    if (before.isDemo) throw new ForbiddenError(DEMO_READ_ONLY);
     const after = await updateCurrentBusiness(tx, ctx, patch);
     if (!after) throw new NotFoundError("Business");
     const diff = changedFields(before, after);

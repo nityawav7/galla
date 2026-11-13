@@ -45,5 +45,7 @@ export interface DocumentPdfProps {
   payment: PdfPayment | null;
   bank: PdfBank | null;
   cancelled: boolean;
+  /** The demo shop's documents say they are samples, not real bills (SPEC F12). */
+  sample: boolean;
   t: PdfTranslator;
 }
