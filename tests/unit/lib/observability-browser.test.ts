@@ -8,10 +8,9 @@ const posthog = vi.hoisted(() => ({ init: vi.fn(), capture: vi.fn() }));
 vi.mock("@sentry/nextjs", () => sentry);
 vi.mock("posthog-js", () => ({ default: posthog }));
 
-/** A browser window with its event listeners and the idle callback under the test's control. */
-function fakeWindow({ idle = true } = {}) {
+/** A browser window with its event listeners under the test's control. */
+function fakeWindow() {
   const listeners = new Map<string, (event: unknown) => void>();
-  let idleCallback: (() => void) | undefined;
   const window = {
     addEventListener: vi.fn((type: string, listener: (event: unknown) => void) => {
       listeners.set(type, listener);
@@ -19,19 +18,11 @@ function fakeWindow({ idle = true } = {}) {
     removeEventListener: vi.fn((type: string) => {
       listeners.delete(type);
     }),
-    ...(idle
-      ? {
-          requestIdleCallback: vi.fn((callback: () => void) => {
-            idleCallback = callback;
-          }),
-        }
-      : {}),
   };
   vi.stubGlobal("window", window);
   return {
     window,
     fire: (type: string, event: unknown) => listeners.get(type)?.(event),
-    idle: () => idleCallback?.(),
     listening: () => [...listeners.keys()],
   };
 }
@@ -58,21 +49,30 @@ afterEach(() => {
 });
 
 describe("Sentry in the browser", () => {
-  it("loads once the page is idle, through our tunnel, and sends errors thrown before that", async () => {
+  it("is not loaded on a page without errors, even after a while", async () => {
+    vi.useFakeTimers();
+    const page = fakeWindow();
+    const { startObservability } = await load({ NEXT_PUBLIC_SENTRY_DSN: DSN });
+    startObservability();
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(sentry.init).not.toHaveBeenCalled();
+    expect(page.listening()).toEqual(["error", "unhandledrejection"]);
+  });
+
+  it("loads on the first error, through our tunnel, and sends every error held until then", async () => {
     const page = fakeWindow();
     const { startObservability } = await load({
       NEXT_PUBLIC_SENTRY_DSN: DSN,
       NEXT_PUBLIC_VERCEL_ENV: "production",
     });
     startObservability();
-    expect(sentry.init).not.toHaveBeenCalled();
     const early = new Error("hydration");
     page.fire("error", { error: early, message: "hydration" });
     page.fire("error", { message: "Script error." });
     page.fire("unhandledrejection", { reason: "rejected" });
 
-    page.idle();
     await flush();
+    expect(sentry.init).toHaveBeenCalledTimes(1);
     expect(sentry.init).toHaveBeenCalledWith(
       expect.objectContaining({ dsn: DSN, environment: "production", tunnel: "/api/monitoring" }),
     );
@@ -80,7 +80,7 @@ describe("Sentry in the browser", () => {
     expect(page.listening()).toEqual([]);
   });
 
-  it("holds at most 10 early errors", async () => {
+  it("holds at most 10 errors while Sentry loads", async () => {
     const page = fakeWindow();
     const { startObservability } = await load({ NEXT_PUBLIC_SENTRY_DSN: DSN });
     startObservability();
@@ -88,23 +88,21 @@ describe("Sentry in the browser", () => {
       page.fire("error", { error: new Error(String(index)) });
       page.fire("unhandledrejection", { reason: index });
     }
-    page.idle();
     await flush();
+    expect(sentry.init).toHaveBeenCalledTimes(1);
     expect(sentry.captureException).toHaveBeenCalledTimes(10);
   });
 
-  it("falls back to a timer without requestIdleCallback, and reports boundary errors at once", async () => {
-    vi.useFakeTimers();
-    fakeWindow({ idle: false });
+  it("reports error-boundary errors, loading Sentry once", async () => {
+    fakeWindow();
     const { startObservability, reportError } = await load({ NEXT_PUBLIC_SENTRY_DSN: DSN });
     startObservability();
-    await vi.advanceTimersByTimeAsync(4000);
-    expect(sentry.init).toHaveBeenCalledTimes(1);
     const boom = new Error("boundary");
     reportError(boom);
-    await vi.advanceTimersByTimeAsync(0);
-    expect(sentry.captureException).toHaveBeenCalledWith(boom);
+    reportError(boom);
+    await flush();
     expect(sentry.init).toHaveBeenCalledTimes(1);
+    expect(sentry.captureException.mock.calls).toEqual([[boom], [boom]]);
   });
 
   it("does nothing without a DSN or on the server", async () => {

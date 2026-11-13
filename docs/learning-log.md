@@ -261,3 +261,8 @@ What I learned and what broke while building Galla, phase by phase.
 - `next start` serves only the files that were in `public/` at build time. Screenshots added after the build answered 404 until the next build, so make assets before building.
 - Screenshots made by a script from the demo stay honest: they show the real app, banner and all, and are one command away from being redone after a UI change.
 - **Looking at a screenshot found a real bug:** the public page said "Nothing is due" next to "Unpaid". Its condition was "no UPI block to show", which is also true for any shop without a UPI ID. Conditions should say what they mean (balance is zero), not what usually goes with it.
+
+## After Phase 12: Sentry on the first error
+
+- **Measure in production too.** The landing page scored 93 locally and 80 live. The local build had no Sentry DSN, so the SDK never loaded there. Test locally with the same settings as production (a placeholder DSN is enough).
+- "Load it when the page is idle" isn't free: idle comes about a second after load, still inside the time a phone is busy, and Lighthouse counts it. For an error reporter, the honest trigger is the first error.

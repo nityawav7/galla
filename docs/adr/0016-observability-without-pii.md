@@ -23,9 +23,9 @@ A plain Next.js rewrite was rejected because it forwards cookies, including the 
 
 **Loaded lazily:**
 
-- Sentry loads when the browser is idle (at most 4 s after the first render). `<StartObservability />` in the root layout holds up to 10 errors thrown before then and sends them once Sentry is there. Error boundaries load it at once.
+- Sentry loads only when there is an error to report. `<StartObservability />` in the root layout listens for uncaught errors and rejections; the first one loads Sentry, and up to 10 errors are held until it arrives. Error boundaries load it too. (Until 2026-11-13 it loaded on every page once the browser was idle. Its 445 KB took about 0.5 s of a phone's main thread, and the production landing page scored 80 on Lighthouse against 93 without it.)
 - PostHog loads on its first event; most visits never load it. Net cost on the sign-in page: 13 KB.
-- `instrumentation-client.ts` isn't used: with Turbopack it shipped a second copy of Next's router (about 130 KB) to every page. The cost is no Sentry span for client-side navigations; page loads and errors are still traced.
+- `instrumentation-client.ts` isn't used: with Turbopack it shipped a second copy of Next's router (about 130 KB) to every page. The cost is no Sentry span for client-side navigations. Since Sentry now loads only on an error, browser page loads aren't traced either; server requests still are (10%), and every browser error is still reported.
 
 **Nothing personal leaves.** For Sentry:
 

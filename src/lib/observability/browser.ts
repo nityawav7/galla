@@ -3,8 +3,10 @@
  * Both SDKs together are about 540 KB of JavaScript; loaded up front they more than doubled the
  * sign-in page's script. So:
  *
- * - Sentry loads once the page is idle. Errors thrown before that are held (up to 10) and sent
- *   when it arrives, so an early crash is still reported.
+ * - Sentry loads only when there is an error to report: the first uncaught error or rejection,
+ *   or an error boundary. Two small listeners catch errors until then and hold them (up to 10)
+ *   until Sentry arrives, so nothing is lost. Loading it on every page, even once idle, cost about
+ *   0.5 s of main-thread time on a phone (production Lighthouse TBT 850 ms against 320 ms).
  * - PostHog loads the first time one of its four events happens; most visits never load it.
  *
  * Without NEXT_PUBLIC_SENTRY_DSN / NEXT_PUBLIC_POSTHOG_KEY nothing is ever loaded.
@@ -19,8 +21,6 @@ type SentryModule = typeof Sentry;
 type PostHogClient = typeof PostHog;
 
 const EARLY_ERROR_LIMIT = 10;
-/** Load Sentry when the browser is idle, or after this long at the latest. */
-const SENTRY_IDLE_TIMEOUT_MS = 4000;
 
 const sentryDsn = process.env.NEXT_PUBLIC_SENTRY_DSN;
 const posthogKey = process.env.NEXT_PUBLIC_POSTHOG_KEY;
@@ -29,12 +29,17 @@ let sentry: Promise<SentryModule> | undefined;
 let posthog: Promise<PostHogClient> | undefined;
 const earlyErrors: unknown[] = [];
 
+function hold(error: unknown): void {
+  if (earlyErrors.length < EARLY_ERROR_LIMIT) earlyErrors.push(error);
+  void loadSentry();
+}
+
 function holdError(event: ErrorEvent): void {
-  if (earlyErrors.length < EARLY_ERROR_LIMIT) earlyErrors.push(event.error ?? event.message);
+  hold(event.error ?? event.message);
 }
 
 function holdRejection(event: PromiseRejectionEvent): void {
-  if (earlyErrors.length < EARLY_ERROR_LIMIT) earlyErrors.push(event.reason);
+  hold(event.reason);
 }
 
 function loadSentry(): Promise<SentryModule> {
@@ -51,17 +56,14 @@ function loadSentry(): Promise<SentryModule> {
   return sentry;
 }
 
-/** Called once by <StartObservability /> in the root layout, after the first render. */
+/**
+ * Called once by <StartObservability /> in the root layout, after the first render: listens for
+ * errors, and loads Sentry on the first one.
+ */
 export function startObservability(): void {
   if (!sentryDsn || typeof window === "undefined") return;
   window.addEventListener("error", holdError);
   window.addEventListener("unhandledrejection", holdRejection);
-  const load = () => void loadSentry();
-  if ("requestIdleCallback" in window) {
-    window.requestIdleCallback(load, { timeout: SENTRY_IDLE_TIMEOUT_MS });
-  } else {
-    setTimeout(load, SENTRY_IDLE_TIMEOUT_MS);
-  }
 }
 
 /** Reports an error caught by an error boundary (loads Sentry now if it isn't yet). */
