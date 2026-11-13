@@ -328,6 +328,13 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 - The seed creates 1 demo business with about 60 products, 120 customers and 6 months of realistic invoices (mix of B2B/B2C, intra/inter-state, paid, partial and overdue), plus credit notes and payments. Use `@faker-js/faker` with the `en_IN` locale plus curated HSN and product lists.
 - A banner says "Demo data — resets daily". Emails are suppressed in demo. Demo writes are rate-limited.
 - A **daily cron reset** restores it to the seed snapshot.
+- **How it is built (Phase 12a, ADR 0018):**
+  - **The shop:** *Sharma Hardware & Sanitary*, a fictional hardware store in Pune.
+  - **Products:** 60 products, all at 18%.
+  - **Customers:** 120, of which 40 are businesses with fictional, checksum-valid GSTINs (10 in other states) and 80 are retail customers on credit. None has a phone or email, and the shop has no UPI ID.
+  - **Activity:** about 550 invoices over the last six months (around a third walk-in, paid at the counter), about 500 payments, about 15 credit notes (walk-in returns refunded at the counter) and a few cancellations.
+  - **Built by replaying a deterministic plan** through the real services, each event at its own moment, so every total, number and status is what the app itself makes. Dates end yesterday, so the demo never goes stale.
+  - **Reset:** `/api/cron/demo-reset` at 04:00 IST; locally `pnpm db:seed:demo`. Emptying it relies on migration 0012, which lets delete guards pass only for a demo business inside a transaction that set the reset flag.
 
 ---
 

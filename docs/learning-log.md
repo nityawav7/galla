@@ -235,3 +235,12 @@ What I learned and what broke while building Galla, phase by phase.
 - Signing in through Better Auth's server API (`auth.api.signInEmail({ asResponse: true })`) gives a real session cookie without hitting the 5-a-minute sign-in limit, which is right for a seed script and wrong for anything public.
 - Five times the users didn't bring five times the throughput: 50 users on one local Node process with a 10-connection pool queue for connections. What mattered more was that gapless numbering held under contention in every shop.
 - The SPEC said 50 users and the plan said 10. Running both cost a minute and answered both.
+
+## Phase 12a: the demo business
+
+- Realistic demo data is mostly about _correctness_. Writing rows directly would have meant re-implementing GST, numbering, allocation, credit notes and refunds. Replaying a plan through the real services gets every number right by construction, and it took 37 s for six months of a shop.
+- To replay the past, the services needed a movable clock. `AsyncLocalStorage` scopes it to one piece of work (`atTime`), so a request running at the same moment still reads the real time.
+- Vercel's free plan allows 300 s per function with Fluid compute (on by default), not the 60 s assumed earlier. Check the current limits before designing around them.
+- A deterministic plan needs its own seeded random generator (mulberry32) as well as `faker.seed`, and anything picked at random must not be picked twice: the first version could return the same line twice, more than was sold.
+- The first plan made customers pay too rarely: 76% of what was owed was overdue. Looking at the dashboard with real eyes caught it; the tests couldn't.
+- Database guards and a reset can coexist: a transaction-local setting plus `is_demo`, checked inside the trigger, lets exactly one job delete, and only in one business.

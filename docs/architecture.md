@@ -60,6 +60,10 @@ flowchart TD
 
 Vercel Cron calls `/api/cron/daily` at 03:30 UTC (09:00 IST) with `CRON_SECRET` ([ADR 0014](adr/0014-daily-job.md)). For each business, in batches of 25 and within 45 s, it sends due payment reminders (if the owner turned them on) and the owner's digest. Each is claimed first (`INSERT … ON CONFLICT DO NOTHING`), so running it twice sends nothing twice. Without Resend it reports `emailSetUp: false` and sends nothing.
 
+## The demo business
+
+At 04:00 IST Vercel Cron calls `/api/cron/demo-reset` ([ADR 0018](adr/0018-demo-business-and-daily-reset.md)). The job restores the demo business's settings and its two users, empties it (the only delete the guards allow, and only for a demo business), then replays six months of a deterministic plan through the real services, each event at its own moment (`atTime`).
+
 ## Backups
 
 GitHub Actions runs at 21:30 UTC (03:00 IST). It dumps production with `pg_dump`, encrypts the dump with `age` to the owner's public key, and uploads it to a private Backblaze B2 bucket that keeps 30 days ([ADR 0017](adr/0017-nightly-backups.md), [restore steps](restore.md)). Neon's own point-in-time restore covers the last 6 hours on the free plan.
@@ -85,6 +89,7 @@ GitHub Actions runs at 21:30 UTC (03:00 IST). It dumps production with `pg_dump`
 | [0015](adr/0015-csp-with-nonces.md)                           | A strict CSP with nonces, and every page rendered per request           |
 | [0016](adr/0016-observability-without-pii.md)                 | Error tracking and product analytics without personal data              |
 | [0017](adr/0017-nightly-backups.md)                           | Nightly encrypted backups to Backblaze B2                               |
+| [0018](adr/0018-demo-business-and-daily-reset.md)             | The demo business, built by replaying the real services every morning   |
 
 ## Data model
 
