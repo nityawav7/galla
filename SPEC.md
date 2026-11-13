@@ -359,7 +359,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 - Errors and performance are tracked in **Sentry** with source maps and release tags. Product analytics are in **PostHog** (no PII, and respect Do Not Track).
 - Both are off without their keys, reached through our own routes (`/api/monitoring`, `/api/relay`) so the CSP stays `connect-src 'self'` and neither service sees cookies or IPs, and loaded lazily (Sentry when the page is idle, PostHog on its first event). Sentry gets no user, headers, bodies or query strings, and URLs lose invoice tokens and business slugs. PostHog gets four named events only (`invoice_issued` with seconds to issue, `payment_recorded`, `reminder_shared`, `invoice_emailed`), no identity, nothing stored in the browser. See ADR 0016.
 - Structured JSON logs (`pino`) with `requestId` and `businessId`: the proxy passes Vercel's request id (`x-vercel-id`) on as `x-request-id`, and every log line inside a server action or route handler carries it, plus the business once `requireTenant` has resolved it.
-- **Backups:** Neon point-in-time restore (limited window on the free plan), **plus** a nightly `pg_dump` from GitHub Actions, encrypted with `age` and uploaded to object storage (Cloudflare R2 or Backblaze B2). The restore steps are documented and tested monthly into a Neon branch.
+- **Backups:** Neon point-in-time restore (6 hours on the free plan), **plus** a nightly `pg_dump` from GitHub Actions at 03:00 IST, encrypted with `age` to a public key in the repo (the private key is kept offline by the owner) and uploaded to a private Backblaze B2 bucket, which deletes files after 30 days (ADR 0017). The restore steps are in `docs/restore.md` and tested monthly: decrypt, restore into a throwaway database, compare with `scripts/backup/check.sql`.
 - `docs/runbook.md`: how to roll back a deploy, restore the DB, rotate secrets, and handle "invoice numbers out of sequence".
 
 ### 6.5 Accessibility & i18n
@@ -408,7 +408,7 @@ UI (app/ routes, components)  →  Server Actions / Route Handlers (thin: auth, 
 .
 ├── CLAUDE.md  SPEC.md  BUILD_PLAN.md  README.md  .env.example  .nvmrc
 ├── docs/  architecture.md  runbook.md  adr/0001-….md
-├── scripts/  seed.ts  seed-demo.ts  backup.sh  restore.md
+├── scripts/  seed.ts  migrate.ts  backup/check.sql
 ├── drizzle/  (generated SQL migrations — committed, never edited after merge)
 ├── src/
 │   ├── app/

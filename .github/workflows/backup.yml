@@ -1,0 +1,83 @@
+name: Nightly backup
+
+# Every night at 21:30 UTC (03:00 IST), and by hand from the Actions tab (ADR 0017).
+# pg_dump of the production database → encrypted with age to the public key in
+# .github/backup/age-recipient.txt (the private key is kept offline by the owner) →
+# Backblaze B2, which deletes files 30 days after upload (bucket lifecycle rule).
+# Any failed step fails the run, and GitHub emails the owner.
+on:
+  schedule:
+    - cron: "30 21 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: backup
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    name: Dump, encrypt, upload
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      # pg_dump must be at least the server's major version; 18 dumps 16, 17 and 18.
+      PG_IMAGE: postgres:18-alpine
+      # Only these secrets reach this job. Never echo them.
+      BACKUP_DATABASE_URL: ${{ secrets.BACKUP_DATABASE_URL }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.B2_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_APPLICATION_KEY }}
+      B2_BUCKET: ${{ secrets.B2_BUCKET }}
+      B2_ENDPOINT: ${{ secrets.B2_ENDPOINT }}
+      # Backblaze's S3 API doesn't take the newer AWS CLI's default checksums.
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Check the settings
+        run: |
+          set -euo pipefail
+          missing=0
+          for name in BACKUP_DATABASE_URL AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY B2_BUCKET B2_ENDPOINT; do
+            if [ -z "${!name:-}" ]; then echo "::error::Secret for $name is not set"; missing=1; fi
+          done
+          grep -Eq '^age1[0-9a-z]{58}$' .github/backup/age-recipient.txt \
+            || { echo "::error::.github/backup/age-recipient.txt is not one age public key"; missing=1; }
+          exit "$missing"
+
+      - name: Install age
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq age
+
+      - name: Dump and encrypt
+        run: |
+          set -euo pipefail
+          name="galla-$(date -u +%Y-%m-%d).dump.age"
+          echo "BACKUP_FILE=$name" >> "$GITHUB_ENV"
+          # Custom format (compressed, restorable table by table). No owners or grants:
+          # it restores into any database, such as a fresh Neon branch.
+          docker run --rm -e DB_URL="$BACKUP_DATABASE_URL" "$PG_IMAGE" \
+            sh -c 'pg_dump --format=custom --no-owner --no-privileges --dbname="$DB_URL"' \
+            | age --encrypt --recipients-file .github/backup/age-recipient.txt > "$name"
+          size=$(stat -c %s "$name")
+          echo "Encrypted dump: $size bytes"
+          # An empty or near-empty file means the dump failed even if a pipe hid it.
+          [ "$size" -gt 10000 ] || { echo "::error::Backup is only $size bytes"; exit 1; }
+          head -c 21 "$name" | grep -q 'age-encryption.org/v1' \
+            || { echo "::error::Backup is not age-encrypted"; exit 1; }
+
+      - name: Upload to Backblaze B2
+        run: |
+          set -euo pipefail
+          region=$(echo "$B2_ENDPOINT" | cut -d. -f2)
+          aws s3 cp "$BACKUP_FILE" "s3://$B2_BUCKET/$BACKUP_FILE" \
+            --endpoint-url "https://$B2_ENDPOINT" --region "$region" --only-show-errors
+          # Read it back: the file must be there with the same size.
+          remote=$(aws s3api head-object --bucket "$B2_BUCKET" --key "$BACKUP_FILE" \
+            --endpoint-url "https://$B2_ENDPOINT" --region "$region" --query ContentLength --output text)
+          local_size=$(stat -c %s "$BACKUP_FILE")
+          [ "$remote" = "$local_size" ] \
+            || { echo "::error::Uploaded $remote bytes, expected $local_size"; exit 1; }
+          echo "Uploaded $BACKUP_FILE ($local_size bytes)" >> "$GITHUB_STEP_SUMMARY"

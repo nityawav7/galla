@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Phase 11e:** nightly encrypted backups (ADR 0017). A GitHub Actions workflow dumps the production database at 03:00 IST, encrypts it with `age` to the owner's public key and uploads it to Backblaze B2 (free, no card), which keeps 30 days. `docs/restore.md` explains how to download, decrypt and restore, with `scripts/backup/check.sql` to compare counts.
+
 - **Phase 11d:** Sentry error tracking and PostHog product analytics, both off until their keys are set (ADR 0016). They go through our own routes (`/api/monitoring`, `/api/relay`), so the CSP is unchanged and neither service sees cookies or IP addresses. Sentry loads when the page is idle (early errors are held and sent), PostHog on its first event, which costs the sign-in page 13 KB. Nothing personal is sent: URLs lose invoice tokens and business slugs; analytics are four named events with no identity. A last-resort error page. Pages with a trailing slash are now redirected by the proxy.
 
 - **Phase 11c:** axe accessibility checks in the e2e tests on 14 pages at phone and desktop widths (serious or critical issues fail the build). Fixed what they found: text contrast on grey panels and light red fills (darker muted and destructive colours), WhatsApp placeholder buttons named after what they show, and sideways-scrolling tables reachable from the keyboard. Lighthouse scores recorded in `docs/hardening-checklist.md`: accessibility 100 on every page measured; performance 90–99 except the production sign-in page (83, open).
