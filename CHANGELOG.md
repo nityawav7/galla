@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Faster pages in production:** Sentry now loads only when there is an error to report, not on every page. It cost about half a second on a phone; the live landing page scored 80 on Lighthouse instead of 93. Errors are still all reported; browser page loads are no longer traced.
+
 - **Phase 12c:**
   - **Landing page:** what Galla does, the problems it solves, three features, real phone screenshots of the demo (made by `pnpm landing:screenshots`), the "Try the demo" buttons and a link to the code.
   - **Privacy and Terms pages** in plain language (marked as not lawyer-reviewed), and a footer with the "not tax or legal advice" note.

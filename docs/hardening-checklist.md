@@ -62,7 +62,7 @@ Sentry and PostHog, off until their keys are set ([ADR 0016](adr/0016-observabil
 
 - **What Sentry would send:** an error thrown from `/login?next=/b/sharma-hardware` was sent to `/api/monitoring` (Sentry's `beforeEnvelope` hook shows the envelope). Its message `…/b/sharma-hardware/customers?q=Ravi` arrived as `…/b/:slug/customers`; its URL had no query string, and it carried no user, no headers, `infer_ip: never` and the commit as its release.
 - **What PostHog would send:** "Email invoice" sent one event to `/api/relay/e/` with only `event`, `$lib`, `$lib_version`, a random `distinct_id`, the project key and `$process_person_profile: false`.
-- **Cost:** sign-in page JavaScript went from 762 KB to 775 KB; Sentry loads when the page is idle and PostHog on its first event.
+- **Cost:** sign-in page JavaScript went from 762 KB to 775 KB; Sentry loads when the page is idle and PostHog on its first event. (Since 2026-11-13 Sentry loads only on the first error: see the landing page below.)
 - **No CSP violations:** both go to our own origin.
 
 ## Backups (11e)
@@ -90,6 +90,8 @@ k6 through the real server actions, against a local production build ([load-test
 
 Lighthouse 13.6.0, mobile, median of 3, local production build: **performance 93, accessibility 100, best practices 100, SEO 100** (LCP 0.9 s, TBT 320 ms). Privacy and Terms are in the axe checks, with no violations.
 
+**In production it scored 80** (2026-11-13: runs of 82, 77 and 80, TBT 750–1,130 ms). The difference was Sentry: production has a DSN, so its 445 KB SDK loaded on every page once the browser was idle and ran for about 0.5 s on a throttled phone. Sentry now loads only when there is an error to report. On a local production build **with a Sentry DSN**, the landing page scores **93** again (runs of 96, 93 and 86), and the SDK isn't fetched; a thrown test error still loads it and reaches `/api/monitoring`. The sign-in page scored about 80 in the same local runs, so Sentry isn't what holds it back (see below).
+
 ## Still open after Phase 11
 
 | Item                                    | Why it is open                                                                            | Next step                                                                                                     |
@@ -101,4 +103,3 @@ Lighthouse 13.6.0, mobile, median of 3, local production build: **performance 93
 | Neon branches 9 of 10                   | Each PR preview makes one; the 11th fails the preview deploy                              | Delete merged `preview/…` branches in the Neon console                                                        |
 | Signed-in downloads unlimited           | PDFs, statements and reports need a session but have no rate limit (security review, 11a) | A per-user limit if Vercel usage ever shows abuse                                                             |
 | 50-user load slow on one process        | p95 3.2 s locally; production wasn't load tested, on purpose                              | Watch Vercel's function durations once real traffic exists                                                    |
-| Demo mode's stricter limits             | Demo mode doesn't exist yet                                                               | Phase 12                                                                                                      |
