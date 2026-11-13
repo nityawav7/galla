@@ -1,29 +1,21 @@
+import { hashPassword } from "better-auth/crypto";
+
 import { type Role, type TenantContext } from "@/server/authz/context";
 import { atTime, now } from "@/server/clock";
-import {
-  type DemoUser,
-  ensureDemoBusiness,
-  ensureDemoUsers,
-  wipeDemoBusiness,
-} from "@/server/db/admin/demo";
+import { ensureDemoBusiness, ensureDemoUsers, wipeDemoBusiness } from "@/server/db/admin/demo";
 import { getDb } from "@/server/db/client";
 import { insertCustomers } from "@/server/db/repos/customers.repo";
 import { findInvoiceLines, findOpenInvoicesForCustomer } from "@/server/db/repos/invoices.repo";
 import { insertProducts, type Product } from "@/server/db/repos/products.repo";
 import { DEMO_BUSINESS, DEMO_PRODUCTS, DEMO_RATE_BP } from "@/server/demo/catalog";
 import { DEMO_SEED, type DemoEvent, demoGstin, demoPlan, type DemoRole } from "@/server/demo/plan";
+import { DEMO_USERS, demoPassword } from "@/server/demo/users";
 import { istDateFromInstant, istStartOfDay } from "@/server/domain/fy";
 import { balancePaise } from "@/server/domain/invoice/status";
 import { formatRupees, parseRupees, sumPaise } from "@/server/domain/money";
 import { cancelInvoice, createCreditNote } from "@/server/services/credit-note.service";
 import { createDraft, issueInvoice } from "@/server/services/invoice.service";
 import { recordPayment } from "@/server/services/payment.service";
-
-/** The two people visitors become in the demo (Phase 12b signs them in). */
-export const DEMO_USERS: readonly DemoUser[] = [
-  { name: "Demo Owner", email: "demo-owner@galla.invalid", role: "OWNER" },
-  { name: "Demo Staff", email: "demo-staff@galla.invalid", role: "STAFF" },
-];
 
 /** The shop opens at 10:00 IST; each event of a day is a minute after the last. */
 const OPENING_MS = 10 * 60 * 60 * 1000;
@@ -196,7 +188,16 @@ export async function runDemoReset(
     creditNotePrefix: DEMO_BUSINESS.creditNotePrefix,
     hsnDigitsRequired: DEMO_BUSINESS.hsnDigitsRequired,
   });
-  const userIds = await ensureDemoUsers(db, businessId, DEMO_USERS);
+  const userIds = await ensureDemoUsers(
+    db,
+    businessId,
+    await Promise.all(
+      DEMO_USERS.map(async (user) => ({
+        ...user,
+        passwordHash: await hashPassword(demoPassword(user.role)),
+      })),
+    ),
+  );
   await wipeDemoBusiness(businessId);
 
   const ctx = (role: Role): TenantContext => {

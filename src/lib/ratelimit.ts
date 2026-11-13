@@ -24,6 +24,10 @@ export const LIMITS = {
   mutation: { requests: 120, windowSeconds: 60 },
   /** "Email invoice", per business (decision 4 of the Phase 10 plan). */
   invoiceEmail: { requests: 30, windowSeconds: 60 * 60 },
+  /** "Try the demo" sign-ins, per IP (SPEC F12, Phase 12b). */
+  demoSignIn: { requests: 10, windowSeconds: 60 * 60 },
+  /** Changes in the demo, per visitor IP: everyone shares the demo users (Phase 12b). */
+  demoMutation: { requests: 30, windowSeconds: 60 },
   /** The analytics relay (/api/relay), per IP (Phase 11d). A page sends a handful at most. */
   analytics: { requests: 120, windowSeconds: 60 },
 } as const;

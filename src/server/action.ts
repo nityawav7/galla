@@ -4,9 +4,10 @@ import { unstable_rethrow } from "next/navigation";
 import { type ActionResult } from "@/lib/action-result";
 import { isAppError, RateLimitError, toPublicError } from "@/lib/errors";
 import { logger } from "@/lib/logger";
-import { getLimiter } from "@/lib/ratelimit";
+import { clientIp, getLimiter, hashIp } from "@/lib/ratelimit";
 import { withRequestContext } from "@/lib/request-context";
 import { getSessionUser } from "@/server/auth/session";
+import { isDemoEmail } from "@/server/demo/users";
 import { requestIdFrom } from "@/server/http/security-headers";
 
 /** The proxy's request id, or a new one (requests the proxy didn't see). */
@@ -46,6 +47,16 @@ export async function limitMutation(userId: string): Promise<void> {
 }
 
 /**
+ * The demo's users are shared by every visitor, so their changes are counted per visitor IP
+ * instead, and more strictly: 30 a minute (SPEC F12).
+ */
+export async function limitDemoMutation(requestHeaders: Headers): Promise<void> {
+  const key = hashIp(clientIp(requestHeaders));
+  const { success, reset } = await getLimiter("demoMutation").limit(key);
+  if (!success) throw new RateLimitError(Math.max(1, Math.ceil((reset - Date.now()) / 1000)));
+}
+
+/**
  * `runAction` for actions that change data. Searches and previews (which fire while typing)
  * use `runAction` and are not counted. Without a session the work itself sends the user to
  * sign in.
@@ -53,7 +64,8 @@ export async function limitMutation(userId: string): Promise<void> {
 export async function runMutation<T>(work: () => Promise<T>): Promise<ActionResult<T>> {
   return runAction(async () => {
     const user = await getSessionUser();
-    if (user) await limitMutation(user.id);
+    if (user && isDemoEmail(user.email)) await limitDemoMutation(await headers());
+    else if (user) await limitMutation(user.id);
     return work();
   });
 }

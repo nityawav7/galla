@@ -19,7 +19,8 @@ import {
 } from "@/server/db/schema";
 import { withTransaction } from "@/server/db/transaction";
 import { DEMO_BUSINESS } from "@/server/demo/catalog";
-import { DEMO_USERS, type DemoResetSummary, runDemoReset } from "@/server/jobs/demo-reset";
+import { DEMO_USERS } from "@/server/demo/users";
+import { type DemoResetSummary, runDemoReset } from "@/server/jobs/demo-reset";
 import { createDraft, issueInvoice } from "@/server/services/invoice.service";
 
 import { createTenant, type Tenant } from "../support/tenants";
@@ -189,7 +190,11 @@ describe("demo guard rails", () => {
     await db()
       .insert(members)
       .values({ businessId: first.businessId, userId: stranger.id, role: "STAFF" });
-    const ids = await ensureDemoUsers(db(), first.businessId, DEMO_USERS);
+    const ids = await ensureDemoUsers(
+      db(),
+      first.businessId,
+      DEMO_USERS.map((user) => ({ ...user, passwordHash: "unused" })),
+    );
     const rows = await db()
       .select({ userId: members.userId, role: members.role })
       .from(members)
