@@ -54,7 +54,16 @@ Lighthouse mobile (13.6.0, median of 3; details in [docs/hardening-checklist.md]
 | Invoice page         | 90          | 100           |
 | Public invoice       | 99          | 100           |
 
-Dashboard, invoice page and public invoice were measured on a local production build. Load test p95: coming in Phase 11f.
+Dashboard, invoice page and public invoice were measured on a local production build.
+
+Load test (k6, through the real server actions, local production build; [docs/load-test.md](docs/load-test.md)):
+
+| Users | Invoices in 60 s | p95 create draft | p95 issue | Failures |
+| ----- | ---------------- | ---------------- | --------- | -------- |
+| 10    | 355              | 189 ms           | 249 ms    | 0        |
+| 50    | 687              | 3.2 s            | 2.6 s     | 0        |
+
+Gapless invoice numbers held in every test shop. At 50 users the single local server process is the limit, not the database.
 
 ## Roadmap
 

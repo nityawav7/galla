@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Phase 11f:**
+  - `docs/architecture.md` in full: system, layers and flows, with Mermaid diagrams.
+  - Runbook sections on rolling back a deploy, restoring the database and rotating every secret.
+  - A k6 load test through the real server actions (`load/issue-invoice.js`, `pnpm load:seed`, `docs/load-test.md`). With 10 users, 355 invoices a minute, p95 249 ms to issue; at 50 users the single local process saturates. Gapless numbering held throughout.
+  - `docs/hardening-checklist.md` completed: the first production restore test, and what is still open.
+  - `/api/monitoring` answers 404 without a Sentry DSN.
+
 - **Phase 11e:** nightly encrypted backups (ADR 0017). A GitHub Actions workflow dumps the production database at 03:00 IST, encrypts it with `age` to the owner's public key and uploads it to Backblaze B2 (free, no card), which keeps 30 days. `docs/restore.md` explains how to download, decrypt and restore, with `scripts/backup/check.sql` to compare counts.
 
 - **Phase 11d:** Sentry error tracking and PostHog product analytics, both off until their keys are set (ADR 0016). They go through our own routes (`/api/monitoring`, `/api/relay`), so the CSP is unchanged and neither service sees cookies or IP addresses. Sentry loads when the page is idle (early errors are held and sent), PostHog on its first event, which costs the sign-in page 13 KB. Nothing personal is sent: URLs lose invoice tokens and business slugs; analytics are four named events with no identity. A last-resort error page. Pages with a trailing slash are now redirected by the proxy.

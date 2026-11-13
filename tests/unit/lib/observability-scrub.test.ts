@@ -24,11 +24,13 @@ describe("scrubText", () => {
   });
 
   it("never leaves a token, slug or query string behind", () => {
+    // Each value starts with a letter the fixed text doesn't contain (Q, z, q), so finding it
+    // in the result can only mean it leaked, never that it matched "x.app" or ":token".
     fc.assert(
       fc.property(
-        fc.stringMatching(/^[A-Za-z0-9_-]{8,30}$/),
-        fc.stringMatching(/^[a-z][a-z0-9-]{3,30}$/),
-        fc.stringMatching(/^[a-z]{3,12}$/),
+        fc.stringMatching(/^Q[A-Za-z0-9_-]{7,29}$/),
+        fc.stringMatching(/^z[a-z0-9-]{3,30}$/),
+        fc.stringMatching(/^q[a-z]{2,11}$/),
         (token, slug, search) => {
           const text = scrubText(`https://x.app/i/${token} and /b/${slug}/c?q=${search}`);
           expect(text).not.toContain(token);

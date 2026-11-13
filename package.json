@@ -28,6 +28,7 @@
     "db:migrate": "tsx scripts/migrate.ts",
     "db:seed": "tsx scripts/seed.ts",
     "db:seed:reference": "tsx scripts/seed.ts --reference-only",
+    "load:seed": "tsx scripts/load-seed.ts",
     "db:studio": "drizzle-kit studio",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test:unit && pnpm test:integration && pnpm test:perf",
     "prepare": "husky"
