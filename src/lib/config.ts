@@ -1,6 +1,13 @@
 /** Renaming the product is a one-line change here (SPEC header). */
 export const APP_NAME = "Galla";
 
+/** The public source code (landing page and footer). */
+export const SOURCE_URL = "https://github.com/nityawav7/galla";
+/** Where people raise questions and data requests (Privacy page). */
+export const ISSUES_URL = `${SOURCE_URL}/issues`;
+/** The date the Privacy and Terms pages last changed. */
+export const LEGAL_UPDATED = "2026-11-13";
+
 export const APP_TAGLINE = "GST billing and udhaar for small shops";
 
 /** The largest single payment, ₹10 crore (also a CHECK on `payments.amount_paise`). */

@@ -86,6 +86,10 @@ k6 through the real server actions, against a local production build ([load-test
 - [Runbook](runbook.md): rolling back a deploy, restoring the database (6-hour Neon restore or the nightly backup), rotating every secret, the daily job, backups, Sentry.
 - `/api/monitoring` now answers 404 without a Sentry DSN (it answered 500).
 
+## Landing page (12c)
+
+Lighthouse 13.6.0, mobile, median of 3, local production build: **performance 93, accessibility 100, best practices 100, SEO 100** (LCP 0.9 s, TBT 320 ms). Privacy and Terms are in the axe checks, with no violations.
+
 ## Still open after Phase 11
 
 | Item                                    | Why it is open                                                                            | Next step                                                                                                     |

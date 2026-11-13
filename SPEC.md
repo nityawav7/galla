@@ -328,6 +328,9 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 - The seed creates 1 demo business with about 60 products, 120 customers and 6 months of realistic invoices (mix of B2B/B2C, intra/inter-state, paid, partial and overdue), plus credit notes and payments. Use `@faker-js/faker` with the `en_IN` locale plus curated HSN and product lists.
 - A banner says "Demo data — resets daily". Emails are suppressed in demo. Demo writes are rate-limited.
 - A **daily cron reset** restores it to the seed snapshot.
+- **The landing page (Phase 12c):**
+  - **Content:** the problem, three features, real screenshots of the demo at phone size, and the demo buttons, plus sign-up, sign-in and a GitHub link.
+  - **Footer:** Privacy and Terms pages, written in plain language and marked as not reviewed by a lawyer, and the "not tax or legal advice" disclaimer.
 - **Trying it (Phase 12b):**
   - "Try as the owner" and "Try as staff" on the sign-in page (and the landing page). The server signs the visitor in as "Demo Owner" or "Demo Staff". Their emails are on `galla.invalid`, and their passwords are derived from `BETTER_AUTH_SECRET`; the browser never sees them.
   - Every demo page shows "Demo data — resets daily. Other visitors can see your changes."

@@ -88,7 +88,7 @@ async function SharedInvoice({ params }: { params: Promise<{ token: string }> })
             </div>
           </div>
         </section>
-      ) : !cancelled ? (
+      ) : !cancelled && shared.balancePaise === 0n ? (
         <p role="status" className="rounded-lg border p-3 text-sm">
           {t("nothingDue")}
         </p>
