@@ -137,3 +137,13 @@ Rotate a secret when it may have leaked (pasted in a chat, a screenshot, a publi
 | `B2_KEY_ID`, `B2_APPLICATION_KEY`      | GitHub secrets                                                               | Backblaze → **Application Keys** → create (that bucket only, read and write), update both secrets, delete the old key              | Backups made before the update keep working; a run during the switch fails and emails the owner.                       |
 | Backup encryption key (age)            | Owner's offline copy; public half in `.github/backup/age-recipient.txt`      | [restore.md → Losing or rotating the key](restore.md#losing-or-rotating-the-key)                                                   | Keep the old private key until its last backup expires (30 days).                                                      |
 | `RESEND_API_KEY`, Google client secret | Vercel (not set up yet)                                                      | create a new key, update, redeploy, revoke the old one                                                                             | Emails or Google sign-in fail between revoking and redeploying, so revoke last.                                        |
+
+## The demo business (ADR 0018)
+
+- **What:** _Sharma Hardware & Sanitary_ (`/b/demo-sharma-hardware`), rebuilt every morning at 04:00 IST by Vercel Cron (`/api/cron/demo-reset`, same `CRON_SECRET` as the daily job), from six months of plan replayed through the real services.
+- **Rebuild it now:** Vercel → **Settings** → **Cron Jobs** → `/api/cron/demo-reset` → **Run**. It takes under a minute (up to 5 allowed). The response lists invoices, payments and credit notes made.
+- **Locally:** `pnpm db:seed:demo` (refuses a Neon database).
+- **If the reset fails:** the function logs show the step. Common causes:
+  - the database was asleep and slow (run it again);
+  - a service rule changed so a planned event is no longer valid, for example a payment or return the new rule refuses. Fix the plan in `src/server/demo/plan.ts`, with a test.
+- **It never touches a real business:** the delete guards pass only for `is_demo` businesses inside the reset's own transaction (migration 0012).

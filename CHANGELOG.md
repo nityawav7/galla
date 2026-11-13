@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- **Phase 12a:** the demo business (ADR 0018), _Sharma Hardware & Sanitary_ in Pune: 60 products, 120 customers, about 550 invoices with payments, credit notes and refunds over the last six months. It is built by replaying a deterministic plan through the real services, so its numbers are the app's own, and rebuilt every morning at 04:00 IST (`/api/cron/demo-reset`, `pnpm db:seed:demo` locally). Migration `0012_demo_reset` lets only that reset empty a demo business. Visitors can't sign in to it yet (12b).
+
 - **Phase 11f:**
   - `docs/architecture.md` in full: system, layers and flows, with Mermaid diagrams.
   - Runbook sections on rolling back a deploy, restoring the database and rotating every secret.
