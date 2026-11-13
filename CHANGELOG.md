@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+- **Phase 12c:**
+  - **Landing page:** what Galla does, the problems it solves, three features, real phone screenshots of the demo (made by `pnpm landing:screenshots`), the "Try the demo" buttons and a link to the code.
+  - **Privacy and Terms pages** in plain language (marked as not lawyer-reviewed), and a footer with the "not tax or legal advice" note.
+  - **Final README:** the live demo, screenshots, architecture, decisions and metrics.
+  - **Fix:** the public invoice page said "Nothing is due" whenever no UPI payment could be shown, even with money still owed. It now says so only when the balance really is zero.
+
 - **Phase 12b:**
   - **Try the demo:** "Try as the owner" and "Try as staff" on the sign-in page open the demo shop with no sign-up.
   - **Banner:** every demo page says "Demo data — resets daily".

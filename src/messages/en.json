@@ -1497,5 +1497,92 @@
       "tooMany": "Too many demo visits from here. Please try again later.",
       "failed": "The demo couldn't open. Please try again."
     }
+  },
+  "landing": {
+    "metaTitle": "GST billing and udhaar for small shops",
+    "eyebrow": "For kirana, hardware and small shops in India",
+    "heading": "GST bills in under a minute. Know who owes you what.",
+    "lead": "Make a GST-correct invoice on your phone, share it on WhatsApp with a UPI QR, record payments and udhaar, and hand your CA clean reports.",
+    "createAccount": "Create a free account",
+    "signIn": "Sign in",
+    "problemTitle": "Why Galla",
+    "problems": {
+      "one": "Bills in a notebook or a spreadsheet get the GST split wrong, and fixing them later is painful.",
+      "two": "Money owed (udhaar) lives in someone's memory, and reminders feel awkward.",
+      "three": "At filing time the CA needs a clean sales register and HSN summary, not a pile of photos."
+    },
+    "featuresTitle": "What it does",
+    "features": {
+      "invoiceTitle": "A GST invoice in under a minute",
+      "invoiceBody": "CGST and SGST, or IGST, worked out from the place of supply. Gapless invoice numbers, credit notes for returns, and A4 or 80 mm thermal PDFs.",
+      "shareTitle": "Share and get paid",
+      "shareBody": "Send the invoice on WhatsApp or by email with a private link. Your customer sees the bill and pays by UPI with one tap.",
+      "ledgerTitle": "Udhaar, reminders and reports",
+      "ledgerBody": "Every customer's balance and what is overdue, polite WhatsApp reminders, and the sales register, HSN summary and a GSTR-1 helper for your CA."
+    },
+    "screensTitle": "See it on a phone",
+    "screens": {
+      "dashboard": "The dashboard: sales, GST and money to collect",
+      "invoice": "An invoice, ready to share",
+      "public": "What your customer sees"
+    },
+    "openSourceTitle": "Built in the open",
+    "openSourceBody": "Galla is a portfolio project, built with Next.js, TypeScript and Postgres. The code, the design decisions and the tests are on GitHub.",
+    "github": "View the code on GitHub"
+  },
+  "footer": {
+    "disclaimer": "Galla helps you prepare GST invoices and reports. It is not tax or legal advice: check filings with your CA.",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "github": "GitHub"
+  },
+  "legal": {
+    "notReviewed": "Written in plain language for an early version of Galla. It has not been reviewed by a lawyer.",
+    "updated": "Last updated {date}",
+    "contact": "Questions or requests: open an issue on GitHub."
+  },
+  "privacy": {
+    "title": "Privacy",
+    "intro": "Galla is a small project run by one developer. This page says what it stores, why, and who else handles it.",
+    "storeTitle": "What Galla stores",
+    "store": {
+      "account": "Your account: your name, your email and your password (stored only as a hash).",
+      "business": "What you enter for your business: its details, products, customers, invoices, payments and settings.",
+      "logs": "Technical records: when you sign in, and logs that hold request ids and business ids, never names, phones, emails or GST numbers."
+    },
+    "useTitle": "How it is used",
+    "use": {
+      "service": "Only to run Galla for you: to make your invoices, show your reports and send what you ask it to send.",
+      "noSale": "Your data and your customers' data are not sold, rented or used for advertising.",
+      "cookies": "One cookie keeps you signed in. There are no tracking or advertising cookies."
+    },
+    "servicesTitle": "Services that handle data for Galla",
+    "services": {
+      "vercel": "Vercel runs the app (Singapore).",
+      "neon": "Neon stores the database (Singapore).",
+      "upstash": "Upstash counts requests to stop abuse, using a scrambled (hashed) form of your IP address.",
+      "sentry": "Sentry receives error reports with names, shop names, links and IP addresses removed.",
+      "backblaze": "Backblaze keeps encrypted nightly backups for 30 days. Only the owner's offline key can open them."
+    },
+    "rightsTitle": "Your choices",
+    "rights": {
+      "export": "You can download your sales register, HSN summary and GSTR-1 helper at any time.",
+      "delete": "To delete your account and your businesses' data, open an issue on GitHub. It is deleted within 30 days, and backups expire 30 days after that."
+    },
+    "demoTitle": "The demo",
+    "demo": "The demo shop is fictional and shared by every visitor, and it resets every morning. Don't type real customer details into it."
+  },
+  "terms": {
+    "title": "Terms",
+    "intro": "By using Galla you agree to these terms.",
+    "items": {
+      "free": "Galla is free and early-stage. It is provided as it is, without guarantees, and it may change or stop. Where possible you will get notice first.",
+      "yours": "You are responsible for the invoices you issue and for your GST returns. Galla is not tax or legal advice; check with your CA.",
+      "data": "Your data stays yours. You can export your reports at any time (see Privacy for deleting it).",
+      "fair": "Don't use Galla to break the law, to send spam on WhatsApp or by email, or to attack or overload the service.",
+      "accounts": "Keep your password private. You are responsible for what happens in your account and for who you invite to your business.",
+      "demo": "The demo shop is fictional. Its invoices are samples, not real bills.",
+      "law": "These terms are governed by the laws of India."
+    }
   }
 }

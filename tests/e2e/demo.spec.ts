@@ -48,6 +48,8 @@ test("the demo owner can't change the shop, and its invoices say they are sample
   if (!customer) throw new Error("no browser");
   await customer.goto(new URL(link).pathname);
   await expect(customer.getByTestId("sample-invoice")).toContainText("not a real bill");
+  // Something is still owed: the page must not say otherwise (a bug fixed in 12c).
+  await expect(customer.getByText("Nothing is due on this invoice.")).toHaveCount(0);
   await expect(customer.getByRole("link", { name: /Pay .* via UPI/ })).toHaveCount(0);
   await customer.close();
 });

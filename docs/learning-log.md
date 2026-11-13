@@ -255,3 +255,9 @@ What I learned and what broke while building Galla, phase by phase.
 - **Better Auth's `hooks.before` sees both HTTP requests and server-side `auth.api` calls.** `ctx.request` is only set for the first, which is how the demo password works from our server action but not from a browser.
 - Deriving the demo users' passwords from the auth secret (an HMAC) means no new setting to manage, and nothing to leak in the repo.
 - A demo check placed after input validation reports "fix these fields" to a visitor who can't change anything at all. Check the demo first.
+
+## Phase 12c: landing, privacy, terms
+
+- `next start` serves only the files that were in `public/` at build time. Screenshots added after the build answered 404 until the next build, so make assets before building.
+- Screenshots made by a script from the demo stay honest: they show the real app, banner and all, and are one command away from being redone after a UI change.
+- **Looking at a screenshot found a real bug:** the public page said "Nothing is due" next to "Unpaid". Its condition was "no UPI block to show", which is also true for any shop without a UPI ID. Conditions should say what they mean (balance is zero), not what usually goes with it.

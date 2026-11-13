@@ -2,9 +2,27 @@ import { expect, test } from "@playwright/test";
 
 import { expectAccessible, watchCsp } from "./support";
 
-test("home page renders", async ({ page }) => {
+test("the landing page says what Galla does and offers the demo (Phase 12c)", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { level: 1, name: "Galla" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { level: 1, name: /GST bills in under a minute/ }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Try as the owner" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Create a free account" })).toHaveAttribute(
+    "href",
+    "/signup",
+  );
+  for (const name of [
+    "The dashboard: sales, GST and money to collect",
+    "What your customer sees",
+  ]) {
+    await expect(page.getByRole("img", { name })).toBeVisible();
+  }
+  await page.getByRole("link", { name: "Privacy" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Privacy" })).toBeVisible();
+  await expect(page.getByText("not been reviewed by a lawyer")).toBeVisible();
+  await page.getByRole("link", { name: "Terms" }).click();
+  await expect(page.getByRole("heading", { level: 1, name: "Terms" })).toBeVisible();
 });
 
 test("pages carry the security headers and run under the CSP (SPEC §6.2)", async ({ page }) => {
@@ -29,7 +47,9 @@ test("pages carry the security headers and run under the CSP (SPEC §6.2)", asyn
 
 test("the public pages have no serious accessibility issues (Phase 11c)", async ({ page }) => {
   for (const [path, heading] of [
-    ["/", "Galla"],
+    ["/", "GST bills in under a minute. Know who owes you what."],
+    ["/privacy", "Privacy"],
+    ["/terms", "Terms"],
     ["/login", "Sign in"],
     ["/signup", "Create your account"],
     ["/forgot-password", null],
