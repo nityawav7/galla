@@ -104,3 +104,36 @@ In PostHog's project settings also turn on **Discard client IP data** and leave 
 - **Monthly restore test:** follow `docs/restore.md` steps 1–3 with the latest backup and write the date and the numbers in `docs/hardening-checklist.md`.
 - **Restoring for real:** `docs/restore.md` step 4 (a new Neon branch, then point Vercel's `DATABASE_URL` at it).
 - **Rotating:** a new B2 application key goes into the two GitHub secrets, then revoke the old key. The database password: after resetting it in Neon, update `BACKUP_DATABASE_URL` as well as Vercel. The age key: see `docs/restore.md`.
+
+## Rolling back a bad deploy
+
+Every merge to `main` deploys to production. If the new version is broken:
+
+1. **Vercel** → **galla** → **Deployments**.
+2. Find the last Production deployment that worked (the one below the broken one, with a green **Ready**).
+3. **⋯** → **Instant Rollback** (on some plans: **Promote to Production**) → confirm. Production serves the old version within seconds; nothing is rebuilt.
+4. Fix the problem in a new PR (or `git revert` the bad commit in a PR) and merge it; that deploys normally and replaces the rollback.
+
+**Database migrations don't roll back.** The build runs `db:migrate` before deploying, so after a rollback the old code runs against the new schema. Migrations here only ever add (columns with defaults, new tables, indexes), so old code keeps working. If a migration itself was wrong, write a new migration that fixes it; never edit or delete a merged one (CLAUDE.md rule 8). If data was damaged, see "Restoring the database" below.
+
+## Restoring the database
+
+- **Within the last 6 hours:** Neon → project → **Backup & Restore** (or **Branches** → `main` → **Restore**), and pick a time just before the mistake. Neon keeps a backup branch of the state it replaced, so this can be undone. Then redeploy on Vercel so connections reset.
+- **Older than 6 hours:** the nightly backup in Backblaze B2. Follow [restore.md](restore.md): decrypt with the owner's key, check it in a throwaway database, then restore into a new Neon branch and point Vercel's `DATABASE_URL` at it.
+- Either way, invoices issued after the restore point are gone from the database. Their numbers will be issued again, which CLAUDE.md rule 5 forbids in normal running, so tell the shops affected and note it in the audit trail.
+
+## Rotating secrets
+
+Rotate a secret when it may have leaked (pasted in a chat, a screenshot, a public log), or when someone who had it leaves. The order is always: **create the new value, update it everywhere, redeploy, then revoke the old one.**
+
+| Secret                                 | Where it lives                                                               | How to rotate                                                                                                                      | What breaks meanwhile                                                                                                  |
+| -------------------------------------- | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `BETTER_AUTH_SECRET`                   | Vercel (Production, Preview separately)                                      | `openssl rand -base64 32`, update, redeploy                                                                                        | **Everyone is signed out** and must sign in again; no data is lost.                                                    |
+| `DATABASE_URL` (Neon password)         | Vercel (set by the Neon integration) and GitHub secret `BACKUP_DATABASE_URL` | Neon → **Roles** → `neondb_owner` → **Reset password**; the integration updates Vercel; update the GitHub secret by hand; redeploy | The app fails until the redeploy finishes (about 2 minutes); the next backup fails until the GitHub secret is updated. |
+| `CRON_SECRET`                          | Vercel                                                                       | new value, update, redeploy                                                                                                        | Nothing, unless the daily run falls during the deploy (it is then skipped until tomorrow).                             |
+| Upstash token                          | Vercel (set by the integration)                                              | Upstash console → database → **Reset password/token**, reconnect the integration, redeploy                                         | Sign-ins fail in production until the redeploy.                                                                        |
+| `SENTRY_AUTH_TOKEN`                    | Vercel                                                                       | Sentry → **Settings** → **Developer Settings** → **Organization Tokens**: create, update Vercel, revoke the old one                | Source maps aren't uploaded for builds in between.                                                                     |
+| `NEXT_PUBLIC_SENTRY_DSN`               | Vercel                                                                       | Sentry → project → **Client Keys** → create a key, update Vercel, redeploy, then disable the old key                               | Errors from pages still open with the old key are dropped. (It is public by design, so rotate only if it is abused.)   |
+| `B2_KEY_ID`, `B2_APPLICATION_KEY`      | GitHub secrets                                                               | Backblaze → **Application Keys** → create (that bucket only, read and write), update both secrets, delete the old key              | Backups made before the update keep working; a run during the switch fails and emails the owner.                       |
+| Backup encryption key (age)            | Owner's offline copy; public half in `.github/backup/age-recipient.txt`      | [restore.md → Losing or rotating the key](restore.md#losing-or-rotating-the-key)                                                   | Keep the old private key until its last backup expires (30 days).                                                      |
+| `RESEND_API_KEY`, Google client secret | Vercel (not set up yet)                                                      | create a new key, update, redeploy, revoke the old one                                                                             | Emails or Google sign-in fail between revoking and redeploying, so revoke last.                                        |

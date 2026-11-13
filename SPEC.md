@@ -479,7 +479,7 @@ Branch protection on `main`: all checks green, squash merge, Conventional Commit
 | Component | Testing Library | Invoice builder totals update, form validation messages |
 | E2E | Playwright (mobile + desktop viewports) | Signup → onboarding → product → customer → invoice → PDF → public link → payment → ledger → GSTR-1 export downloads |
 | Accessibility | `@axe-core/playwright` | No serious violations on key pages |
-| Load (manual, documented) | k6 | 50 virtual users creating invoices; record p95 in README |
+| Load (manual, documented) | k6 | 10 and 50 virtual users creating and issuing invoices through the server actions, on a local production build (`docs/load-test.md`); p95 recorded in README |
 
 Shared, hand-verified **golden fixtures** (`tests/fixtures/invoices/*.json`) hold expected totals to the paisa. Ideally a CA or accountant friend checks 5 of them once.
 

@@ -45,3 +45,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Load test state (pnpm load:seed): session cookies and this build's action ids
+/load/.*.json

@@ -58,7 +58,7 @@ The Activity page (SPEC F11): owners and accountants, filters, keyset paging; no
 
 ## Observability (11d)
 
-Sentry and PostHog, off until their keys are set ([ADR 0016](adr/0016-observability-without-pii.md)). Verified on a local production build with placeholder keys, so nothing left the machine:
+Sentry and PostHog, off until their keys are set ([ADR 0016](adr/0016-observability-without-pii.md)). **Sentry is live** (free Developer plan, set up 2026-11-12): a test error thrown on the production sign-in page reached Sentry with `/b/:slug` in place of the shop name. **PostHog is not set up**, the owner's choice (no paid services); its code stays off. Before going live, both were checked on a local production build with placeholder keys, so nothing left the machine:
 
 - **What Sentry would send:** an error thrown from `/login?next=/b/sharma-hardware` was sent to `/api/monitoring` (Sentry's `beforeEnvelope` hook shows the envelope). Its message `…/b/sharma-hardware/customers?q=Ravi` arrived as `…/b/:slug/customers`; its URL had no query string, and it carried no user, no headers, `infer_ip: never` and the commit as its release.
 - **What PostHog would send:** "Email invoice" sent one event to `/api/relay/e/` with only `event`, `$lib`, `$lib_version`, a random `distinct_id`, the project key and `$process_person_profile: false`.
@@ -70,9 +70,31 @@ Sentry and PostHog, off until their keys are set ([ADR 0016](adr/0016-observabil
 Nightly encrypted dumps to Backblaze B2 ([ADR 0017](adr/0017-nightly-backups.md), [restore steps](restore.md)).
 
 - **Round trip tested before going live (2026-11-13):** the local database was dumped exactly as the workflow does (`pg_dump --format=custom --no-owner --no-privileges`, Postgres 18 client), restored into an empty Postgres 18 and compared with `scripts/backup/check.sql`. All 13 lines were identical (95 businesses, 50 issued invoices, 90 payments, 1,054 audit rows, next-number sum 213, 12 migrations).
-- **First production backup and restore test:** to be recorded after the workflow's first run.
+- **First production backup and restore test (2026-11-13):** the workflow's first run (by hand) passed every step and uploaded `galla-2026-11-13.dump.age` (128 KB). It was downloaded, decrypted with the owner's key, and restored into an empty Postgres 18 without errors. `check.sql` matched production in Neon's SQL Editor: 0 businesses, 1 user, nothing else yet, 12 migrations. The decrypted copy was deleted. Next test: in a month (runbook).
 
-## Still to come in Phase 11
+## Load (11f)
 
-- 11d: error tracking (Sentry) and product analytics (PostHog), without PII.
-- 11f: architecture, runbook (rollback, restore, secret rotation), k6 load test.
+k6 through the real server actions, against a local production build ([load-test.md](load-test.md)):
+
+- **10 users for a minute:** 355 invoices, p95 189 ms to create a draft and 249 ms to issue it, 0 failures.
+- **50 users:** 687 invoices with 0 failures, but p95 3.2 s and 2.6 s, because the single local process saturates (10 database connections).
+- **Gapless numbering held** in all 60 test shops (1,102 invoices).
+
+## Operations (11f)
+
+- [Architecture](architecture.md) with diagrams of the system, the layers, issuing, payments and the public link.
+- [Runbook](runbook.md): rolling back a deploy, restoring the database (6-hour Neon restore or the nightly backup), rotating every secret, the daily job, backups, Sentry.
+- `/api/monitoring` now answers 404 without a Sentry DSN (it answered 500).
+
+## Still open after Phase 11
+
+| Item                                    | Why it is open                                                                            | Next step                                                                                                     |
+| --------------------------------------- | ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| Sign-in page performance 83 (target 90) | About 650 KB of JavaScript runs on the page (React and Next.js 360 KB, Zod 150 KB)        | A small PR: send each page only the messages it needs, and lighter client-side checks on the auth forms (11c) |
+| Screen reader not tried                 | axe covers the rules, but not how TalkBack or NVDA read the flow                          | Try the invoice builder and payments with TalkBack on a phone                                                 |
+| PostHog off                             | Owner's choice: no paid services, and its free limits couldn't be confirmed               | Revisit when real shops use Galla (Phase 13)                                                                  |
+| Email (Resend) not set up               | No verified domain, so only the account owner would get emails                            | "Email invoice", reminders and the owner digest stay hidden or skipped until it is                            |
+| Neon branches 9 of 10                   | Each PR preview makes one; the 11th fails the preview deploy                              | Delete merged `preview/…` branches in the Neon console                                                        |
+| Signed-in downloads unlimited           | PDFs, statements and reports need a session but have no rate limit (security review, 11a) | A per-user limit if Vercel usage ever shows abuse                                                             |
+| 50-user load slow on one process        | p95 3.2 s locally; production wasn't load tested, on purpose                              | Watch Vercel's function durations once real traffic exists                                                    |
+| Demo mode's stricter limits             | Demo mode doesn't exist yet                                                               | Phase 12                                                                                                      |

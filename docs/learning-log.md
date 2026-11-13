@@ -225,3 +225,13 @@ What I learned and what broke while building Galla, phase by phase.
 - A pipe can hide a failed `pg_dump` (age happily encrypts an empty stream). `set -o pipefail` plus a minimum size and an `age-encryption.org/v1` header check catch it.
 - The round trip was tested before going live: local database → `pg_dump --format=custom --no-owner --no-privileges` → `pg_restore` into an empty Postgres 18 → `check.sql` on both: identical.
 - `age-keygen -o file` prints only the public key; the private key is only in the file, which surprised the owner. Say so in the instructions.
+
+## Phase 11f: load test and runbook
+
+- Server actions can be load-tested without a browser:
+  - POST to the page with `Next-Action: <id>`, the arguments as a JSON array (`text/plain`), and `Origin` matching the host.
+  - The ids are in `.next/server/server-reference-manifest.json` with each action's `exportedName`, and they change with every build.
+  - The reply is React's stream format; the action's return value is the line with `"ok":`.
+- Signing in through Better Auth's server API (`auth.api.signInEmail({ asResponse: true })`) gives a real session cookie without hitting the 5-a-minute sign-in limit, which is right for a seed script and wrong for anything public.
+- Five times the users didn't bring five times the throughput: 50 users on one local Node process with a 10-connection pool queue for connections. What mattered more was that gapless numbering held under contention in every shop.
+- The SPEC said 50 users and the plan said 10. Running both cost a minute and answered both.
