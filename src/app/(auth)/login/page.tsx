@@ -3,6 +3,7 @@ import Link from "next/link";
 import { getTranslations } from "next-intl/server";
 import { Suspense } from "react";
 
+import { TryDemo } from "@/components/demo/try-demo";
 import { LoginForm } from "@/components/forms/login-form";
 import { APP_NAME } from "@/lib/config";
 import { isGoogleEnabled } from "@/server/auth/auth";
@@ -24,6 +25,7 @@ export default async function LoginPage() {
       <Suspense>
         <LoginForm googleEnabled={isGoogleEnabled()} />
       </Suspense>
+      <TryDemo />
       <p className="text-sm text-muted-foreground">
         {t("noAccount", { app: APP_NAME })}{" "}
         <Link

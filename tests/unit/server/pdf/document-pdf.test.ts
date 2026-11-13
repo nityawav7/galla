@@ -27,6 +27,7 @@ function props(input: PrintableInput, extra: Partial<DocumentPdfProps> = {}): Do
     payment: null,
     bank: null,
     cancelled: false,
+    sample: false,
     t,
     ...extra,
   };
@@ -119,6 +120,14 @@ describe("invoice PDF", () => {
       expect(text).toContain(value);
     }
     expect(text).toMatchSnapshot();
+  });
+
+  it("stamps the demo shop's documents as samples, on both paper sizes (SPEC F12)", async () => {
+    for (const format of ["a4", "80mm"] as const) {
+      const { text } = await pdfText("sample", format, props(UTGST, { sample: true }));
+      expect(text).toContain("SAMPLE");
+      expect(text).toContain("not a real bill");
+    }
   });
 
   it("prints a Bill of Supply without tax, with Hindi names (A4 and 80 mm)", async () => {

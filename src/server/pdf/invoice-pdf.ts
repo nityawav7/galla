@@ -31,6 +31,7 @@ export type PaymentDetails = Pick<
   | "bankAccountNumber"
   | "bankIfsc"
   | "bankName"
+  | "isDemo"
 >;
 
 export function pdfFilename(number: string, format: PdfFormat): string {
@@ -80,7 +81,8 @@ export async function renderIssuedInvoice(
 ): Promise<RenderedPdf | null> {
   if (invoice.status === "DRAFT" || !invoice.number || !invoice.supplierSnapshot) return null;
   const cancelled = invoice.status === "CANCELLED";
-  const due = !cancelled && balancePaise(invoice) > 0n;
+  // A demo invoice is a sample: nothing on it can be paid (SPEC F12).
+  const due = !cancelled && !business.isDemo && balancePaise(invoice) > 0n;
   const bytes = await renderDocumentPdf(format, {
     doc: printableDocument({
       type: invoice.type,
@@ -96,10 +98,11 @@ export async function renderIssuedInvoice(
       notes: invoice.notes,
     }),
     creditNote: null,
-    payment: paymentFor(invoice, business),
+    payment: business.isDemo ? null : paymentFor(invoice, business),
     // Bank details sit with the UPI block: only while something is still due.
     bank: due ? bankFor(business) : null,
     cancelled,
+    sample: business.isDemo,
     t: pdfTranslator(),
   });
   return { filename: pdfFilename(invoice.number, format), bytes };

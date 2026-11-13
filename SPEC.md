@@ -306,7 +306,7 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 
 ### F9. Notifications & jobs
 - Email an invoice to the customer (via Resend) with the PDF link. "Email invoice" sits next to "Share on WhatsApp" on the issued sheet and the invoice page (owner and staff, `invoice:share`) when the customer has an email, the invoice's link is on and email is set up (on Vercel, `RESEND_API_KEY`; otherwise the button is hidden rather than saying "sent" for an email that would be dropped). The email is in the business's language: the amount due (or the total once paid), the due date, a "View, download or pay by UPI" button to the public link and the shop's name, phone and GSTIN; Reply-To is the shop's email when set. No attachment: the link always shows the invoice as it is now. At most 30 invoice emails an hour per business; each send is audited (`invoice.emailed`, no address).
-- **Demo businesses never send email:** `sendEmail` takes the sender (a business or the app itself) and refuses a demo business, so no caller can forget. Demo invites are still created, with the link to copy.
+- **Demo businesses never send email:** `sendEmail` takes the sender (a business or the app itself) and refuses a demo business, so no caller can forget. A demo business can't invite anyone (Phase 12b).
 - **Daily job** (once a day fits Vercel Hobby cron; `30 3 * * *` = 09:00 IST, `GET /api/cron/daily`, ADR 0014): (a) email reminders for invoices due today or overdue on day 1, 7 and 14, for customers who have an email; (b) an owner digest: "₹X overdue from N customers", with WhatsApp reminder links.
   - **Email reminders are off by default:** a business switch in Settings ("Email payment reminders to customers"). Live invoices with something due, of customers with an email. A stage whose day had no run still goes out up to 2 days late, never twice and never after a later stage; an invoice due on receipt gets no "due today". **One email per customer** lists every invoice that reached a stage that day, each with its amount, how overdue it is and its link; Reply-To is the shop's email.
   - **Owner digest is on by default** ("Email me what is overdue"): to each owner, once a day, only when something is overdue (live invoices past their due date, or the invoice date when due on receipt): the total, the number of customers, the 10 most overdue customers with a WhatsApp reminder link each (the customer page's "Send reminder" message), and the dashboard.
@@ -328,6 +328,15 @@ Each feature is done only when its acceptance criteria pass as automated tests.
 - The seed creates 1 demo business with about 60 products, 120 customers and 6 months of realistic invoices (mix of B2B/B2C, intra/inter-state, paid, partial and overdue), plus credit notes and payments. Use `@faker-js/faker` with the `en_IN` locale plus curated HSN and product lists.
 - A banner says "Demo data — resets daily". Emails are suppressed in demo. Demo writes are rate-limited.
 - A **daily cron reset** restores it to the seed snapshot.
+- **Trying it (Phase 12b):**
+  - "Try as the owner" and "Try as staff" on the sign-in page (and the landing page). The server signs the visitor in as "Demo Owner" or "Demo Staff". Their emails are on `galla.invalid`, and their passwords are derived from `BETTER_AUTH_SECRET`; the browser never sees them.
+  - Every demo page shows "Demo data — resets daily. Other visitors can see your changes."
+  - **Guard rails, enforced on the server:**
+    - the demo shop's settings and members can't change;
+    - the demo users can't create businesses;
+    - Better Auth refuses to change, reset, take over (by email code) or delete the demo accounts, or to sign in to them from a browser.
+  - The demo's public links and PDFs say "Sample — demo data, not a real bill", with no UPI or bank details.
+  - **Limits:** 10 demo sign-ins an hour and 30 changes a minute per visitor IP.
 - **How it is built (Phase 12a, ADR 0018):**
   - **The shop:** *Sharma Hardware & Sanitary*, a fictional hardware store in Pune.
   - **Products:** 60 products, all at 18%.

@@ -14,6 +14,7 @@ import { getCurrentBusiness } from "@/server/db/repos/businesses.repo";
 import { sendEmail } from "@/server/notifications/email";
 
 import { accessControl, authRoles } from "./access";
+import { demoGuard } from "./demo-guard";
 import { inviteEmail, otpEmail } from "./emails";
 
 const SEVEN_DAYS_SECONDS = 7 * 24 * 60 * 60;
@@ -70,6 +71,8 @@ function createAuth() {
       revokeSessionsOnPasswordReset: true,
     },
     socialProviders: googleProvider(),
+    // The demo's shared accounts can't be changed, reset or taken over (SPEC F12).
+    hooks: { before: demoGuard },
     account: {
       accountLinking: { enabled: true, trustedProviders: ["google"] },
     },

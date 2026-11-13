@@ -146,4 +146,5 @@ Rotate a secret when it may have leaked (pasted in a chat, a screenshot, a publi
 - **If the reset fails:** the function logs show the step. Common causes:
   - the database was asleep and slow (run it again);
   - a service rule changed so a planned event is no longer valid, for example a payment or return the new rule refuses. Fix the plan in `src/server/demo/plan.ts`, with a test.
+- **Signing in to it:** "Try as the owner / as staff" on `/login` signs in on the server with passwords derived from `BETTER_AUTH_SECRET`; the reset writes their hashes. **After rotating `BETTER_AUTH_SECRET`, or on a new database, run the reset once**, or the buttons say "The demo is being set up".
 - **It never touches a real business:** the delete guards pass only for `is_demo` businesses inside the reset's own transaction (migration 0012).

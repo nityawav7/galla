@@ -68,9 +68,10 @@ export async function renderCreditNotePdf(
   const db = getDb();
   const note = await findCreditNoteById(db, ctx, requireId(id, "Credit note"));
   if (!note) throw new NotFoundError("Credit note");
-  const [lines, invoice] = await Promise.all([
+  const [lines, invoice, business] = await Promise.all([
     findCreditNoteLines(db, ctx, note.id),
     findInvoiceById(db, ctx, note.invoiceId),
+    getCurrentBusiness(db, ctx),
   ]);
   if (!invoice?.number) throw new NotFoundError("Invoice");
   const props: DocumentPdfProps = {
@@ -95,6 +96,7 @@ export async function renderCreditNotePdf(
     payment: null,
     bank: null,
     cancelled: false,
+    sample: business?.isDemo ?? false,
     t: pdfTranslator(),
   };
   return {

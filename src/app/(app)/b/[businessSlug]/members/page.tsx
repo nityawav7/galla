@@ -23,8 +23,8 @@ const expiryFormat = new Intl.DateTimeFormat("en-IN", {
 
 async function Members({ params }: { params: Promise<{ businessSlug: string }> }) {
   const { businessSlug } = await params;
-  const { ctx } = await requireTenant(businessSlug);
-  const canManage = can(ctx, "business:manage");
+  const { ctx, membership } = await requireTenant(businessSlug);
+  const canManage = can(ctx, "business:manage") && !membership.isDemo;
   const members: MemberRow[] = (await listMembers(ctx)).map((member) => ({
     memberId: member.memberId,
     name: member.name,
@@ -45,6 +45,7 @@ async function Members({ params }: { params: Promise<{ businessSlug: string }> }
     <MembersPanel
       businessSlug={businessSlug}
       canManage={canManage}
+      demo={membership.isDemo}
       members={members}
       invitations={invitations}
     />

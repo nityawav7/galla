@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+- **Phase 12b:**
+  - **Try the demo:** "Try as the owner" and "Try as staff" on the sign-in page open the demo shop with no sign-up.
+  - **Banner:** every demo page says "Demo data — resets daily".
+  - **Read-only:** the demo shop's settings and members can't be changed, and its accounts can't be changed, reset or taken over.
+  - **Samples:** demo invoices' public links and PDFs say "Sample", with nothing to pay.
+  - **Limits:** 30 changes a minute and 10 demo sign-ins an hour per visitor.
+
 - **Phase 12a:** the demo business (ADR 0018), _Sharma Hardware & Sanitary_ in Pune: 60 products, 120 customers, about 550 invoices with payments, credit notes and refunds over the last six months. It is built by replaying a deterministic plan through the real services, so its numbers are the app's own, and rebuilt every morning at 04:00 IST (`/api/cron/demo-reset`, `pnpm db:seed:demo` locally). Migration `0012_demo_reset` lets only that reset empty a demo business. Visitors can't sign in to it yet (12b).
 
 - **Phase 11f:**

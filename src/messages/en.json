@@ -236,7 +236,8 @@
     "invoices": "Invoices",
     "payments": "Payments",
     "reports": "Reports",
-    "activity": "Activity"
+    "activity": "Activity",
+    "demoBanner": "Demo data — resets daily. Other visitors can see your changes."
   },
   "dashboard": {
     "title": "Dashboard",
@@ -300,7 +301,8 @@
     "emailReminders": "Email payment reminders to customers",
     "emailRemindersHint": "Customers with an email get one reminder when an invoice is due today, and again at 1, 7 and 14 days overdue, all their invoices in one email.",
     "ownerDigest": "Email me what is overdue",
-    "ownerDigestHint": "Owners get one email a day when something is overdue, with WhatsApp reminder links for the biggest amounts."
+    "ownerDigestHint": "Owners get one email a day when something is overdue, with WhatsApp reminder links for the biggest amounts.",
+    "demoReadOnly": "This is the demo shop: its settings can't be changed, so its invoices always show the same shop details."
   },
   "roles": {
     "OWNER": "Owner",
@@ -402,7 +404,8 @@
       "lastOwner": "A business needs at least one owner. Make someone else owner first.",
       "inviteInvalid": "This invite has expired, was cancelled, or was sent to a different email address.",
       "verifyFirst": "Verify your email address first."
-    }
+    },
+    "demoReadOnly": "This is the demo shop: members can't be invited, changed or removed."
   },
   "invite": {
     "title": "Join a business",
@@ -1039,7 +1042,8 @@
         "total": "Balance"
       },
       "upiNote": "Balance due"
-    }
+    },
+    "sample": "SAMPLE — demo data, not a real bill"
   },
   "publicInvoice": {
     "metaTitle": "Invoice",
@@ -1054,7 +1058,8 @@
     "cancelled": "This invoice was cancelled.",
     "download": "Download PDF",
     "downloadThermal": "Download 80 mm slip",
-    "footer": "Sent with {app}. Questions about this invoice? Please contact the shop."
+    "footer": "Sent with {app}. Questions about this invoice? Please contact the shop.",
+    "sample": "Sample invoice — demo data, not a real bill. Don't pay it."
   },
   "share": {
     "defaultTemplate": "Namaste {customer},\nYour invoice {number} from {shop} is for {amount}, due {dueDate}.\nView, download or pay by UPI: {link}",
@@ -1480,5 +1485,17 @@
     },
     "change": "{field}: {before} → {after}",
     "detail": "{field}: {value}"
+  },
+  "demo": {
+    "title": "Just looking? Try the demo",
+    "body": "Sharma Hardware is a sample shop with six months of invoices, payments and udhaar. No sign-up. Other visitors use it too, and it resets every morning.",
+    "asOwner": "Try as the owner",
+    "asStaff": "Try as staff",
+    "starting": "Opening the demo…",
+    "errors": {
+      "demoNotReady": "The demo is being set up. Please try again in a minute.",
+      "tooMany": "Too many demo visits from here. Please try again later.",
+      "failed": "The demo couldn't open. Please try again."
+    }
   }
 }

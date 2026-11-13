@@ -33,6 +33,7 @@ Phase 11a (SPEC §6.2), 2026-11-12. Every way into the server, what protects it,
 | `importProductsAction`                                                                            | `importProducts`                                     | `catalog:write`                                 | CSV re-parsed and re-validated         | mutation                                  |
 | `updateBusinessAction`                                                                            | `updateBusinessSettings`                             | `business:manage` (owner)                       | `businessSchema`                       | mutation                                  |
 | `createBusinessAction`                                                                            | `createBusiness`                                     | signed-in user                                  | `businessSchema`                       | mutation                                  |
+| `startDemoAction`                                                                                 | Better Auth `signInEmail` on the server              | anyone (signed out)                             | role `OWNER`/`STAFF` (Zod)             | demo sign-in: 10/hour/IP                  |
 | `acceptInviteAction` / `declineInviteAction`                                                      | `acceptInvite` / `declineInvite`                     | the invited, verified user (Better Auth checks) | id                                     | mutation                                  |
 
 "id" means the service runs `requireId` (a malformed id is 404, never a database error) and reads through a tenant-scoped repo.
@@ -61,4 +62,4 @@ The proxy sends signed-out visitors of `/b/*` and `/onboarding` to `/login` and 
 
 - **Signed-in downloads have no rate limit** (PDFs, the statement, reports). They need a session and membership, and SPEC §6.2 lists no limit for them; a PDF takes about a second of CPU, so a per-user limit is the next step if Vercel's usage shows abuse.
 - **File uploads:** none exist yet. MIME, size and re-encoding checks come with logo and signature upload (SPEC F10).
-- **Demo mode's stricter limits** come with demo mode (Phase 12).
+- **Demo mode** (Phase 12b): changes by the shared demo users count per visitor IP (30 a minute); demo settings and members are refused in services; Better Auth refuses account changes for demo users.

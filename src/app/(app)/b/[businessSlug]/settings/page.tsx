@@ -56,6 +56,7 @@ async function Settings({ params }: { params: Promise<{ businessSlug: string }> 
       defaultValues={toFormValues(business)}
       defaultTemplates={{ en: defaultShareTemplate("en"), hi: defaultShareTemplate("hi") }}
       emailReady={canSendEmail()}
+      readOnly={business.isDemo}
     />
   );
 }

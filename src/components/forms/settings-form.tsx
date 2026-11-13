@@ -31,6 +31,8 @@ interface SettingsFormProps {
   defaultTemplates: Record<ShareLocale, string>;
   /** Whether emails can go out at all (on Vercel, RESEND_API_KEY is set). */
   emailReady: boolean;
+  /** The demo shop: shown, but nothing can be changed (SPEC F12). */
+  readOnly?: boolean;
 }
 
 type Status = "idle" | "saved" | "error";
@@ -40,6 +42,7 @@ export function SettingsForm({
   defaultValues,
   defaultTemplates,
   emailReady,
+  readOnly = false,
 }: SettingsFormProps) {
   const t = useTranslations("settings");
   const common = useTranslations("common");
@@ -70,70 +73,77 @@ export function SettingsForm({
     <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)]">
       <FormProvider {...form}>
         <form noValidate className="flex flex-col gap-8" onSubmit={(event) => void submit(event)}>
-          <section className="flex flex-col gap-4">
-            <h2 className="text-lg font-semibold">{t("profile")}</h2>
-            <DetailsFields />
-            <EmailField />
-          </section>
-          <section className="flex flex-col gap-4">
-            <h2 className="text-lg font-semibold">{t("gst")}</h2>
-            <GstFields />
-            <SelectField
-              label={t("hsnDigits")}
-              hint={t("hsnDigitsHint")}
-              error={fieldError(form.formState.errors.hsnDigitsRequired)}
-              {...form.register("hsnDigitsRequired")}
-            >
-              <option value="4">{t("hsnDigits4")}</option>
-              <option value="6">{t("hsnDigits6")}</option>
-            </SelectField>
-          </section>
-          <section className="flex flex-col gap-4">
-            <h2 className="text-lg font-semibold">{t("invoicing")}</h2>
-            <InvoicingFields showCreditNotePrefix />
-          </section>
-          <section className="flex flex-col gap-4">
-            <h2 className="text-lg font-semibold">{t("whatsapp")}</h2>
-            <p className="text-sm text-muted-foreground">{t("whatsappHint")}</p>
-            <WhatsAppTemplateField
-              name="whatsappTemplateEn"
-              locale="en"
-              defaultTemplate={defaultTemplates.en}
-            />
-            <WhatsAppTemplateField
-              name="whatsappTemplateHi"
-              locale="hi"
-              defaultTemplate={defaultTemplates.hi}
-            />
-          </section>
-          <section className="flex flex-col gap-4">
-            <h2 className="text-lg font-semibold">{t("dailyEmails")}</h2>
-            <p className="text-sm text-muted-foreground">{t("dailyEmailsHint")}</p>
-            {emailReady ? null : <p className="text-sm">{t("emailNotSetUp")}</p>}
-            <CheckboxField
-              label={t("emailReminders")}
-              hint={t("emailRemindersHint")}
-              {...form.register("emailReminders")}
-            />
-            <CheckboxField
-              label={t("ownerDigest")}
-              hint={t("ownerDigestHint")}
-              {...form.register("ownerDigest")}
-            />
-          </section>
-          <div className="flex flex-col gap-3" aria-live="polite">
-            {status === "saved" ? <p className="text-sm">{t("saved")}</p> : null}
-            {status === "error" ? (
-              <Alert variant="destructive">
-                <AlertDescription>{errors("generic")}</AlertDescription>
-              </Alert>
-            ) : null}
-            <div>
-              <Button type="submit" disabled={form.formState.isSubmitting}>
-                {form.formState.isSubmitting ? common("pleaseWait") : t("save")}
-              </Button>
+          {readOnly ? (
+            <Alert>
+              <AlertDescription>{t("demoReadOnly")}</AlertDescription>
+            </Alert>
+          ) : null}
+          <fieldset disabled={readOnly} className="flex min-w-0 flex-col gap-8">
+            <section className="flex flex-col gap-4">
+              <h2 className="text-lg font-semibold">{t("profile")}</h2>
+              <DetailsFields />
+              <EmailField />
+            </section>
+            <section className="flex flex-col gap-4">
+              <h2 className="text-lg font-semibold">{t("gst")}</h2>
+              <GstFields />
+              <SelectField
+                label={t("hsnDigits")}
+                hint={t("hsnDigitsHint")}
+                error={fieldError(form.formState.errors.hsnDigitsRequired)}
+                {...form.register("hsnDigitsRequired")}
+              >
+                <option value="4">{t("hsnDigits4")}</option>
+                <option value="6">{t("hsnDigits6")}</option>
+              </SelectField>
+            </section>
+            <section className="flex flex-col gap-4">
+              <h2 className="text-lg font-semibold">{t("invoicing")}</h2>
+              <InvoicingFields showCreditNotePrefix />
+            </section>
+            <section className="flex flex-col gap-4">
+              <h2 className="text-lg font-semibold">{t("whatsapp")}</h2>
+              <p className="text-sm text-muted-foreground">{t("whatsappHint")}</p>
+              <WhatsAppTemplateField
+                name="whatsappTemplateEn"
+                locale="en"
+                defaultTemplate={defaultTemplates.en}
+              />
+              <WhatsAppTemplateField
+                name="whatsappTemplateHi"
+                locale="hi"
+                defaultTemplate={defaultTemplates.hi}
+              />
+            </section>
+            <section className="flex flex-col gap-4">
+              <h2 className="text-lg font-semibold">{t("dailyEmails")}</h2>
+              <p className="text-sm text-muted-foreground">{t("dailyEmailsHint")}</p>
+              {emailReady ? null : <p className="text-sm">{t("emailNotSetUp")}</p>}
+              <CheckboxField
+                label={t("emailReminders")}
+                hint={t("emailRemindersHint")}
+                {...form.register("emailReminders")}
+              />
+              <CheckboxField
+                label={t("ownerDigest")}
+                hint={t("ownerDigestHint")}
+                {...form.register("ownerDigest")}
+              />
+            </section>
+            <div className="flex flex-col gap-3" aria-live="polite">
+              {status === "saved" ? <p className="text-sm">{t("saved")}</p> : null}
+              {status === "error" ? (
+                <Alert variant="destructive">
+                  <AlertDescription>{errors("generic")}</AlertDescription>
+                </Alert>
+              ) : null}
+              <div>
+                <Button type="submit" disabled={form.formState.isSubmitting}>
+                  {form.formState.isSubmitting ? common("pleaseWait") : t("save")}
+                </Button>
+              </div>
             </div>
-          </div>
+          </fieldset>
         </form>
       </FormProvider>
       <InvoicePreview values={values} />

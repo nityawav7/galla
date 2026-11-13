@@ -18,6 +18,7 @@ import {
   type MemberWithUser,
 } from "@/server/db/repos/members.repo";
 
+import { assertNotDemoBusiness } from "./demo-guard";
 import { requireId } from "./ids";
 import { parseInput } from "./validate";
 
@@ -53,6 +54,7 @@ export async function inviteMember(
   input: unknown,
 ): Promise<{ invitationId: string; link: string }> {
   assertCan(ctx, "business:manage");
+  await assertNotDemoBusiness(ctx);
   const { email, role } = parseInput(inviteSchema, input);
   const invitation = await callAuth(() =>
     getAuth().api.createInvitation({
@@ -75,6 +77,7 @@ export async function cancelInvitation(
   invitationId: string,
 ): Promise<void> {
   assertCan(ctx, "business:manage");
+  await assertNotDemoBusiness(ctx);
   const invitation = await findInvitationById(getDb(), ctx, requireId(invitationId, "Invitation"));
   if (!invitation) throw new NotFoundError("Invitation");
   await callAuth(() =>
@@ -95,6 +98,7 @@ export async function updateMemberRole(
   input: unknown,
 ): Promise<void> {
   assertCan(ctx, "business:manage");
+  await assertNotDemoBusiness(ctx);
   const role: Role = parseInput(roleSchema, input);
   const member = await findMemberById(getDb(), ctx, requireId(memberId, "Member"));
   if (!member) throw new NotFoundError("Member");
@@ -119,6 +123,7 @@ export async function removeMember(
   memberId: string,
 ): Promise<void> {
   assertCan(ctx, "business:manage");
+  await assertNotDemoBusiness(ctx);
   const member = await findMemberById(getDb(), ctx, requireId(memberId, "Member"));
   if (!member) throw new NotFoundError("Member");
   await callAuth(() =>

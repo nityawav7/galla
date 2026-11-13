@@ -33,13 +33,22 @@ async function SharedInvoice({ params }: { params: Promise<{ token: string }> })
     if (error instanceof NotFoundError) notFound();
     throw error;
   });
-  const { invoice, lines, status, payment, shopName } = shared;
+  const { invoice, lines, status, payment, shopName, sample } = shared;
   const cancelled = invoice.status === "CANCELLED";
   const pdf = `/i/${token}/pdf`;
 
   return (
     <>
       <h1 className="text-2xl font-semibold tracking-tight">{t("heading", { shop: shopName })}</h1>
+      {sample ? (
+        <p
+          role="note"
+          data-testid="sample-invoice"
+          className="rounded-lg border-2 border-destructive p-3 text-sm font-semibold text-destructive"
+        >
+          {t("sample")}
+        </p>
+      ) : null}
       {cancelled ? (
         <p
           role="status"

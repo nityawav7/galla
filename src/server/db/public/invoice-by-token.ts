@@ -23,6 +23,8 @@ export interface SharedBusiness {
   bankAccountNumber: string | null;
   bankIfsc: string | null;
   bankName: string | null;
+  /** The demo shop (SPEC F12): its invoices are samples. */
+  isDemo: boolean;
 }
 
 export interface SharedInvoice {
@@ -58,6 +60,7 @@ export async function findSharedInvoice(
         bankAccountNumber: businesses.bankAccountNumber,
         bankIfsc: businesses.bankIfsc,
         bankName: businesses.bankName,
+        isDemo: businesses.isDemo,
       },
     })
     .from(invoices)

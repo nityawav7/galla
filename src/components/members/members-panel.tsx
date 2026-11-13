@@ -41,6 +41,8 @@ export interface InvitationRow {
 interface MembersPanelProps {
   businessSlug: string;
   canManage: boolean;
+  /** The demo shop: nobody can be invited, changed or removed (SPEC F12). */
+  demo?: boolean;
   members: MemberRow[];
   invitations: InvitationRow[];
 }
@@ -148,7 +150,13 @@ function InviteForm({ businessSlug }: { businessSlug: string }) {
   );
 }
 
-export function MembersPanel({ businessSlug, canManage, members, invitations }: MembersPanelProps) {
+export function MembersPanel({
+  businessSlug,
+  canManage,
+  demo = false,
+  members,
+  invitations,
+}: MembersPanelProps) {
   const t = useTranslations();
   const actionError = useActionError();
   const router = useRouter();
@@ -183,7 +191,9 @@ export function MembersPanel({ businessSlug, canManage, members, invitations }: 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">{t("members.listTitle")}</h2>
         {canManage ? null : (
-          <p className="text-sm text-muted-foreground">{t("members.ownerOnly")}</p>
+          <p className="text-sm text-muted-foreground">
+            {demo ? t("members.demoReadOnly") : t("members.ownerOnly")}
+          </p>
         )}
         <ul className="flex flex-col divide-y rounded-xl border">
           {members.map((member) => (

@@ -13,6 +13,8 @@ export interface Membership {
   legalName: string;
   tradeName: string | null;
   role: Role;
+  /** The shared demo shop (SPEC F12): the shell shows a banner, settings are read-only. */
+  isDemo: boolean;
 }
 
 const membershipColumns = {
@@ -21,6 +23,7 @@ const membershipColumns = {
   legalName: businesses.legalName,
   tradeName: businesses.tradeName,
   role: members.role,
+  isDemo: businesses.isDemo,
 };
 
 function toRole(value: string): Role {
@@ -111,4 +114,10 @@ export async function findMemberById(
     .from(members)
     .where(and(tenantScope(ctx, members), eq(members.id, memberId)));
   return row && { ...row, role: toRole(row.role) };
+}
+
+/** A user's email, to tell the demo's own users apart (SPEC F12). Users aren't a tenant table. */
+export async function findUserEmail(db: Executor, userId: string): Promise<string | undefined> {
+  const [row] = await db.select({ email: users.email }).from(users).where(eq(users.id, userId));
+  return row?.email;
 }

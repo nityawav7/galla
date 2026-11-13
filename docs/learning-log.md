@@ -244,3 +244,14 @@ What I learned and what broke while building Galla, phase by phase.
 - A deterministic plan needs its own seeded random generator (mulberry32) as well as `faker.seed`, and anything picked at random must not be picked twice: the first version could return the same line twice, more than was sold.
 - The first plan made customers pay too rarely: 76% of what was owed was overdue. Looking at the dashboard with real eyes caught it; the tests couldn't.
 - Database guards and a reset can coexist: a transaction-local setting plus `is_demo`, checked inside the trigger, lets exactly one job delete, and only in one business.
+
+## Phase 12b: trying the demo
+
+- **A shared account is a shared attack surface.** Hiding buttons wasn't enough; each risk was closed on the server:
+  - The **settings** (a visitor's UPI ID on "Sharma Hardware" invoices is phishing with our name).
+  - The **members** (locking others out).
+  - The **account itself** (a new password or email takes the demo away from everyone).
+  - **Sessions** ("sign out everywhere" signs every visitor out).
+- **Better Auth's `hooks.before` sees both HTTP requests and server-side `auth.api` calls.** `ctx.request` is only set for the first, which is how the demo password works from our server action but not from a browser.
+- Deriving the demo users' passwords from the auth secret (an HMAC) means no new setting to manage, and nothing to leak in the repo.
+- A demo check placed after input validation reports "fix these fields" to a visitor who can't change anything at all. Check the demo first.

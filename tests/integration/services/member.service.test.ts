@@ -93,18 +93,15 @@ describe("inviteMember", () => {
     expect(audit).toMatchObject({ action: "invitation.created", actorUserId: owner.id });
   });
 
-  it("never emails an invite from a demo business (SPEC F12)", async () => {
+  it("refuses invites in a demo business, and emails nobody (SPEC F12, Phase 12b)", async () => {
     const owner = await ownerWithBusiness();
     await getDb()
       .update(businesses)
       .set({ isDemo: true })
       .where(eq(businesses.id, owner.ctx.businessId));
-    // The invite exists and its link can be copied; no email goes out.
-    const { link } = await inviteMember(owner.ctx, owner.headers, {
-      email: "demo-invitee@example.com",
-      role: "STAFF",
-    });
-    expect(link).toContain("/invite/");
+    await expect(
+      inviteMember(owner.ctx, owner.headers, { email: "demo-invitee@example.com", role: "STAFF" }),
+    ).rejects.toThrow("demoReadOnly");
     expect(readTestOutbox()).toEqual([]);
   });
 

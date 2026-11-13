@@ -3,6 +3,7 @@ import { and, eq, sql } from "drizzle-orm";
 import { type Role } from "@/server/authz/context";
 
 import {
+  accounts,
   auditLogs,
   businesses,
   creditNoteLines,
@@ -81,17 +82,19 @@ export async function ensureDemoBusiness(
   return created.id;
 }
 
-export interface DemoUser {
+export interface DemoUserAccount {
   name: string;
   email: string;
   role: Role;
+  /** Better Auth's hash of the user's password (the "Try the demo" sign-in uses it). */
+  passwordHash: string;
 }
 
 /** The demo's own users and their roles in it. Returns their ids by role. */
 export async function ensureDemoUsers(
   db: Executor,
   businessId: string,
-  demoUsers: readonly DemoUser[],
+  demoUsers: readonly DemoUserAccount[],
 ): Promise<Map<Role, string>> {
   const ids = new Map<Role, string>();
   for (const demoUser of demoUsers) {
@@ -108,6 +111,24 @@ export async function ensureDemoUsers(
           .returning({ id: users.id })
       )[0]?.id;
     if (!userId) throw new Error("insert returned no row");
+    // Their sign-in: a credential account, as Better Auth stores one for any password.
+    const [account] = await db
+      .select({ id: accounts.id })
+      .from(accounts)
+      .where(and(eq(accounts.userId, userId), eq(accounts.providerId, "credential")));
+    if (account) {
+      await db
+        .update(accounts)
+        .set({ password: demoUser.passwordHash })
+        .where(eq(accounts.id, account.id));
+    } else {
+      await db.insert(accounts).values({
+        userId,
+        providerId: "credential",
+        accountId: userId,
+        password: demoUser.passwordHash,
+      });
+    }
     await db
       .insert(members)
       .values({ businessId, userId, role: demoUser.role })
