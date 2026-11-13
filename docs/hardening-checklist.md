@@ -65,8 +65,14 @@ Sentry and PostHog, off until their keys are set ([ADR 0016](adr/0016-observabil
 - **Cost:** sign-in page JavaScript went from 762 KB to 775 KB; Sentry loads when the page is idle and PostHog on its first event.
 - **No CSP violations:** both go to our own origin.
 
+## Backups (11e)
+
+Nightly encrypted dumps to Backblaze B2 ([ADR 0017](adr/0017-nightly-backups.md), [restore steps](restore.md)).
+
+- **Round trip tested before going live (2026-11-13):** the local database was dumped exactly as the workflow does (`pg_dump --format=custom --no-owner --no-privileges`, Postgres 18 client), restored into an empty Postgres 18 and compared with `scripts/backup/check.sql`. All 13 lines were identical (95 businesses, 50 issued invoices, 90 payments, 1,054 audit rows, next-number sum 213, 12 migrations).
+- **First production backup and restore test:** to be recorded after the workflow's first run.
+
 ## Still to come in Phase 11
 
 - 11d: error tracking (Sentry) and product analytics (PostHog), without PII.
-- 11e: nightly encrypted backups and a tested restore.
 - 11f: architecture, runbook (rollback, restore, secret rotation), k6 load test.

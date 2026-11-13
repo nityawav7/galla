@@ -96,3 +96,11 @@ In PostHog's project settings also turn on **Discard client IP data** and leave 
 **If events stop:** our routes answer 500 (`/api/monitoring`) or 502 (`/api/relay`) when Sentry or PostHog is unreachable; check their status pages. A 404 from `/api/relay` means `NEXT_PUBLIC_POSTHOG_KEY` isn't set on that deployment.
 
 **Rotating:** create a new Sentry DSN or auth token or PostHog key, update Vercel, redeploy, then revoke the old one.
+
+## Backups (ADR 0017)
+
+- **What:** every night at 03:00 IST, **Actions → Nightly backup** dumps production, encrypts it to the owner's `age` key and uploads `galla-YYYY-MM-DD.dump.age` to the Backblaze B2 bucket, which deletes files after 30 days.
+- **If it fails:** GitHub emails the owner. Open the failed run; the step name says what broke. **Check the settings** means a GitHub secret is missing (`BACKUP_DATABASE_URL`, `B2_KEY_ID`, `B2_APPLICATION_KEY`, `B2_BUCKET`, `B2_ENDPOINT`). **Dump and encrypt** means the database couldn't be reached or the dump came out empty (check Neon's status and the connection string). **Upload** means the B2 key was revoked or the bucket is full. Fix it, then **Run workflow** by hand.
+- **Monthly restore test:** follow `docs/restore.md` steps 1–3 with the latest backup and write the date and the numbers in `docs/hardening-checklist.md`.
+- **Restoring for real:** `docs/restore.md` step 4 (a new Neon branch, then point Vercel's `DATABASE_URL` at it).
+- **Rotating:** a new B2 application key goes into the two GitHub secrets, then revoke the old key. The database password: after resetting it in Neon, update `BACKUP_DATABASE_URL` as well as Vercel. The age key: see `docs/restore.md`.

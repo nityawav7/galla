@@ -217,3 +217,11 @@ What I learned and what broke while building Galla, phase by phase.
 - posthog-js posts to `/e/`. Next's trailing-slash redirect turned that into a 308 to `https://localhost/...`, which the CSP blocked over plain HTTP. `skipTrailingSlashRedirect` plus a redirect in the proxy for pages fixed it.
 - Sentry's SDK keeps its own reference to `fetch`, so patching `fetch` in the console shows nothing. The client's `beforeEnvelope` hook shows exactly what would be sent.
 - pnpm's minimum release age refused a posthog-js published the same day; letting pnpm pick the newest allowed version beats adding an exception.
+
+## Phase 11e: backups
+
+- Check a service's free plan before building on it: Cloudflare R2's free tier still goes through a checkout flow for a subscription, and the owner wanted no card anywhere. Backblaze B2 says "No credit card required", and its S3-compatible API works with the AWS CLI already on GitHub's runners (with `AWS_REQUEST_CHECKSUM_CALCULATION=when_required`, since B2 doesn't take the newer default checksums).
+- `pg_dump` must be at least the server's major version, so the workflow runs it from the `postgres:18-alpine` image instead of whatever client the runner has.
+- A pipe can hide a failed `pg_dump` (age happily encrypts an empty stream). `set -o pipefail` plus a minimum size and an `age-encryption.org/v1` header check catch it.
+- The round trip was tested before going live: local database → `pg_dump --format=custom --no-owner --no-privileges` → `pg_restore` into an empty Postgres 18 → `check.sql` on both: identical.
+- `age-keygen -o file` prints only the public key; the private key is only in the file, which surprised the owner. Say so in the instructions.
